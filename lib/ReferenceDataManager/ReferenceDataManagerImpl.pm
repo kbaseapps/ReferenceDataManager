@@ -2808,75 +2808,98 @@ sub list_loaded_taxa
     return [] if $maxid < $minid;
 
     my $batch_count = 5000;
-    my $maxid = $wsinfo->[4];
+    $batch_count=$params->{batch} if exists($params->{batch});
     my $pages = ceil($maxid/$batch_count);
+    my $first_page = floor($minid/$batch_count);
+    print "I: Starting at Page $first_page\n";
+    print "I: Fetching ".($maxid-($minid-1))." taxon objects.\n";
+    print "I: Paging through $pages of $batch_count objects\n"; 
+    for (my $m = $first_page; $m <= $pages; $m++) {
 
-    #print "\nFound $maxid taxon objects.\n";
-    #print "\nPaging through $pages of $batch_count objects\n";
-    for (my $m =0; $m < $pages; $m++) {
-        #for (my $m = 21; $m < 26; $m++) {
-        print "\nPage ". $m . "x$batch_count batch on " . scalar localtime;
-        eval {
-            $wsoutput = $self->util_ws_client()->list_objects({
-                        workspaces => [$wsname],
-                        type => "KBaseGenomeAnnotations.Taxon-",
-                        minObjectID => $batch_count * $m + 1,
-                        maxObjectID => $batch_count * ( $m + 1),
-                        includeMetadata => 1
-            });
-        };
-        if($@) {
-                print "Cannot list objects!\n";
-                print "ERROR:" . $@;#->{message}."\n";
-                if(defined($@->{status_line})) {
-                        print "ERROR:" . $@->{status_line}."\n";
-                }
+        my ($minObjID,$maxObjID)=(( $batch_count * $m ) + 1,$batch_count * ( $m + 1));
+
+        #set limit based on whats been done before
+        $minObjID=$minid if $minid >$minObjID;
+
+        last if $minObjID > $maxid;
+
+        print ("I: Batch ". $m . "x$batch_count on " . scalar(localtime)."\n");
+        print ("I: minObjectID: $minObjID\n");
+        print ("I: maxObjectID: $maxObjID\n");
+
+	$wsoutput = [];
+        my $try_count=5;
+        while(scalar(@$wsoutput)==0 && $try_count != 0){
+            $try_count--;
+            eval {
+                $wsoutput = $self->util_ws_client()->list_objects({workspaces => [$wsname],
+                                                                   type => "KBaseGenomeAnnotations.Taxon-1.0",
+                                                                   minObjectID => $minObjID,
+                                                                   maxObjectID => $maxObjID});
+            };
+	    if ($@) {
+		print "ERROR on iteration $try_count for Batch $batch_count: Cannot list objects: $_ at ".scalar(localtime)."\n";
+		print "Exception message: " . $@->{"message"} . "\n";
+		print "JSONRPC code: " . $@->{"code"} . "\n";
+		print "Method: " . $@->{"method_name"} . "\n";
+		print "Client-side exception:\n";
+		print $@;
+		print "Server-side exception:\n";
+		print $@->{"data"};
+	    }
+            sleep(3) if scalar(@$wsoutput)==0;
         }
-        else {
-            if( @{$wsoutput} > 0 ) {
-                my $wstaxonrefs = [];
-                for (my $j=0; $j < @{$wsoutput}; $j++) {
-                        push(@{$wstaxonrefs},{
-                                "ref" => $wsoutput->[$j]->[6]."/".$wsoutput->[$j]->[0]."/".$wsoutput->[$j]->[4]
-                        });
-                }
+        if(exists($params->{ignore})){
+            $wsoutput = [ grep { !exists($params->{ignore}{$_->[0]}) } @$wsoutput ];
+        }
+        next if scalar(@$wsoutput)==0;
+	
+        my $wstaxonrefs = [];
+        for (my $j=0; $j < @{$wsoutput}; $j++) {
+            push(@{$wstaxonrefs},{"ref" => $wsoutput->[$j]->[6]."/".$wsoutput->[$j]->[0]."/".$wsoutput->[$j]->[4]});
+        }
 
+        $taxonout = [];
+        my $try_count=5;
+        while(scalar(@$taxonout)==0 && $try_count != 0){
+            $try_count--;
+            eval {
                 print "\nStart to fetch the objects at the batch size of: " . @{$wstaxonrefs} . " on " . scalar localtime;
-                eval {
-                        $taxonout = $self->util_ws_client()->get_objects2({
-                                objects => $wstaxonrefs
-                        }); #return a reference to a hash where key 'data' is defined as a list of Workspace.ObjectData
-                };
-                if($@) {
-                        print "Cannot get object information!\n";
-                        print "ERROR:".$@;
-                        if(defined($@->{status_line})) {
-                                print $@->{status_line}."\n";
-                        }
-                }
-                else {
-                        print "\nDone getting the objects at the batch size of: " . @{$wstaxonrefs} . " on " . scalar localtime . "\n";
-                        my $solr_taxa = [];
-                        my $curr_taxon; 
-                        $taxonout = $taxonout -> {data};
-                        for (my $i=0; $i < @{$taxonout}; $i++) {
-                                my $taxonData = $taxonout -> [$i] -> {data};#an UnspecifiedObject
-                                #if( $taxonData->{domain} ne "Unknown" ) {
-                                $curr_taxon = {taxon => $taxonData, ws_ref => $wstaxonrefs -> [$i] -> {ref}};
-                                push(@{$output}, $curr_taxon);
-                                push(@{$solr_taxa}, $curr_taxon);
-                                #push(@{$output}, {taxon => $taxonData, ws_ref => $wstaxonrefs -> [$i] -> {ref}});
-                                if (@{$output} < 10) {
-                                        my $curr = @{$output}-1;
-                                        $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
-                                }
-                                #}#if( $taxonData->{domain} ne "Unknown" )
-                        }
-                        #indexing in SOLR for every $batchCount of taxa--NOTE:only used when need to index a super-large number of
-                        #taxa (e.g., >100k) due to the fact that the job may be interrupted by all sorts of events
-                        #$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy_prod"});
-                    }
+                $taxonout = $self->util_ws_client()->get_objects2({objects => $wstaxonrefs})->{data};
+                print "\nDone getting the objects at the batch size of: " . @{$taxonout} . " on " . scalar localtime . "\n\n";
+	    };
+	    if($@) {
+		print "ERROR on iteration $try_count for Batch $batch_count: Cannot get objects: $_ at ".scalar(localtime)."\n";
+		print "Exception message: " . $@->{"message"} . "\n";
+		print "JSONRPC code: " . $@->{"code"} . "\n";
+		print "Method: " . $@->{"method_name"} . "\n";
+		print "Client-side exception:\n";
+		print $@;
+		print "Server-side exception:\n";
+		print $@->{"data"};
+	    }
+	    sleep(3) if scalar(@$taxonout)==0;
+	}
+
+        my $solr_taxa = [];
+        for (my $i=0; $i < @{$taxonout}; $i++) {
+            my $taxonData = $taxonout -> [$i] -> {data}; #an UnspecifiedObject
+	    my $curr_taxon = {taxon => $taxonData, ws_ref => $wstaxonrefs -> [$i] -> {ref}};
+
+            push(@{$output}, $curr_taxon);
+	    push(@{$solr_taxa}, $curr_taxon);
+
+            if (@{$output} < 10) {
+                my $curr = @{$output}-1;
+                $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
             }
+	}
+
+	#indexing in SOLR for every $batchCount of taxa
+	#$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy_ci"});
+
+        if(exists($params->{batch}) && scalar(@$output) >= $params->{batch}){
+            last;
         }
     }
     #END list_loaded_taxa
