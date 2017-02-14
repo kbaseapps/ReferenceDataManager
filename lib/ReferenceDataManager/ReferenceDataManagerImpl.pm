@@ -3583,7 +3583,7 @@ sub update_loaded_genomes
     my $ref_genomes = $self->list_reference_genomes({source => $gn_source, update_only => $params->{update_only}});
 
     #for (my $i=0; $i < @{ $ref_genomes }; $i++) {
-    for (my $i=11800; $i < @{ $ref_genomes }; $i++) {#11800
+    for (my $i=12123; $i < @{ $ref_genomes }; $i++) {#11800
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
 
