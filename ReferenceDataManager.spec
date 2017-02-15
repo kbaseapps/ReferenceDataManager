@@ -33,6 +33,7 @@ module ReferenceDataManager {
         string domain;
         string refseq_category;
         string tax_id;
+        string assembly_level;
     } ReferenceGenomeData;
 
     /*

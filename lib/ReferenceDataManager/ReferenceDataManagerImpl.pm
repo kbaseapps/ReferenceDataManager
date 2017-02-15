@@ -1166,7 +1166,7 @@ sub _indexGenomeFeatureData
                 }
         }
         else {
-            $ws_gnout = $ws_gnout -> {data};#a reference to a list where each element is a Workspace.ObjectData
+            $ws_gnout = $ws_gnout->{data};#a reference to a list where each element is a Workspace.ObjectData
             print "Done getting genome object info for " . $ws_ref->{ref} . " on " . scalar localtime . "\n";
             my $ws_gn_data;#to hold a value which is a Workspace.objectData
             my $ws_gn_info;#to hold a value which is a Workspace.object_info
@@ -1182,7 +1182,7 @@ sub _indexGenomeFeatureData
             my $ws_gn_loc;
             my $ws_gn_save_date;
             my $numCDs = 0;
-            # my $ws_gn_refseqcat;
+            my $ws_gn_asmlevel;
 
             #fetch individual data item to assemble the genome_feature info for $solr_gnftData
             for (my $i=0; $i < @{$ws_gnout}; $i++) {
@@ -1192,7 +1192,8 @@ sub _indexGenomeFeatureData
                 $ws_gn_tax = $ws_gn_data->{taxonomy};
                 $ws_gn_tax =~s/ *; */;;/g;
                 $ws_gn_save_date = $ws_gn_info -> [3];
-                
+                $ws_gn_asmlevel = ($ws_gn_info->[10]{assembly_level}=~/Complete Genome/i) ? 1 : 0;
+
                 $numCDs  = 0;
                 foreach my $feature (@{$ws_gn_features}) {
                     $numCDs++ if $feature->{type} = 'CDS';
@@ -1214,7 +1215,7 @@ sub _indexGenomeFeatureData
                           num_contigs => $ws_gn_info->[10]->{"Number contigs"},#$ws_gn_data->{num_contigs},
                           assembly_ref => $ws_gn_data->{assembly_ref},
                           gc_content => $ws_gn_info->[10]->{"GC content"},
-                          complete => $ws_gn_data->{complete},
+                          complete => $ws_gn_asmlevel,
                           taxonomy => $ws_gn_tax,
                           taxonomy_ref => $ws_gn_data->{taxon_ref},
                           workspace_name => $ws_gn_info->[7],
@@ -1290,7 +1291,7 @@ sub _indexGenomeFeatureData
                           num_contigs => $ws_gn_info->[10]->{"Number contigs"},#$ws_gn_data->{num_contigs},
                           assembly_ref => $ws_gn_data->{assembly_ref},
                           gc_content => $ws_gn_info->[10]->{"GC content"},
-                          complete => $ws_gn_data->{complete},
+                          complete => $ws_gn_asmlevel,
                           taxonomy => $ws_gn_tax,
                           taxonomy_ref => $ws_gn_data->{taxon_ref},
                           workspace_name => $ws_gn_info->[7],
@@ -1460,7 +1461,8 @@ sub _list_ncbi_refseq
             ($current_genome->{id}, $current_genome->{version}) = $current_genome->{accession}=~/(.*)\.(\d+)$/;
             $current_genome->{refseq_category} = $attribs[4];
             $current_genome->{tax_id} = $attribs[5];
-        
+            $current_genome->{assembly_level} = $attribs[11];
+
             if( $update_only == 1 ) {
                 my $gn_solr_core = "GenomeFeatures_prod";
                 if( ($self->_checkGenomeStatus( $current_genome, $gn_solr_core ))=~/(new|updated)/i ) {
@@ -2400,12 +2402,12 @@ sub load_genomes
                 taxon_wsname => "ReferenceTaxons",
                 release => $ncbigenome->{version},
                 generate_ids_if_needed => 1,
-                #genetic_code => 11,
                 type => $gn_type,
                 metadata => { refid => $ncbigenome->{id},
                     accession => $ncbigenome->{accession},
                     refname => $ncbigenome->{accession},#{asm_name},
                     url => $gn_url,
+                    assembly_level => $ncbigenome->{assembly_level},
                     version => $ncbigenome->{version}
                 }
               });
@@ -2896,7 +2898,7 @@ sub list_loaded_taxa
 	}
 
 	#indexing in SOLR for every $batchCount of taxa
-	#$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy_ci"});
+	#$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy_prod"});
 
         if(exists($params->{batch}) && scalar(@$output) >= $params->{batch}){
             last;
@@ -3606,7 +3608,7 @@ sub update_loaded_genomes
     my $ref_genomes = $self->list_reference_genomes({source => $gn_source, update_only => $params->{update_only}});
 
     #for (my $i=0; $i < @{ $ref_genomes }; $i++) {
-    for (my $i=12123; $i < @{ $ref_genomes }; $i++) {#11800
+    for (my $i=12123; $i < @{ $ref_genomes }; $i++) {#11800, started from 10000
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
 
