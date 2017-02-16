@@ -136,33 +136,6 @@ sub util_workspace_names {
     return $self->{_workspace_map}->{$source};
 }
 
-sub util_create_report {
-    my($self,$args) = @_;
-    my $reportobj = {
-        text_message => $args->{"message"},
-        objects_created => []
-    };
-    if (defined($args->{objects})) {
-        for (my $i=0; $i < @{$args->{objects}}; $i++) {
-            push(@{$reportobj->{objects_created}},{
-                'ref' => $args->{objects}->[$i]->[0],
-                description => $args->{objects}->[$i]->[1]
-            });
-        }
-    }
-    $self->util_ws_client()->save_objects({
-        workspace => $args->{workspace},
-        objects => [{
-            provenance => $self->{_provenance},
-            type => "KBaseReport.Report",
-            data => $reportobj,
-            hidden => 1,
-            name => $self->util_method()
-        }]
-    });
-}
-
-
 #This function returns the version of the current method
 sub util_version {
     my ($self) = @_;
@@ -274,6 +247,7 @@ sub util_create_report {
         }]
     });
 }
+
 #################### methods for accessing SOLR using its web interface#######################
 #
 #Internal Method: to list the genomes already in SOLR and return an array of those genomes
