@@ -1192,7 +1192,7 @@ sub _indexGenomeFeatureData
                 $ws_gn_tax = $ws_gn_data->{taxonomy};
                 $ws_gn_tax =~s/ *; */;;/g;
                 $ws_gn_save_date = $ws_gn_info -> [3];
-                $ws_gn_asmlevel = ($ws_gn_info->[10]->{assembly_level}=~/Complete Genome/i) ? 1 : 0;
+                $ws_gn_asmlevel = ($ws_gn_info->[10]->{assembly_level}=~/Complete Genome/i);
                 $numCDs  = 0;
                 foreach my $feature (@{$ws_gn_features}) {
                     $numCDs++ if $feature->{type} = 'CDS';
@@ -3607,7 +3607,7 @@ sub update_loaded_genomes
     my $ref_genomes = $self->list_reference_genomes({source => $gn_source, update_only => $params->{update_only}});
 
     #for (my $i=0; $i < @{ $ref_genomes }; $i++) {
-    for (my $i=12143; $i < @{ $ref_genomes }; $i++) {#11800, started from 10000
+    for (my $i=12171; $i < @{ $ref_genomes }; $i++) {#11800, started from 10000
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
         
