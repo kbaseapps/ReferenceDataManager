@@ -20,7 +20,8 @@ A KBase module: ReferenceDataManager
 #BEGIN_HEADER
 use Bio::KBase::AuthToken;
 use Workspace::WorkspaceClient;
-use GenomeFileUtil::GenomeFileUtilClient;                                                                                                                                                                            
+use GenomeFileUtil::GenomeFileUtilClient;
+
 use Config::IniFiles;
 use Config::Simple;
 use POSIX;
@@ -45,7 +46,9 @@ sub util_initialize_call {
     $self->{data} = $cfg->val('ReferenceDataManager','data');
     $self->{scratch} = $cfg->val('ReferenceDataManager','scratch');
     $self->{workspace_url} = $cfg->val('ReferenceDataManager','workspace-url');#$config->{"workspace-url"}; 
-    die "no workspace-url defined" unless $self->{workspace_url};   $self->util_timestamp(DateTime->now()->datetime());
+    die "no workspace-url defined" unless $self->{workspace_url};
+    
+    $self->util_timestamp(DateTime->now()->datetime());
     $self->{_wsclient} = new Workspace::WorkspaceClient($self->{workspace_url},token => $ctx->token());
     return $params;
 }
@@ -70,17 +73,8 @@ sub util_username {
 
 #This function returns the name of the SDK method being run
 sub util_method {
-    my ($self) = @_;                                                                                                                                                                                                 
+    my ($self) = @_;
     return $self->{_method};
-}
-
-#This function returns a timestamp recored when the functionw was first started
-sub util_timestamp {
-    my ($self,$input) = @_;
-    if (defined($input)) {
-        $self->{_timestamp} = $input;
-    }
-    return $self->{_timestamp};
 }
 
 #Use this function to log messages to the SDK console
@@ -136,90 +130,13 @@ sub util_workspace_names {
     return $self->{_workspace_map}->{$source};
 }
 
-#This function returns the version of the current method
-sub util_version {
-    my ($self) = @_;
-    return "1";
-}
-
-#This function returns the token of the user running the SDK method
-sub util_token {
-    my ($self) = @_;
-    return $self->{_token};
-}
-
-#This function returns the username of the user running the SDK method
-sub util_username {
-    my ($self) = @_;
-    return $self->{_username};
-}
-
-#This function returns the name of the SDK method being run
-sub util_method {
-    my ($self) = @_;
-    return $self->{_method};
-}
-
-#This function returns a timestamp recored when the functionw was first started
+#This function returns a timestamp recorded when the functionw was first started
 sub util_timestamp {
     my ($self,$input) = @_;
     if (defined($input)) {
         $self->{_timestamp} = $input;
     }
     return $self->{_timestamp};
-}
-
-#Use this function to log messages to the SDK console
-sub util_log {
-    my($self,$message) = @_;
-    print $message."\n";
-}
-
-#Use this function to get a client for the workspace service
-sub util_ws_client {
-    my ($self,$input) = @_;
-    return $self->{_wsclient};
-}
-
-#This function validates the arguments to a method making sure mandatory arguments are present and optional arguments are set
-sub util_args {
-    my($self,$args,$mandatoryArguments,$optionalArguments,$substitutions) = @_;
-    if (!defined($args)) {
-        $args = {};
-    }
-    if (ref($args) ne "HASH") {
-        die "Arguments not hash";   
-    }
-    if (defined($substitutions) && ref($substitutions) eq "HASH") {
-        foreach my $original (keys(%{$substitutions})) {
-            $args->{$original} = $args->{$substitutions->{$original}};
-        }
-    }
-    if (defined($mandatoryArguments)) {
-        for (my $i=0; $i < @{$mandatoryArguments}; $i++) {
-            if (!defined($args->{$mandatoryArguments->[$i]})) {
-                push(@{$args->{_error}},$mandatoryArguments->[$i]);
-            }
-        }
-    }
-    if (defined($args->{_error})) {
-        die "Mandatory arguments ".join("; ",@{$args->{_error}})." missing";
-    }
-    foreach my $argument (keys(%{$optionalArguments})) {
-        if (!defined($args->{$argument})) {
-            $args->{$argument} = $optionalArguments->{$argument};
-        }
-    }
-    return $args;
-}
-
-#This function specifies the name of the workspace where genomes are loaded for the specified source database
-sub util_workspace_names {
-    my($self,$source) = @_;
-    if (!defined($self->{_workspace_map}->{$source})) {
-        die "No workspace specified for source: ".$source;
-    }
-    return $self->{_workspace_map}->{$source};
 }
 
 sub util_create_report {
