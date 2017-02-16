@@ -1074,18 +1074,19 @@ sub _checkGenomeStatus
         my $solr_records = $solr_response->{response}->{grouped}->{$groupOption}->{groups};
         for (my $i = 0; $i < @{$solr_records}; $i++ ) {
             my $record = $solr_records->[$i];
-            my $genome_id = uc $record->{genome_id};
+            my $gm_id = uc $record->{groupValue};
 
-            if ($genome_id eq uc $current_genome->{accession}){
+            if ($gm_id eq uc $current_genome->{accession}){
                 $status = "Existing genome: current";
-                $current_genome->{genome_id} = $genome_id;
+                $current_genome->{genome_id} = $gm_id;
                 last;
-            }elsif ($genome_id =~/$current_genome->{id}/){
+            }elsif ($gm_id =~/uc $current_genome->{id}/){
                 $status = "Existing genome: updated ";
-                $current_genome->{genome_id} = $genome_id;
+                $current_genome->{genome_id} = $gm_id;
                 last;
             }
         }
+        
         if( $status eq "" )
         {
             $status = "New genome";#or "Existing genome: status unknown";
@@ -1221,7 +1222,7 @@ sub _indexGenomeFeatureData
                           num_cds => $numCDs,
                           #gnmd5checksum => $ws_gn_info->[8],
                           save_date => $ws_gn_save_date,            
-                };   
+                };  
                 push @{$solr_gnftData}, $ws_gnobj;
                 push @{$gnft_batch}, $ws_gnobj;
                 ###---end Build the genome solr object---
