@@ -14,7 +14,7 @@
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
-    "default_values":["1"],
+    "default_values":[{}],
     "field_type" : "text",
     "text_options":{
 	"valid_ws_types" : []
@@ -24,10 +24,10 @@
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
-    "default_values":["1"],
+    "default_values":"GenomeFeatures_ci",
     "field_type" : "text",
     "text_options":{
-	"valid_ws_types" : []
+	"valid_as" : "text
     }
   }],
   "job_id_output_field": "docker",

@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '0646cb4b5a3b08faaf8dccb8a3baefaa5786ab51';
+our $GIT_COMMIT_HASH = '6d01e754a9809d7dc287357ec18448ec178498fe';
 
 =head1 NAME
 
@@ -1555,7 +1555,7 @@ sub new
     $self->{_workspace_map} = {
         ensembl => "Ensembl_Genomes",
         phytozome => "Phytozome_Genomes",
-        refseq => "RefSeq_Genomes"
+        refseq => "ReferenceDataManager"
     };
 
     #SOLR specific parameters
@@ -1612,6 +1612,7 @@ ReferenceGenomeData is a reference to a hash where the following keys are define
 	domain has a value which is a string
 	refseq_category has a value which is a string
 	tax_id has a value which is a string
+	assembly_level has a value which is a string
 
 </pre>
 
@@ -1639,6 +1640,7 @@ ReferenceGenomeData is a reference to a hash where the following keys are define
 	domain has a value which is a string
 	refseq_category has a value which is a string
 	tax_id has a value which is a string
+	assembly_level has a value which is a string
 
 
 =end text
@@ -2150,6 +2152,7 @@ ReferenceGenomeData is a reference to a hash where the following keys are define
 	domain has a value which is a string
 	refseq_category has a value which is a string
 	tax_id has a value which is a string
+	assembly_level has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -2188,6 +2191,7 @@ ReferenceGenomeData is a reference to a hash where the following keys are define
 	domain has a value which is a string
 	refseq_category has a value which is a string
 	tax_id has a value which is a string
+	assembly_level has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -2805,6 +2809,7 @@ sub list_loaded_taxa
     }
     return($output);
 }
+
 
 
 
@@ -3499,7 +3504,7 @@ sub update_loaded_genomes
     my $ref_genomes = $self->list_reference_genomes({source => $gn_source, update_only => $params->{update_only}});
 
     #for (my $i=0; $i < @{ $ref_genomes }; $i++) {
-    for (my $i=12171; $i < @{ $ref_genomes }; $i++) {#11800, started from 10000
+    for (my $i=4781; $i < @{ $ref_genomes }; $i++) {#11800, started from 0
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
         
@@ -3518,7 +3523,7 @@ sub update_loaded_genomes
                     }
                 }
         }else{
-                # Current version already in KBase, check for annotation update
+                print "Current version already in KBase"; #check for annotation update
         }
     }
 
@@ -3687,6 +3692,7 @@ source has a value which is a string
 domain has a value which is a string
 refseq_category has a value which is a string
 tax_id has a value which is a string
+assembly_level has a value which is a string
 
 </pre>
 
@@ -3706,6 +3712,7 @@ source has a value which is a string
 domain has a value which is a string
 refseq_category has a value which is a string
 tax_id has a value which is a string
+assembly_level has a value which is a string
 
 
 =end text
@@ -4023,7 +4030,7 @@ create_report has a value which is a ReferenceDataManager.bool
 
 =item Description
 
-Structure of a single KBase genome in the list returned by the load_genomes function
+Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
 
 
 =item Definition
