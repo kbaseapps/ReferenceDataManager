@@ -30,19 +30,19 @@
       "options": [
         {
           "value": "GenomeFeatures_ci",
-          "display": "GenomeFeatures in CI)",
+          "display": "GenomeFeatures in CI",
           "id": "CI",
           "ui_name": "GenomeFeatures_ci"
         },
         {
           "value": "GenomeFeatures_appdev",
-          "display": "GenomeFeatures in appdev)",
+          "display": "GenomeFeatures_appdev",
           "id": "appdev",
           "ui_name": "GenomeFeatures_appdev"
         },
         {
           "value": "GenomeFeatures_prod",
-          "display": "GenomeFeatures in prod)",
+          "display": "GenomeFeatures_prod",
           "id": "prod",
           "ui_name": "GenomeFeatures_prod"
         }
