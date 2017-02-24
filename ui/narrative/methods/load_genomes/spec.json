@@ -19,6 +19,17 @@
     "text_options" : {
       "valid_as" : "text"
     }
+  }, {
+    "id" : "index_in_solr",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["0"],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
   }],
   "job_id_output_field": "docker",
   "behavior" : {
@@ -30,6 +41,10 @@
         {
           "input_parameter": "data",
           "target_property": "data"
+        },
+        {
+          "input_parameter": "index_in_solr",
+          "target_property": "index_in_solr"
         },
         {
           "constant_value" : "1",

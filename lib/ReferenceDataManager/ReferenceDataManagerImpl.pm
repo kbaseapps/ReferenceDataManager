@@ -1367,9 +1367,9 @@ sub _list_ncbi_refgenomes
             else {
                 push(@{$output},$current_genome);
             }
-
+            
             if ($count <= 10) {
-                $summary .= $current_genome->{accession}.";".$current_genome->{version_status}.";".$current_genome->{asm_name}.";".$current_genome->{ftp_dir}.";".$current_genome->{id}.";".$current_genome->{version}.";".$current_genome->{source}.";".$current_genome->{domain}."\n";
+                $summary .= $current_genome->{accession}.";".$current_genome->{version_status}.";".$current_genome->{id}.";".$current_genome->{ftp_dir}.";".$current_genome->{file}.";".$current_genome->{id}.";".$current_genome->{version}.";".$current_genome->{source}.";".$current_genome->{domain}."\n";
             }
         }
     }
@@ -1712,8 +1712,11 @@ sub list_reference_genomes
     $output = $list_items->{ref_genomes};
     $summary = $list_items->{summary};
 
+    $summary .= "\nThere are a total of " . @{$output} . " " . $gn_domain . " Reference genomes in " . $gn_source .".\n";
+    print $summary . "\n";     
+
     if ($params->{create_report}) {
-        print $summary."\n";
+        print $summary . "\n";
         $self->util_create_report({
             message => $summary,
             workspace => $params->{workspace_name}
@@ -1881,7 +1884,7 @@ sub list_loaded_genomes
                         }
                  }
                  else {
-                    print "\nTotal genome object count=" . @{$wsoutput}. "\n";
+                    #print "\nTotal genome object count=" . @{$wsoutput}. "\n";
                     my $ws_objinfo;
                     my $obj_src;
                     my $curr_gn_info;
@@ -1919,8 +1922,6 @@ sub list_loaded_genomes
                             }
                             
                             if (@{$output} < 10) {
-                                #my $curr = @{$output}-1;
-                                #$msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
                                 $msg .= $curr_gn_info->{accession}.";".$curr_gn_info->{workspace_name}.";".$curr_gn_info->{domain}.";".$curr_gn_info->{source}.";".$curr_gn_info->{save_date}.";".$curr_gn_info->{contig_count}." contigs;".$curr_gn_info->{feature_count}." features; KBase id:".$curr_gn_info->{ref}."\n";
                             }
                         }
@@ -1929,8 +1930,11 @@ sub list_loaded_genomes
             }
         }
     }
+    $msg .= "\nThere are a total of " . @{$output} . " Reference genomes loaded in KBase.\n";
+    print $msg . "\n";     
+
     if ($params->{create_report}) {
-        print $msg."\n";
+        print $msg . "\n";     
         $self->util_create_report({
                 message => $msg,
                 workspace => $params->{workspace_name}

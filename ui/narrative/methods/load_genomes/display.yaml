@@ -38,6 +38,15 @@ parameters :
             Genome data in semi-colon separated string
         long-hint  : |
             Genome data in the format of 'accession;status;name;ftp_dir;file;id;version;source;domain'
+    
+    index_in_solr :
+         ui-name : |
+             Index in Solr
+         short-hint : |
+             Indicate to send the genome info to Solr to be indexed
+         long-hint : |
+             Indicate to send the genome info to Solr to be indexed
+
 
 description : |
-    <p>Load genomes into KBase and index in solr</p>
+    <p>Load genomes into KBase and index in solr if want </p>
