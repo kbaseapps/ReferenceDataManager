@@ -55,7 +55,7 @@ parameters :
         long-hint  : |
             List genomes available in Ensembl
     
-    gn_domain :
+    domain :
         ui-name : |
             Division of genomes
         short-hint : |

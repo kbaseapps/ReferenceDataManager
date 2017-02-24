@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : List reference genomes loaded in KBase
+name     : List reference genomes in KBase
 
 tooltip  : |
     List reference genomes loaded in KBase
@@ -33,24 +33,23 @@ suggestions :
 parameters :
     refseq :
         ui-name : |
-            List RefSeq genomes
+            RefSeq genomes
         short-hint : |
             List genomes loaded from RefSeq
         long-hint  : |
             List genomes loaded from RefSeq
-
 
     phytozome :
         ui-name : |
-            List Phytozome genomes
+            Phytozome genomes
         short-hint : |
-            List genomes loaded from RefSeq
+            List genomes loaded from Phytozome
         long-hint  : |
-            List genomes loaded from RefSeq
+            List genomes loaded from Phytozome
             
     ensembl :
         ui-name : |
-            List Ensembl genomes
+            Ensembl genomes
         short-hint : |
             List genomes loaded from Ensembl
         long-hint  : |

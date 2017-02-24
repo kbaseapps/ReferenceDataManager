@@ -54,7 +54,7 @@
       "unchecked_value": 0
     }
   }, {
-    "id" : "gn_domain",
+    "id" : "domain",
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
@@ -109,8 +109,8 @@
           "target_property": "phytozome"
         },
         {
-          "input_parameter": "gn_domain",
-          "target_property": "gn_domain"
+          "input_parameter": "domain",
+          "target_property": "domain"
         },
         {
           "input_parameter": "updated_only",

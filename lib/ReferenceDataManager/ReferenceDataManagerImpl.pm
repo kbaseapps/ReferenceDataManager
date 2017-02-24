@@ -937,11 +937,13 @@ sub _checkTaxonStatus
     return $status;
 }
 #
-# Internal Method: to check if a given genome status against genomes in SOLR.  Returns a string stating the status
+# Internal Method 
+# Name: _checkGenomeStatus
+# Purpose: to check if a given genome status against genomes in SOLR.  Returns a string stating the status
 #
 # params :
-# $current_genome is a genome object whose KBase status is to be checked.
-# $solr_core is the name of the SOLR core
+#       $current_genome is a genome object whose KBase status is to be checked.
+#       $solr_core is the name of the SOLR core
 #
 # returns : a string
 #    
@@ -988,9 +990,11 @@ sub _checkGenomeStatus
 }
 
 #
-#Internal method, to fetch the information about a genome records from a given genome reference
-#Input: a reference to a Workspace.object_info (which is a reference to a list containing 11 items)
-#Output: a reference to a hash of the type of ReferenceDataManager.LoadedReferenceGenomeData
+# Internal method
+# Name: _getGenomeInfo
+# Purpose: to fetch the information about a genome records from a given genome reference
+# Input: a reference to a Workspace.object_info (which is a reference to a list containing 11 items)
+# Output: a reference to a hash of the type of ReferenceDataManager.LoadedReferenceGenomeData
 #
 sub _getGenomeInfo 
 {
@@ -1305,7 +1309,7 @@ sub _indexInSolr
 #################### Start subs for accessing NCBI ########################
 
 #
-# Internal method: _list_ncbi_refseq
+# Internal method: _list_ncbi_refgenomes
 # params:
 #   input:
 #       $source: "refseq" | "genbank" {default => "refseq"}
@@ -1314,7 +1318,7 @@ sub _indexInSolr
 #   output:
 #       a list of ncbi genomes
 #
-sub _list_ncbi_refseq 
+sub _list_ncbi_refgenomes
 {
     my ($self, $source, $division, $update_only) = @_;
        
@@ -1323,7 +1327,7 @@ sub _list_ncbi_refseq
     $update_only = 0 unless $update_only;
 
     my $output = [];
-    my $msg = "";
+    my $summary = "";
     my $count = 0;
     
     my @divisions = split /,/, $division;
@@ -1365,12 +1369,11 @@ sub _list_ncbi_refseq
             }
 
             if ($count <= 10) {
-                $msg .= $current_genome->{accession}.";".$current_genome->{status}.";".$current_genome->{name}.";".$current_genome->{ftp_dir}.";".$current_genome->{file}.";".$current_genome->{id}.";".$current_genome->{version}.";".$current_genome->{source}.";".$current_genome->{domain}."\n";
+                $summary .= $current_genome->{accession}.";".$current_genome->{version_status}.";".$current_genome->{asm_name}.";".$current_genome->{ftp_dir}.";".$current_genome->{id}.";".$current_genome->{version}.";".$current_genome->{source}.";".$current_genome->{domain}."\n";
             }
         }
-        #print Dumper($output->[@{$output} - 1]);
     }
-    return({msg => $msg, ref_genomes => $output});
+    return({summary => $summary, ref_genomes => $output});
 }
 
 #################### End subs for accessing NCBI ########################
@@ -1682,13 +1685,13 @@ sub list_reference_genomes
         refseq => 1,
         phytozome => 0,
         ensembl => 0, 
-        gn_domain => "bacteria",
+        domain => "bacteria",
         update_only => 0,
         create_report => 0,
         workspace_name => undef
     });
 
-    my $msg = "";
+    my $summary = "";
     $output = [];
 
     my $gn_source = "refseq";
@@ -1702,17 +1705,17 @@ sub list_reference_genomes
         $gn_source = "ensembl";
     }
     
-    my $gn_domain = $params->{gn_domain};    
+    my $gn_domain = $params->{domain};    
     print $gn_source . "---" . $gn_domain . "\n";
     
-    my $list_items = $self->_list_ncbi_refseq($gn_source, $gn_domain, $params->{update_only});
+    my $list_items = $self->_list_ncbi_refgenomes($gn_source, $gn_domain, $params->{update_only});
     $output = $list_items->{ref_genomes};
-    $msg = $list_items->{msg};
+    $summary = $list_items->{summary};
 
     if ($params->{create_report}) {
-        print $msg."\n";
+        print $summary."\n";
         $self->util_create_report({
-            message => $msg,
+            message => $summary,
             workspace => $params->{workspace_name}
         });  
         $output = [$params->{workspace_name}."/list_reference_genomes"];
@@ -1860,7 +1863,7 @@ sub list_loaded_genomes
             }
             my $maxid = $wsinfo->[4];
             my $pages = ceil($maxid/$batch_count);
-            print "\nMax genome object id=$maxid\n";
+            #print "\nMax genome object id=$maxid\n";
 
             for (my $m = 0; $m < $pages; $m++) {
                 eval {
@@ -1912,14 +1915,15 @@ sub list_loaded_genomes
                             elsif( $obj_src && $i == 2 ) {#ensembl genomes #TODO
                                 if( $obj_src !~ /phytozome*/ && $obj_src !~ /refseq*/ ) {
                                     if( $ws_objinfo->[10]->{Domain} !~ /Plant/ && $ws_objinfo->[10]->{Domain} !~ /Bacteria/ ) {    
-                                    push @{$output}, $curr_gn_info; 
-                                }
+                                        push @{$output}, $curr_gn_info; 
+                                    }       
                                 }
                             }
                             
                             if (@{$output} < 10) {
-                                my $curr = @{$output}-1;
-                                $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
+                                #my $curr = @{$output}-1;
+                                #$msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
+                                $msg .= $curr_gn_info->{accession}.";".$curr_gn_info->{workspace_name}.";".$curr_gn_info->{domain}.";".$curr_gn_info->{source}.";".$curr_gn_info->{save_date}.";".$curr_gn_info->{contig_count}." contigs;".$curr_gn_info->{feature_count}." features; KBase id:".$curr_gn_info->{ref}."\n";
                             }
                         }
                     }
@@ -2271,6 +2275,8 @@ sub load_genomes
     my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL });
     my $ncbigenomes;
     $output = [];
+    my $msg = "";
+
     if (defined($params->{data})) {
         my $array = [split(/;/,$params->{data})];
         $ncbigenomes = [{
@@ -2307,6 +2313,7 @@ sub load_genomes
         elsif($ncbigenome->{refseq_category} eq "representative genome") {
            $gn_type = "Representative";
         }
+        
         print "\nNow loading ".$ncbigenome->{id}." with loader url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         if ($ncbigenome->{source} eq "refseq" || $ncbigenome->{source} eq "") {
             my $genomeout;
@@ -2345,29 +2352,32 @@ sub load_genomes
             }
             else
             {
-              $genomeout = {
-                "ref" => $genutilout->{genome_ref},
-                id => $ncbigenome->{id},
-                workspace_name => $wsname,
-                source_id => $ncbigenome->{id},
-                accession => $ncbigenome->{accession},
-                name => $ncbigenome->{asm_name},
-                version => $ncbigenome->{version},
-                source => $ncbigenome->{source},
-                domain => $ncbigenome->{domain}
-             };
+                $genomeout = {
+                  "ref" => $genutilout->{genome_ref},
+                  id => $ncbigenome->{id},
+                  workspace_name => $wsname,
+                  source_id => $ncbigenome->{id},
+                  accession => $ncbigenome->{accession},
+                  name => $ncbigenome->{asm_name},
+                  version => $ncbigenome->{version},
+                  source => $ncbigenome->{source},
+                  domain => $ncbigenome->{domain}
+               };
 
-             my $gn_solrCore = "GenomeFeatures_prod";
-             if ($params->{index_in_solr} == 1) {
+               my $gn_solrCore = "GenomeFeatures_prod";
+               if ($params->{index_in_solr} == 1) {
                     $self->index_genomes_in_solr({
                         solr_core => $gn_solrCore,             
                         genomes => [$genomeout]
                     });
-             }
-             push(@{$output},$genomeout);
-             print "!!!!!!!!!!!!!--Loading of $ncbigenome->{id} succeeded--!!\n";
-           }
-           print "**********************Genome loading process ends on " . scalar localtime . "************************\n";
+               }
+               push(@{$output},$genomeout);
+               if (@{$output} < 10) {
+                   $msg .= "Loaded genome: ".$genomeout->{id}." into workspace ".$genomeout->{workspace_name}.";\n";
+               }
+               print "!!!!!!!!!!!!!--Loading of $ncbigenome->{id} succeeded--!!\n";
+            }
+            print "**********************Genome loading process ends on " . scalar localtime . "************************\n";
         } elsif ($ncbigenome->{source} eq "phytozome") {
             #NEED SAM TO PUT CODE FOR HIS LOADER HERE
 	        my $genomeout = {
@@ -2386,9 +2396,9 @@ sub load_genomes
         }
     }
     if ($params->{create_report}) {
-        print "Loaded ". scalar @{$output}. " genomes!\n";
+        $msg .= "\nLoaded a total of ". scalar @{$output}. " genomes!\n";
         $self->util_create_report({
-            message => "Loaded ".@{$output}." genomes!",
+            message => $msg,
             workspace => $params->{workspace}
         });
         $output = [$params->{workspace}."/load_genomes"];

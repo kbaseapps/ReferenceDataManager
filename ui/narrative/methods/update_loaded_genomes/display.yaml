@@ -33,27 +33,27 @@ suggestions :
 parameters :
     refseq :
         ui-name : |
-            List RefSeq genomes
+            Update RefSeq genomes
         short-hint : |
-            List genomes available in RefSeq
+            Update KBase RefSeq genomes with NCBI
         long-hint  : |
-            List genomes available in RefSeq
+            Update KBase RefSeq genomes with NCBI
 
     phytozome :
         ui-name : |
-            List Phytozome genomes
+            Update Phytozome genomes
         short-hint : |
-            List genomes available in RefSeq
+            Update KBase Phytozome genomes
         long-hint  : |
-            List genomes available in RefSeq
+            Update KBase Phytozome genomes
             
     ensembl :
         ui-name : |
-            List Ensembl genomes
+            Update Ensembl genomes
         short-hint : |
-            List genomes available in Ensembl
+            Update KBase Ensembl genomes
         long-hint  : |
-            List genomes available in Ensembl
+            Update KBase Ensembl genomes
 
 description : |
-    <p>Update genomes from source database</p>
+    <p>Update genomes from source databases</p>

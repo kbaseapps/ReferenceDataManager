@@ -24,10 +24,29 @@
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
-    "default_values":"GenomeFeatures_ci",
-    "field_type" : "text",
-    "text_options":{
-	"valid_as" : "text"
+    "default_values":["GenomeFeatures_ci"],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "GenomeFeatures_ci",
+          "display": "GenomeFeatures in CI)",
+          "id": "CI",
+          "ui_name": "GenomeFeatures_ci"
+        },
+        {
+          "value": "GenomeFeatures_appdev",
+          "display": "GenomeFeatures in appdev)",
+          "id": "appdev",
+          "ui_name": "GenomeFeatures_appdev"
+        },
+        {
+          "value": "GenomeFeatures_prod",
+          "display": "GenomeFeatures in prod)",
+          "id": "prod",
+          "ui_name": "GenomeFeatures_prod"
+        }
+      ]
     }
   }],
   "job_id_output_field": "docker",

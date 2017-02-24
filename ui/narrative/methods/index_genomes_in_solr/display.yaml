@@ -3,7 +3,7 @@
 name	 : Index genome in Solr
 
 tooltip  : |
-    Add genome docs to Solr database core to be indexed
+    Add KBase genomes to a Solr database core to be indexed
 screenshots :
     []
 
@@ -31,18 +31,19 @@ suggestions :
 parameters :
     genomes :
         ui-name : |
-            Genome data
+            KBase genome data
         short-hint : |
-            Genome data
+            KBase genome data
         long-hint  : |
-            Genome data
+            KBase genome data
 
     solr_core :
         ui-name : |
-            Solr Database_name
+            Solr database name
         short-hint : |
             Name of the solr core
         long-hint  : |
             Name of the solr core
+
 description : |
     <p>Send genomes for index in Solr</p>
