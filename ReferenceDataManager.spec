@@ -83,6 +83,37 @@ module ReferenceDataManager {
     */
     funcdef list_loaded_genomes(ListLoadedGenomesParams params) returns (list<LoadedReferenceGenomeData> output);
   
+    /*
+        Arguments for the load_genomes function
+    */
+    typedef structure {
+        string data;
+        list<ReferenceGenomeData> genomes;
+        bool index_in_solr;
+        string workspace_name;
+        bool create_report;
+    } LoadGenomesParams;
+    
+    /*  
+        Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
+    */  
+    typedef structure {
+        string ref;
+        string id;
+        string workspace_name;
+        string source_id;
+        string accession;
+        string name;
+        string version;
+        string source;
+        string domain;
+    } KBaseReferenceGenomeData;
+
+    /*
+        Loads specified genomes into KBase workspace and indexes in SOLR on demand
+    */
+    funcdef load_genomes(LoadGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
+
 
     /*
         Struct containing data for a single genome element output by the list_solr_genomes and index_genomes_in_solr functions 
@@ -138,46 +169,13 @@ module ReferenceDataManager {
         int row_start;
         int row_count;
 	bool create_report;
+        string workspace_name;
     } ListSolrDocsParams;
 
     /* 
         Lists genomes indexed in SOLR
     */
     funcdef list_solr_genomes(ListSolrDocsParams params) returns (list<SolrGenomeFeatureData> output) authentication required;
-
- 
-    /*
-        Arguments for the load_genomes function
-        
-    */
-    typedef structure {
-        string data;
-        list<ReferenceGenomeData> genomes;
-        bool index_in_solr;
-        string workspace_name;
-        bool create_report;
-    } LoadGenomesParams;
-    
-    /*  
-        Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
-    */  
-    typedef structure {
-        string ref;
-        string id;
-        string workspace_name;
-        string source_id;
-        string accession;
-        string name;
-        string version;
-        string source;
-        string domain;
-    } KBaseReferenceGenomeData;
-
-    /*
-        Loads specified genomes into KBase workspace and indexes in SOLR on demand
-    */
-    funcdef load_genomes(LoadGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
-
 
     /*
         Arguments for the index_genomes_in_solr function

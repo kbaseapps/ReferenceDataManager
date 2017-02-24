@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '49ef32aad2dd1ce7bba3c48bdf08d9b2ed2e0485';
+our $GIT_COMMIT_HASH = '4d2883ba6d749fd66221d64eba10ed2a86f25455';
 
 =head1 NAME
 
@@ -1359,7 +1359,7 @@ sub _list_ncbi_refgenomes
             $current_genome->{assembly_level} = $attribs[11];
 
             if( $update_only == 1 ) {
-                my $gn_solr_core = "GenomeFeatures_prod";
+                my $gn_solr_core = "GenomeFeatures_ci";
                 if( ($self->_checkGenomeStatus( $current_genome, $gn_solr_core ))=~/(new|updated)/i ) {
                     push(@{$output},$current_genome);
                 }
@@ -1884,7 +1884,7 @@ sub list_loaded_genomes
                         }
                  }
                  else {
-                    #print "\nTotal genome object count=" . @{$wsoutput}. "\n";
+                    print "\nGenome object count=" . @{$wsoutput}. "\n";
                     my $ws_objinfo;
                     my $obj_src;
                     my $curr_gn_info;
@@ -1904,7 +1904,7 @@ sub list_loaded_genomes
 =begin
 ##NOTE:The following line is needed only for the case if you want to index a large number (>100k) genome_features, 
 #because of the reality that there will be interruption of all sorts.
-                                    my $gn_solrCore = "GenomeFeatures_prod";
+                                    my $gn_solrCore = "GenomeFeatures_ci";
                                     if($self->_exists($gn_solrCore, {genome_id=>$curr_gn_info->{name}})==0) {
                                         print "Not in " . $gn_solrCore . ": " . $curr_gn_info->{id} . "--" . $curr_gn_info->{name} . "\n";
                                         #indexing in SOLR for every $batchCount of genomes
@@ -1949,203 +1949,6 @@ sub list_loaded_genomes
 	my $msg = "Invalid returns passed to list_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'list_loaded_genomes');
-    }
-    return($output);
-}
-
-
-
-
-=head2 list_solr_genomes
-
-  $output = $obj->list_solr_genomes($params)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$params is a ReferenceDataManager.ListSolrDocsParams
-$output is a reference to a list where each element is a ReferenceDataManager.SolrGenomeFeatureData
-ListSolrDocsParams is a reference to a hash where the following keys are defined:
-	solr_core has a value which is a string
-	row_start has a value which is an int
-	row_count has a value which is an int
-	create_report has a value which is a ReferenceDataManager.bool
-bool is an int
-SolrGenomeFeatureData is a reference to a hash where the following keys are defined:
-	genome_feature_id has a value which is a string
-	genome_id has a value which is a string
-	feature_id has a value which is a string
-	ws_ref has a value which is a string
-	feature_type has a value which is a string
-	aliases has a value which is a string
-	scientific_name has a value which is a string
-	domain has a value which is a string
-	functions has a value which is a string
-	genome_source has a value which is a string
-	go_ontology_description has a value which is a string
-	go_ontology_domain has a value which is a string
-	gene_name has a value which is a string
-	object_name has a value which is a string
-	location_contig has a value which is a string
-	location_strand has a value which is a string
-	taxonomy has a value which is a string
-	workspace_name has a value which is a string
-	genetic_code has a value which is a string
-	md5 has a value which is a string
-	tax_id has a value which is a string
-	assembly_ref has a value which is a string
-	taxonomy_ref has a value which is a string
-	ontology_namespaces has a value which is a string
-	ontology_ids has a value which is a string
-	ontology_names has a value which is a string
-	ontology_lineages has a value which is a string
-	dna_sequence_length has a value which is an int
-	genome_dna_size has a value which is an int
-	location_begin has a value which is an int
-	location_end has a value which is an int
-	num_cds has a value which is an int
-	num_contigs has a value which is an int
-	protein_translation_length has a value which is an int
-	gc_content has a value which is a float
-	complete has a value which is a ReferenceDataManager.bool
-	refseq_category has a value which is a string
-	save_date has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$params is a ReferenceDataManager.ListSolrDocsParams
-$output is a reference to a list where each element is a ReferenceDataManager.SolrGenomeFeatureData
-ListSolrDocsParams is a reference to a hash where the following keys are defined:
-	solr_core has a value which is a string
-	row_start has a value which is an int
-	row_count has a value which is an int
-	create_report has a value which is a ReferenceDataManager.bool
-bool is an int
-SolrGenomeFeatureData is a reference to a hash where the following keys are defined:
-	genome_feature_id has a value which is a string
-	genome_id has a value which is a string
-	feature_id has a value which is a string
-	ws_ref has a value which is a string
-	feature_type has a value which is a string
-	aliases has a value which is a string
-	scientific_name has a value which is a string
-	domain has a value which is a string
-	functions has a value which is a string
-	genome_source has a value which is a string
-	go_ontology_description has a value which is a string
-	go_ontology_domain has a value which is a string
-	gene_name has a value which is a string
-	object_name has a value which is a string
-	location_contig has a value which is a string
-	location_strand has a value which is a string
-	taxonomy has a value which is a string
-	workspace_name has a value which is a string
-	genetic_code has a value which is a string
-	md5 has a value which is a string
-	tax_id has a value which is a string
-	assembly_ref has a value which is a string
-	taxonomy_ref has a value which is a string
-	ontology_namespaces has a value which is a string
-	ontology_ids has a value which is a string
-	ontology_names has a value which is a string
-	ontology_lineages has a value which is a string
-	dna_sequence_length has a value which is an int
-	genome_dna_size has a value which is an int
-	location_begin has a value which is an int
-	location_end has a value which is an int
-	num_cds has a value which is an int
-	num_contigs has a value which is an int
-	protein_translation_length has a value which is an int
-	gc_content has a value which is a float
-	complete has a value which is a ReferenceDataManager.bool
-	refseq_category has a value which is a string
-	save_date has a value which is a string
-
-
-=end text
-
-
-
-=item Description
-
-Lists genomes indexed in SOLR
-
-=back
-
-=cut
-
-sub list_solr_genomes
-{
-    my $self = shift;
-    my($params) = @_;
-
-    my @_bad_arguments;
-    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_solr_genomes');
-    }
-
-    my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
-    my($output);
-    #BEGIN list_solr_genomes
-    if (! $self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
-    $params = $self->util_initialize_call($params,$ctx);
-    $params = $self->util_args($params,[],{
-        solr_core => "genomes",
-        row_start => 0,
-        row_count => 100,
-        group_option => "",
-        create_report => 0
-    });
-
-    $output = [];
-    my $msg = "";
-    my $solrout;
-    my $solrCore = $params -> {solr_core};
-    my $fields = "*";
-    my $startRow = $params -> {row_start};
-    my $topRows = $params -> {row_count};
-    my $grpOpt = $params -> {group_option}; #"genome_id";
-
-    eval {
-        $solrout = $self->_listGenomesInSolr($solrCore, $fields, $startRow, $topRows, $grpOpt);
-    };
-    if($@) {
-        print "Cannot list genomes in SOLR information!\n";
-        print "ERROR:".$@;
-        if(defined($@->{status_line})) {
-            print $@->{status_line}."\n";
-        }
-    }
-    else {
-        #print "\nList of genomes: \n" . Dumper($solrout) . "\n";  
-        $output = ($grpOpt eq "") ? $solrout->{response}->{response}->{docs} : $solrout->{response}->{grouped}->{$grpOpt}->{groups};
-
-        if (@{$output} < 10) {
-            my $curr = @{$output}-1;
-            $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
-        }
-    }
-
-    #END list_solr_genomes
-    my @_bad_returns;
-    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_solr_genomes');
     }
     return($output);
 }
@@ -2366,7 +2169,7 @@ sub load_genomes
                   domain => $ncbigenome->{domain}
                };
 
-               my $gn_solrCore = "GenomeFeatures_prod";
+               my $gn_solrCore = "GenomeFeatures_ci";
                if ($params->{index_in_solr} == 1) {
                     $self->index_genomes_in_solr({
                         solr_core => $gn_solrCore,             
@@ -2397,13 +2200,16 @@ sub load_genomes
             push(@{$output},$genomeout);
         }
     }
+    $msg .= "\nLoaded a total of ". scalar @{$output}. " genomes!\n";
+    print $msg . "\n";
+
     if ($params->{create_report}) {
-        $msg .= "\nLoaded a total of ". scalar @{$output}. " genomes!\n";
+        print $msg . "\n";
         $self->util_create_report({
             message => $msg,
-            workspace => $params->{workspace}
+            workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace}."/load_genomes"];
+        $output = [$params->{workspace_name}."/load_genomes"];
     }
 
     #END load_genomes
@@ -2413,6 +2219,205 @@ sub load_genomes
 	my $msg = "Invalid returns passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'load_genomes');
+    }
+    return($output);
+}
+
+
+
+
+=head2 list_solr_genomes
+
+  $output = $obj->list_solr_genomes($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a ReferenceDataManager.ListSolrDocsParams
+$output is a reference to a list where each element is a ReferenceDataManager.SolrGenomeFeatureData
+ListSolrDocsParams is a reference to a hash where the following keys are defined:
+	solr_core has a value which is a string
+	row_start has a value which is an int
+	row_count has a value which is an int
+	create_report has a value which is a ReferenceDataManager.bool
+	workspace_name has a value which is a string
+bool is an int
+SolrGenomeFeatureData is a reference to a hash where the following keys are defined:
+	genome_feature_id has a value which is a string
+	genome_id has a value which is a string
+	feature_id has a value which is a string
+	ws_ref has a value which is a string
+	feature_type has a value which is a string
+	aliases has a value which is a string
+	scientific_name has a value which is a string
+	domain has a value which is a string
+	functions has a value which is a string
+	genome_source has a value which is a string
+	go_ontology_description has a value which is a string
+	go_ontology_domain has a value which is a string
+	gene_name has a value which is a string
+	object_name has a value which is a string
+	location_contig has a value which is a string
+	location_strand has a value which is a string
+	taxonomy has a value which is a string
+	workspace_name has a value which is a string
+	genetic_code has a value which is a string
+	md5 has a value which is a string
+	tax_id has a value which is a string
+	assembly_ref has a value which is a string
+	taxonomy_ref has a value which is a string
+	ontology_namespaces has a value which is a string
+	ontology_ids has a value which is a string
+	ontology_names has a value which is a string
+	ontology_lineages has a value which is a string
+	dna_sequence_length has a value which is an int
+	genome_dna_size has a value which is an int
+	location_begin has a value which is an int
+	location_end has a value which is an int
+	num_cds has a value which is an int
+	num_contigs has a value which is an int
+	protein_translation_length has a value which is an int
+	gc_content has a value which is a float
+	complete has a value which is a ReferenceDataManager.bool
+	refseq_category has a value which is a string
+	save_date has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a ReferenceDataManager.ListSolrDocsParams
+$output is a reference to a list where each element is a ReferenceDataManager.SolrGenomeFeatureData
+ListSolrDocsParams is a reference to a hash where the following keys are defined:
+	solr_core has a value which is a string
+	row_start has a value which is an int
+	row_count has a value which is an int
+	create_report has a value which is a ReferenceDataManager.bool
+	workspace_name has a value which is a string
+bool is an int
+SolrGenomeFeatureData is a reference to a hash where the following keys are defined:
+	genome_feature_id has a value which is a string
+	genome_id has a value which is a string
+	feature_id has a value which is a string
+	ws_ref has a value which is a string
+	feature_type has a value which is a string
+	aliases has a value which is a string
+	scientific_name has a value which is a string
+	domain has a value which is a string
+	functions has a value which is a string
+	genome_source has a value which is a string
+	go_ontology_description has a value which is a string
+	go_ontology_domain has a value which is a string
+	gene_name has a value which is a string
+	object_name has a value which is a string
+	location_contig has a value which is a string
+	location_strand has a value which is a string
+	taxonomy has a value which is a string
+	workspace_name has a value which is a string
+	genetic_code has a value which is a string
+	md5 has a value which is a string
+	tax_id has a value which is a string
+	assembly_ref has a value which is a string
+	taxonomy_ref has a value which is a string
+	ontology_namespaces has a value which is a string
+	ontology_ids has a value which is a string
+	ontology_names has a value which is a string
+	ontology_lineages has a value which is a string
+	dna_sequence_length has a value which is an int
+	genome_dna_size has a value which is an int
+	location_begin has a value which is an int
+	location_end has a value which is an int
+	num_cds has a value which is an int
+	num_contigs has a value which is an int
+	protein_translation_length has a value which is an int
+	gc_content has a value which is a float
+	complete has a value which is a ReferenceDataManager.bool
+	refseq_category has a value which is a string
+	save_date has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+Lists genomes indexed in SOLR
+
+=back
+
+=cut
+
+sub list_solr_genomes
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_solr_genomes');
+    }
+
+    my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
+    my($output);
+    #BEGIN list_solr_genomes
+    if (! $self->_ping()) {
+        die "\nError--Solr server not responding:\n" . $self->_error->{response};
+    }
+    $params = $self->util_initialize_call($params,$ctx);
+    $params = $self->util_args($params,[],{
+        solr_core => "genomes",
+        row_start => 0,
+        row_count => 100,
+        group_option => "",
+        create_report => 0
+    });
+
+    $output = [];
+    my $msg = "";
+    my $solrout;
+    my $solrCore = $params -> {solr_core};
+    my $fields = "*";
+    my $startRow = $params -> {row_start};
+    my $topRows = $params -> {row_count};
+    my $grpOpt = $params -> {group_option}; #"genome_id";
+
+    eval {
+        $solrout = $self->_listGenomesInSolr($solrCore, $fields, $startRow, $topRows, $grpOpt);
+    };
+    if($@) {
+        print "Cannot list genomes in SOLR information!\n";
+        print "ERROR:".$@;
+        if(defined($@->{status_line})) {
+            print $@->{status_line}."\n";
+        }
+    }
+    else {
+        #print "\nList of genomes: \n" . Dumper($solrout) . "\n";  
+        $output = ($grpOpt eq "") ? $solrout->{response}->{response}->{docs} : $solrout->{response}->{grouped}->{$grpOpt}->{groups};
+
+        if (@{$output} < 10) {
+            my $curr = @{$output}-1;
+            $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
+        }
+    }
+
+    #END list_solr_genomes
+    my @_bad_returns;
+    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_solr_genomes');
     }
     return($output);
 }
@@ -2589,7 +2594,7 @@ sub index_genomes_in_solr
     $params = $self->util_args($params,[],{
         genomes => {},
         create_report => 0,
-        solr_core => "GenomeFeatures_prod",
+        solr_core => "GenomeFeatures_ci",
         workspace_name => undef
     });
 
@@ -2604,14 +2609,17 @@ sub index_genomes_in_solr
             my $curr = @{$output}-1;
             $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
-
+    
+    $msg .= "Indexed ". scalar @{$output}. " genomes!\n";
+    print $msg . "\n";
+    
     if ($params->{create_report}) {
-        print "Indexed ". scalar @{$output}. " genomes!\n";
+        print $msg . "\n";
         $self->util_create_report({
-            message => "Loaded ".@{$output}." genomes!",
-            workspace => $params->{workspace}
+            message => $msg,
+            workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace}."/index_genomes_in_solr"];
+        $output = [$params->{workspace_nmae}."/index_genomes_in_solr"];
     }
 
     #END index_genomes_in_solr
@@ -2882,6 +2890,7 @@ ListSolrDocsParams is a reference to a hash where the following keys are defined
 	row_start has a value which is an int
 	row_count has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
+	workspace_name has a value which is a string
 bool is an int
 SolrTaxonData is a reference to a hash where the following keys are defined:
 	taxonomy_id has a value which is an int
@@ -2917,6 +2926,7 @@ ListSolrDocsParams is a reference to a hash where the following keys are defined
 	row_start has a value which is an int
 	row_count has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
+	workspace_name has a value which is a string
 bool is an int
 SolrTaxonData is a reference to a hash where the following keys are defined:
 	taxonomy_id has a value which is an int
@@ -3420,13 +3430,16 @@ sub index_taxa_in_solr
                 print "\nIndexed ". @{$solrBatch} . " taxa.\n";
             }
     }
+    $msg .= "Indexed ". scalar @{$output}. " taxa!\n";
+    print $msg . "\n";
+
     if ($params->{create_report}) {
-        print "Indexed ". scalar @{$output}. " taxa!\n";
+        print $msg . "\n";
         $self->util_create_report({
-            message => "Indexed ".@{$output}." taxa!",
-            workspace => undef
+            message => $msg,
+            workspace => $params->{workspace_name}
         });
-        $output = ["indexed taxa"];
+        $output = [$params->{workspace_name}."/indexed taxa_in_solr"];
     }
     #END index_taxa_in_solr
     my @_bad_returns;
@@ -3545,8 +3558,8 @@ sub update_loaded_genomes
     $output = [];
 
     my $count = 0;
-    my $gn_solr_core = "GenomeFeatures_prod";
-    my $tx_solr_core = "taxonomy_prod";
+    my $gn_solr_core = "GenomeFeatures_ci";
+    my $tx_solr_core = "taxonomy_ci";
     my $gn_source = "refseq";
     if($params->{phtozome} == 1) {
         $gn_source = "Phytozome";
@@ -3579,12 +3592,16 @@ sub update_loaded_genomes
         }
     }
 
+    $msg .= "Updated ".@{$output}." genomes!";
+    print $msg . "\n";
+
     if ($params->{create_report}) {
+        print $msg . "\n";
         $self->util_create_report({
-            message => "Updated ".@{$output}." genomes!",
-            workspace => $params->{workspace}
+            message => $msg,
+            workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace}."/update_loaded_genomes"];
+        $output = [$params->{workspace_name}."/update_loaded_genomes"];
     }
 
     #END update_loaded_genomes
@@ -3887,6 +3904,100 @@ gc has a value which is a float
 
 
 
+=head2 LoadGenomesParams
+
+=over 4
+
+
+
+=item Description
+
+Arguments for the load_genomes function
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+data has a value which is a string
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
+index_in_solr has a value which is a ReferenceDataManager.bool
+workspace_name has a value which is a string
+create_report has a value which is a ReferenceDataManager.bool
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+data has a value which is a string
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
+index_in_solr has a value which is a ReferenceDataManager.bool
+workspace_name has a value which is a string
+create_report has a value which is a ReferenceDataManager.bool
+
+
+=end text
+
+=back
+
+
+
+=head2 KBaseReferenceGenomeData
+
+=over 4
+
+
+
+=item Description
+
+Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+ref has a value which is a string
+id has a value which is a string
+workspace_name has a value which is a string
+source_id has a value which is a string
+accession has a value which is a string
+name has a value which is a string
+version has a value which is a string
+source has a value which is a string
+domain has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+ref has a value which is a string
+id has a value which is a string
+workspace_name has a value which is a string
+source_id has a value which is a string
+accession has a value which is a string
+name has a value which is a string
+version has a value which is a string
+source has a value which is a string
+domain has a value which is a string
+
+
+=end text
+
+=back
+
+
+
 =head2 SolrGenomeFeatureData
 
 =over 4
@@ -4017,6 +4128,7 @@ solr_core has a value which is a string
 row_start has a value which is an int
 row_count has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
+workspace_name has a value which is a string
 
 </pre>
 
@@ -4029,100 +4141,7 @@ solr_core has a value which is a string
 row_start has a value which is an int
 row_count has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
-
-
-=end text
-
-=back
-
-
-
-=head2 LoadGenomesParams
-
-=over 4
-
-
-
-=item Description
-
-Arguments for the load_genomes function
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a reference to a hash where the following keys are defined:
-data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
-index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
-
-</pre>
-
-=end html
-
-=begin text
-
-a reference to a hash where the following keys are defined:
-data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
-index_in_solr has a value which is a ReferenceDataManager.bool
-workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
-
-
-=end text
-
-=back
-
-
-
-=head2 KBaseReferenceGenomeData
-
-=over 4
-
-
-
-=item Description
-
-Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a reference to a hash where the following keys are defined:
-ref has a value which is a string
-id has a value which is a string
-workspace_name has a value which is a string
-source_id has a value which is a string
-accession has a value which is a string
-name has a value which is a string
-version has a value which is a string
-source has a value which is a string
-domain has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-a reference to a hash where the following keys are defined:
-ref has a value which is a string
-id has a value which is a string
-workspace_name has a value which is a string
-source_id has a value which is a string
-accession has a value which is a string
-name has a value which is a string
-version has a value which is a string
-source has a value which is a string
-domain has a value which is a string
 
 
 =end text
