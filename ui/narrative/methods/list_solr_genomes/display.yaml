@@ -1,0 +1,59 @@
+#
+# Define basic display information
+#
+name     : List KBase genomes indexed in Solr
+
+tooltip  : |
+    List reference genomes not only loaded in KBase but also indexed in Solr
+
+screenshots :
+    []
+
+icon: icon.png
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    solr_core :
+        ui-name : |
+            Solr database name
+        short-hint : |
+            Name of the solr core
+        long-hint  : |
+            Name of the solr core
+    
+    row_start :
+        ui-name : |
+            Row start
+        short-hint : |
+            Row to start showing the results
+        long-hint  : |
+            Row to start showing the results 
+            
+    row_count :
+        ui-name : |
+            Row count
+        short-hint : |
+            Count of rows of result to display
+        long-hint  : |
+            Count of rows of result to display
+
+description : |
+    <p>Lists genomes loaded into KBase and indexed in Solr of a given core</p>

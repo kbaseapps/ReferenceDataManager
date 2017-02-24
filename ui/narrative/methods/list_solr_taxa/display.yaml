@@ -1,9 +1,11 @@
+#
 # Define basic display information
 #
-name	 : Index genomes in Solr
+name     : List KBase taxa indexed in Solr
 
 tooltip  : |
-    Add KBase genomes to a Solr database core to be indexed
+    List reference taxa not only loaded in KBase but also indexed in Solr
+
 screenshots :
     []
 
@@ -29,14 +31,6 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    genomes :
-        ui-name : |
-            KBase genome data
-        short-hint : |
-            KBase genome data
-        long-hint  : |
-            KBase genome data of type 'KBaseReferenceGenomeData'
-
     solr_core :
         ui-name : |
             Solr database name
@@ -44,6 +38,22 @@ parameters :
             Name of the solr core
         long-hint  : |
             Name of the solr core
+    
+    row_start :
+        ui-name : |
+            Row start
+        short-hint : |
+            Row to start showing the results
+        long-hint  : |
+            Row to start showing the results 
+            
+    row_count :
+        ui-name : |
+            Row count
+        short-hint : |
+            Count of rows of result to display
+        long-hint  : |
+            Count of rows of result to display
 
 description : |
-    <p>Send KBaseReferenceGenomeData genomes for index in Solr</p>
+    <p>Lists taxa loaded into KBase and indexed in Solr of a given core</p>

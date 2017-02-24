@@ -2124,6 +2124,7 @@ sub load_genomes
             my $genomeout;
             my $genutilout;
             my $gn_url = $ncbigenome->{ftp_dir}."/".$ncbigenome->{file}."_genomic.gbff.gz";
+            my $asm_level = ($ncbigenome->{assembly_level}) ? $ncbigenome->{assembly_level} : "unknown"; 
             eval {
                 $genutilout = $loader->genbank_to_genome({
 		file => {
@@ -2136,11 +2137,12 @@ sub load_genomes
                 release => $ncbigenome->{version},
                 generate_ids_if_needed => 1,
                 type => $gn_type,
-                metadata => { refid => $ncbigenome->{id},
+                metadata => { 
+                    refid => $ncbigenome->{id},
                     accession => $ncbigenome->{accession},
                     refname => $ncbigenome->{accession},#{asm_name},
                     url => $gn_url,
-                    assembly_level => $ncbigenome->{assembly_level},
+                    assembly_level => $asm_level,
                     version => $ncbigenome->{version}
                 }
               });
@@ -3031,9 +3033,9 @@ sub list_solr_taxa
 
 
 
-=head2 load_taxons
+=head2 load_taxa
 
-  $output = $obj->load_taxons($params)
+  $output = $obj->load_taxa($params)
 
 =over 4
 
@@ -3159,7 +3161,7 @@ Loads specified taxa into KBase workspace and indexes in SOLR on demand
 
 =cut
 
-sub load_taxons
+sub load_taxa
 {
     my $self = shift;
     my($params) = @_;
@@ -3167,14 +3169,14 @@ sub load_taxons
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to load_taxons:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	my $msg = "Invalid arguments passed to load_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'load_taxons');
+							       method_name => 'load_taxa');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
     my($output);
-    #BEGIN load_taxons
+    #BEGIN load_taxa
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         data => undef,
@@ -3206,13 +3208,13 @@ sub load_taxons
                                                                                "provenance"=>$taxon_provenance}] });
         push(@$output, $self->_getTaxon($obj, $Taxon_WS."/".$taxon_name));
     }
-    #END load_taxons
+    #END load_taxa
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to load_taxons:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	my $msg = "Invalid returns passed to load_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'load_taxons');
+							       method_name => 'load_taxa');
     }
     return($output);
 }
@@ -4413,7 +4415,7 @@ comments has a value which is a string
 
 =item Description
 
-Arguments for the load_taxons function
+Arguments for the load_taxa function
 
 
 =item Definition

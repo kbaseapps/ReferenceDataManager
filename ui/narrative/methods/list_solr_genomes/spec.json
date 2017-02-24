@@ -1,0 +1,101 @@
+{
+  "ver" : "1.0.0",
+  "name" : "List KBase genomes indexed in Solr",
+  "authors" : [ "chenry", "qzhang" ],
+  "contact" : "help@kbase.us",
+  "visble" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : null,
+    "output" : "kbaseReportView"
+  },
+  "parameters" : [ {
+    "id" : "row_start",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["0"],
+    "field_type" : "text",
+    "text_options" : {
+        "validate_as": "int"
+    } 
+  }, {
+    "id" : "row_count",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["10"],
+    "field_type" : "text",
+    "text_options" : {
+        "validate_as": "int"
+    } 
+  }, {
+    "id" : "solr_core",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["GenomeFeatures_ci"],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "GenomeFeatures_ci",
+          "display": "GenomeFeatures_ci",
+          "id": "ci",
+          "ui_name": "GenomeFeatures_ci"
+        },
+        {
+          "value": "GenomeFeatures_appdev",
+          "display": "GenomeFeatures_appdev",
+          "id": "appdev",
+          "ui_name": "GenomeFeatures_appdev"
+        },
+        {
+          "value": "GenomeFeatures_prod",
+          "display": "GenomeFeatures_prod",
+          "id": "prod",
+          "ui_name": "GenomeFeatures_prod"
+        }
+      ]
+    }
+  }],
+  "job_id_output_field": "docker",
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "ReferenceDataManager",
+      "method" : "list_solr_genomes",
+      "input_mapping" : [
+        {
+          "input_parameter": "solr_core",
+          "target_property": "solr_core"
+        },
+        {
+          "input_parameter": "row_start",
+          "target_property": "row_start"
+        },
+        {
+          "input_parameter": "row_count",
+          "target_property": "row_count"
+        },
+        {
+          "constant_value" : "1",
+          "target_property": "create_report"
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace_name"
+        }
+      ],
+      "output_mapping" : [
+        {
+          "target_property" : "report_ref",
+    	  "service_method_output_path" : [
+				0,
+				0
+        	]
+        }
+      ]
+    }
+  }
+}

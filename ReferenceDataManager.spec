@@ -161,7 +161,6 @@ module ReferenceDataManager {
 
     /*
         Arguments for the list_solr_genomes and list_solr_taxa functions
-        
     */
 
     typedef structure {
@@ -272,7 +271,7 @@ module ReferenceDataManager {
     funcdef list_solr_taxa(ListSolrDocsParams params) returns (list<SolrTaxonData> output) authentication required;
 
     /*
-        Arguments for the load_taxons function
+        Arguments for the load_taxa function
     */
     typedef structure {
         string data;
@@ -285,12 +284,11 @@ module ReferenceDataManager {
     /*
         Loads specified taxa into KBase workspace and indexes in SOLR on demand
     */
-    funcdef load_taxons(LoadTaxonsParams params) returns (list<SolrTaxonData> output) authentication required;
+    funcdef load_taxa(LoadTaxonsParams params) returns (list<SolrTaxonData> output) authentication required;
     
 
     /*
         Arguments for the index_taxa_in_solr function
-        
     */
     typedef structure {
         list<LoadedReferenceTaxonData> taxa;
