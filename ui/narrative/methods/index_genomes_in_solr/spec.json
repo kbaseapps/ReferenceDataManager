@@ -7,14 +7,14 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseReportView"
+    "output" : "kbaseGenomeView"
   },
   "parameters" : [ {
     "id" : "genomes",
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
-    "default_values":[{}],
+    "default_values":[],
     "field_type" : "text",
     "text_options":{
 	"valid_ws_types" : []
@@ -27,7 +27,7 @@
     "default_values":"GenomeFeatures_ci",
     "field_type" : "text",
     "text_options":{
-	"valid_as" : "text
+	"valid_as" : "text"
     }
   }],
   "job_id_output_field": "docker",
