@@ -12,11 +12,14 @@ module ReferenceDataManager {
         Arguments for the list_reference_genomes function
     */
     typedef structure {
-	string source;
-        string domain;
+        bool ensembl;
+        bool refseq;
+        bool phytozome;
         bool updated_only;
-	bool create_report; 
-   } ListReferenceGenomesParams;
+        string gn_domain;
+        string workspace_name;
+        bool create_report; 
+    } ListReferenceGenomesParams;
 
     /*
         Struct containing data for a single genome output by the list_reference_genomes function
@@ -48,9 +51,10 @@ module ReferenceDataManager {
         bool ensembl;
         bool refseq;
         bool phytozome;
+        string gn_domain;
 	string workspace_name;
 	bool create_report;
-   } ListLoadedGenomesParams;
+    } ListLoadedGenomesParams;
     
     /*
         Struct containing data for a single genome output by the list_loaded_genomes function
@@ -178,11 +182,11 @@ module ReferenceDataManager {
 
     /*
         Arguments for the index_genomes_in_solr function
-        
     */
     typedef structure {
         list<KBaseReferenceGenomeData> genomes;
         string solr_core;
+        string workspace_name;
         bool create_report;
     } IndexGenomesInSolrParams;
     
@@ -192,7 +196,6 @@ module ReferenceDataManager {
     funcdef index_genomes_in_solr(IndexGenomesInSolrParams params) returns (list<SolrGenomeFeatureData> output) authentication required;
     
 
- 
     /*
         Argument(s) for the the lists_loaded_taxa function 
     */
@@ -295,6 +298,7 @@ module ReferenceDataManager {
     typedef structure {
         list<LoadedReferenceTaxonData> taxa;
         string solr_core;
+        string workspace_name;
         bool create_report;
     } IndexTaxaInSolrParams;
     

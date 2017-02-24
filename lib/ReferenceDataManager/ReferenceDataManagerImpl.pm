@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '6d01e754a9809d7dc287357ec18448ec178498fe';
+our $GIT_COMMIT_HASH = '66a29042540856905904b156ff15d558036653db';
 
 =head1 NAME
 
@@ -1309,7 +1309,7 @@ sub _indexInSolr
 # params:
 #   input:
 #       $source: "refseq" | "genbank" {default => "refseq"}
-#       $domain: "bacteria" | "archaea" | "plant" | "fungi" | multivalued, comma-seperated, {default => "bacteria"}
+#       $division: "bacteria" | "archaea" | "plant" | "fungi" | multivalued, comma-seperated, {default => "bacteria"}
 #       $update_only: 0 | 1 {default => 0}
 #   output:
 #       a list of ncbi genomes
@@ -1595,9 +1595,12 @@ sub new
 $params is a ReferenceDataManager.ListReferenceGenomesParams
 $output is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 ListReferenceGenomesParams is a reference to a hash where the following keys are defined:
-	source has a value which is a string
-	domain has a value which is a string
+	ensembl has a value which is a ReferenceDataManager.bool
+	refseq has a value which is a ReferenceDataManager.bool
+	phytozome has a value which is a ReferenceDataManager.bool
 	updated_only has a value which is a ReferenceDataManager.bool
+	gn_domain has a value which is a string
+	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1623,9 +1626,12 @@ ReferenceGenomeData is a reference to a hash where the following keys are define
 $params is a ReferenceDataManager.ListReferenceGenomesParams
 $output is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 ListReferenceGenomesParams is a reference to a hash where the following keys are defined:
-	source has a value which is a string
-	domain has a value which is a string
+	ensembl has a value which is a ReferenceDataManager.bool
+	refseq has a value which is a ReferenceDataManager.bool
+	phytozome has a value which is a ReferenceDataManager.bool
 	updated_only has a value which is a ReferenceDataManager.bool
+	gn_domain has a value which is a string
+	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1673,16 +1679,33 @@ sub list_reference_genomes
     #BEGIN list_reference_genomes
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        source => "refseq",
-        domain => "bacteria",
+        refseq => 1,
+        phytozome => 0,
+        ensembl => 0, 
+        gn_domain => "bacteria",
+        update_only => 0,
         create_report => 0,
-        update_only => 0
-    });  
+        workspace_name => undef
+    });
+
     my $msg = "";
     $output = [];
+
+    my $gn_source = "refseq";
+    if($params->{refseq} == 1) {
+        $gn_source = "refseq";
+    }
+    elsif($params->{phytozome} == 1) {
+        $gn_source = "phytozome";
+    }
+    elsif($params->{ensembl} == 1) {
+        $gn_source = "ensembl";
+    }
     
-    print $params->{source} . "---" . $params->{domain} . "\n";
-    my $list_items = $self->_list_ncbi_refseq($params->{source}, $params->{domain}, $params->{update_only});
+    my $gn_domain = $params->{gn_domain};    
+    print $gn_source . "---" . $gn_domain . "\n";
+    
+    my $list_items = $self->_list_ncbi_refseq($gn_source, $gn_domain, $params->{update_only});
     $output = $list_items->{ref_genomes};
     $msg = $list_items->{msg};
 
@@ -1690,9 +1713,9 @@ sub list_reference_genomes
         print $msg."\n";
         $self->util_create_report({
             message => $msg,
-            workspace => $params->{workspace}
+            workspace => $params->{workspace_name}
         });  
-        $output = [$params->{workspace}."/list_reference_genomes"];
+        $output = [$params->{workspace_name}."/list_reference_genomes"];
     }    
     #END list_reference_genomes
     my @_bad_returns;
@@ -1725,6 +1748,7 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
+	gn_domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -1758,6 +1782,7 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
+	gn_domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -1821,11 +1846,12 @@ sub list_loaded_genomes
     my $batch_count = 1000;
     my $obj_type = "KBaseGenomes.Genome-";
     my $sources = ["phytozome","refseq","ensembl"];
+    my $wsname;
     for (my $i=0; $i < @{$sources}; $i++) {
         if ($params->{$sources->[$i]} == 1) {
             my $wsinfo;
             my $wsoutput;
-            my $wsname = $self->util_workspace_names($sources->[$i]);
+            $wsname = $self->util_workspace_names($sources->[$i]);
             
             if(defined($self->util_ws_client())){
                 $wsinfo = $self->util_ws_client()->get_workspace_info({
@@ -1903,11 +1929,11 @@ sub list_loaded_genomes
     }
     if ($params->{create_report}) {
         print $msg."\n";
-                $self->util_create_report({
-                        message => $msg,
-                        workspace => $params->{workspace}
-                });
-        $output = [$params->{workspace}."/list_loaded_genomes"];
+        $self->util_create_report({
+                message => $msg,
+                workspace => $params->{workspace_name}
+        });
+        $output = [$params->{workspace_name}."/list_loaded_genomes"];
     }
 
     #END list_loaded_genomes
@@ -2398,6 +2424,7 @@ $output is a reference to a list where each element is a ReferenceDataManager.So
 IndexGenomesInSolrParams is a reference to a hash where the following keys are defined:
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 	solr_core has a value which is a string
+	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -2461,6 +2488,7 @@ $output is a reference to a list where each element is a ReferenceDataManager.So
 IndexGenomesInSolrParams is a reference to a hash where the following keys are defined:
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 	solr_core has a value which is a string
+	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -2549,11 +2577,12 @@ sub index_genomes_in_solr
     $params = $self->util_args($params,[],{
         genomes => {},
         create_report => 0,
-        solr_core => "GenomeFeatures_prod"
+        solr_core => "GenomeFeatures_prod",
+        workspace_name => undef
     });
 
     my $msg = "";
-    #$output = [];
+    
     my $genomes = $params->{genomes};
     my $solrCore = $params->{solr_core};
     print "\nTotal genomes to be indexed: ". @{$genomes} . "\n";
@@ -2563,6 +2592,16 @@ sub index_genomes_in_solr
             my $curr = @{$output}-1;
             $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
+
+    if ($params->{create_report}) {
+        print "Indexed ". scalar @{$output}. " genomes!\n";
+        $self->util_create_report({
+            message => "Loaded ".@{$output}." genomes!",
+            workspace => $params->{workspace}
+        });
+        $output = [$params->{workspace}."/index_genomes_in_solr"];
+    }
+
     #END index_genomes_in_solr
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -3175,6 +3214,7 @@ $output is a reference to a list where each element is a ReferenceDataManager.So
 IndexTaxaInSolrParams is a reference to a hash where the following keys are defined:
 	taxa has a value which is a reference to a list where each element is a ReferenceDataManager.LoadedReferenceTaxonData
 	solr_core has a value which is a string
+	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 LoadedReferenceTaxonData is a reference to a hash where the following keys are defined:
 	taxon has a value which is a ReferenceDataManager.KBaseReferenceTaxonData
@@ -3231,6 +3271,7 @@ $output is a reference to a list where each element is a ReferenceDataManager.So
 IndexTaxaInSolrParams is a reference to a hash where the following keys are defined:
 	taxa has a value which is a reference to a list where each element is a ReferenceDataManager.LoadedReferenceTaxonData
 	solr_core has a value which is a string
+	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 LoadedReferenceTaxonData is a reference to a hash where the following keys are defined:
 	taxon has a value which is a ReferenceDataManager.KBaseReferenceTaxonData
@@ -3501,10 +3542,9 @@ sub update_loaded_genomes
     elsif($params->{ensembl} == 1) {
         $gn_source = "Ensembl";
     }
-    my $ref_genomes = $self->list_reference_genomes({source => $gn_source, update_only => $params->{update_only}});
+    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only => $params->{update_only}});
 
-    #for (my $i=0; $i < @{ $ref_genomes }; $i++) {
-    for (my $i=4781; $i < @{ $ref_genomes }; $i++) {#11800, started from 0
+    for (my $i=0; $i < @{ $ref_genomes }; $i++) {
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
         
@@ -3529,9 +3569,9 @@ sub update_loaded_genomes
 
     if ($params->{create_report}) {
         $self->util_create_report({
-                message => "Updated ".@{$output}." genomes!",
-                workspace => $params->{workspace}
-            });
+            message => "Updated ".@{$output}." genomes!",
+            workspace => $params->{workspace}
+        });
         $output = [$params->{workspace}."/update_loaded_genomes"];
     }
 
@@ -3640,9 +3680,12 @@ Arguments for the list_reference_genomes function
 
 <pre>
 a reference to a hash where the following keys are defined:
-source has a value which is a string
-domain has a value which is a string
+ensembl has a value which is a ReferenceDataManager.bool
+refseq has a value which is a ReferenceDataManager.bool
+phytozome has a value which is a ReferenceDataManager.bool
 updated_only has a value which is a ReferenceDataManager.bool
+gn_domain has a value which is a string
+workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -3652,9 +3695,12 @@ create_report has a value which is a ReferenceDataManager.bool
 =begin text
 
 a reference to a hash where the following keys are defined:
-source has a value which is a string
-domain has a value which is a string
+ensembl has a value which is a ReferenceDataManager.bool
+refseq has a value which is a ReferenceDataManager.bool
+phytozome has a value which is a ReferenceDataManager.bool
 updated_only has a value which is a ReferenceDataManager.bool
+gn_domain has a value which is a string
+workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 
@@ -3741,6 +3787,7 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
+gn_domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -3754,6 +3801,7 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
+gn_domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -4092,6 +4140,7 @@ Arguments for the index_genomes_in_solr function
 a reference to a hash where the following keys are defined:
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 solr_core has a value which is a string
+workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -4103,6 +4152,7 @@ create_report has a value which is a ReferenceDataManager.bool
 a reference to a hash where the following keys are defined:
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 solr_core has a value which is a string
+workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 
@@ -4388,6 +4438,7 @@ Arguments for the index_taxa_in_solr function
 a reference to a hash where the following keys are defined:
 taxa has a value which is a reference to a list where each element is a ReferenceDataManager.LoadedReferenceTaxonData
 solr_core has a value which is a string
+workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -4399,6 +4450,7 @@ create_report has a value which is a ReferenceDataManager.bool
 a reference to a hash where the following keys are defined:
 taxa has a value which is a reference to a list where each element is a ReferenceDataManager.LoadedReferenceTaxonData
 solr_core has a value which is a string
+workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 
