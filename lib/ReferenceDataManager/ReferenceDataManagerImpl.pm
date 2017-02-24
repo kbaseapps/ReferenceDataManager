@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '66a29042540856905904b156ff15d558036653db';
+our $GIT_COMMIT_HASH = '49ef32aad2dd1ce7bba3c48bdf08d9b2ed2e0485';
 
 =head1 NAME
 
@@ -1602,7 +1602,7 @@ ListReferenceGenomesParams is a reference to a hash where the following keys are
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
 	updated_only has a value which is a ReferenceDataManager.bool
-	gn_domain has a value which is a string
+	domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -1633,7 +1633,7 @@ ListReferenceGenomesParams is a reference to a hash where the following keys are
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
 	updated_only has a value which is a ReferenceDataManager.bool
-	gn_domain has a value which is a string
+	domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -1751,7 +1751,6 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
-	gn_domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -1785,7 +1784,6 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
-	gn_domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -3694,7 +3692,7 @@ ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 updated_only has a value which is a ReferenceDataManager.bool
-gn_domain has a value which is a string
+domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -3709,7 +3707,7 @@ ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 updated_only has a value which is a ReferenceDataManager.bool
-gn_domain has a value which is a string
+domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -3797,7 +3795,6 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
-gn_domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -3811,7 +3808,6 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
-gn_domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
