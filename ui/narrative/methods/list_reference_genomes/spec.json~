@@ -58,35 +58,12 @@
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
-    "default_values":["bacteria"],
-    "field_type" : "dropdown",
-     "dropdown_options":{
-      "options": [
-        {
-          "value": "bacteria",
-          "display": "B (Bacteria)",
-          "id": "B",
-          "ui_name": "B (Bacteria)"
-        },
-        {
-          "value": "archaea",
-          "display": "A (Archaea)",
-          "id": "fast",
-          "ui_name": "A (Archaea)"
-        },
-        {
-          "value": "fungi",
-          "display": "F (Fungi)",
-          "id": "fast",
-          "ui_name": "F (Fungi)"
-        },
-        {
-          "value": "plant",
-          "display": "P (Plant)",
-          "id": "fast",
-          "ui_name": "P (Plant)"
-        }
-      ]
+    "default_values":["0"],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": "bacteria",
+      "unchecked_value": "archaea",
+      "unchecked_value": "fungi"
     }
   }],
   "job_id_output_field": "docker",
