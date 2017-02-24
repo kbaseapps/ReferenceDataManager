@@ -30,8 +30,8 @@
       "options": [
         {
           "value": "GenomeFeatures_ci",
-          "display": "GenomeFeatures in CI",
-          "id": "CI",
+          "display": "GenomeFeatures_ci",
+          "id": "ci",
           "ui_name": "GenomeFeatures_ci"
         },
         {
