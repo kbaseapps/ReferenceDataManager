@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Load reference genome from NCBI reference database
+name     : Load Reference Genomes
 
 tooltip  : |
-    Load reference genome from NCBI reference database into KBase
+    Load genomes from NCBI reference database into KBase
 
 screenshots :
     []
@@ -35,9 +35,9 @@ parameters :
         ui-name : |
             Genome data
         short-hint : |
-            Genome data
+            Genome data in semi-colon separated string
         long-hint  : |
-            Genome data
+            Genome data in the format of 'accession;status;name;ftp_dir;file;id;version;source;domain'
 
 description : |
     <p>Load genomes into KBase and index in solr</p>
