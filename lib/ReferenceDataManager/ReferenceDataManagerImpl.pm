@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '4d2883ba6d749fd66221d64eba10ed2a86f25455';
+our $GIT_COMMIT_HASH = '69a401c7289661ffd9f9eec0680e5ea72ee48929';
 
 =head1 NAME
 
@@ -1359,7 +1359,7 @@ sub _list_ncbi_refgenomes
             $current_genome->{assembly_level} = $attribs[11];
 
             if( $update_only == 1 ) {
-                my $gn_solr_core = "GenomeFeatures_ci";
+                my $gn_solr_core = "GenomeFeatures_prod";
                 if( ($self->_checkGenomeStatus( $current_genome, $gn_solr_core ))=~/(new|updated)/i ) {
                     push(@{$output},$current_genome);
                 }
@@ -1904,7 +1904,7 @@ sub list_loaded_genomes
 =begin
 ##NOTE:The following line is needed only for the case if you want to index a large number (>100k) genome_features, 
 #because of the reality that there will be interruption of all sorts.
-                                    my $gn_solrCore = "GenomeFeatures_ci";
+                                    my $gn_solrCore = "GenomeFeatures_prod";
                                     if($self->_exists($gn_solrCore, {genome_id=>$curr_gn_info->{name}})==0) {
                                         print "Not in " . $gn_solrCore . ": " . $curr_gn_info->{id} . "--" . $curr_gn_info->{name} . "\n";
                                         #indexing in SOLR for every $batchCount of genomes
@@ -1949,278 +1949,6 @@ sub list_loaded_genomes
 	my $msg = "Invalid returns passed to list_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'list_loaded_genomes');
-    }
-    return($output);
-}
-
-
-
-
-=head2 load_genomes
-
-  $output = $obj->load_genomes($params)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$params is a ReferenceDataManager.LoadGenomesParams
-$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
-LoadGenomesParams is a reference to a hash where the following keys are defined:
-	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
-	index_in_solr has a value which is a ReferenceDataManager.bool
-	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
-ReferenceGenomeData is a reference to a hash where the following keys are defined:
-	accession has a value which is a string
-	version_status has a value which is a string
-	asm_name has a value which is a string
-	ftp_dir has a value which is a string
-	file has a value which is a string
-	id has a value which is a string
-	version has a value which is a string
-	source has a value which is a string
-	domain has a value which is a string
-	refseq_category has a value which is a string
-	tax_id has a value which is a string
-	assembly_level has a value which is a string
-bool is an int
-KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
-	ref has a value which is a string
-	id has a value which is a string
-	workspace_name has a value which is a string
-	source_id has a value which is a string
-	accession has a value which is a string
-	name has a value which is a string
-	version has a value which is a string
-	source has a value which is a string
-	domain has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$params is a ReferenceDataManager.LoadGenomesParams
-$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
-LoadGenomesParams is a reference to a hash where the following keys are defined:
-	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
-	index_in_solr has a value which is a ReferenceDataManager.bool
-	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
-ReferenceGenomeData is a reference to a hash where the following keys are defined:
-	accession has a value which is a string
-	version_status has a value which is a string
-	asm_name has a value which is a string
-	ftp_dir has a value which is a string
-	file has a value which is a string
-	id has a value which is a string
-	version has a value which is a string
-	source has a value which is a string
-	domain has a value which is a string
-	refseq_category has a value which is a string
-	tax_id has a value which is a string
-	assembly_level has a value which is a string
-bool is an int
-KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
-	ref has a value which is a string
-	id has a value which is a string
-	workspace_name has a value which is a string
-	source_id has a value which is a string
-	accession has a value which is a string
-	name has a value which is a string
-	version has a value which is a string
-	source has a value which is a string
-	domain has a value which is a string
-
-
-=end text
-
-
-
-=item Description
-
-Loads specified genomes into KBase workspace and indexes in SOLR on demand
-
-=back
-
-=cut
-
-sub load_genomes
-{
-    my $self = shift;
-    my($params) = @_;
-
-    my @_bad_arguments;
-    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'load_genomes');
-    }
-
-    my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
-    my($output);
-    #BEGIN load_genomes
-    $params = $self->util_initialize_call($params,$ctx);
-    $params = $self->util_args($params,[],{
-        data => undef,
-        genomes => [],
-        index_in_solr => 0,
-        create_report => 0,
-        workspace_name => undef
-    });
-#my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service=ver parameter when master is done.
-    my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL });
-    my $ncbigenomes;
-    $output = [];
-    my $msg = "";
-
-    if (defined($params->{data})) {
-        my $array = [split(/;/,$params->{data})];
-        $ncbigenomes = [{
-            accession => $array->[0],
-            status => $array->[1],
-            name => $array->[2],
-            ftp_dir => $array->[3],
-            file => $array->[4],
-            id => $array->[5],
-            version => $array->[6],
-            source => $array->[7],
-            domain => $array->[8]
-        }];
-    } else {
-        $ncbigenomes = $params->{genomes};
-    }
-
-    for (my $i=0; $i < @{$ncbigenomes}; $i++) {
-        my $ncbigenome = $ncbigenomes->[$i];
-        print "\n******************Genome#: $i ********************";
-        my $wsname = "";
-        if(defined( $ncbigenome->{workspace_name}))
-        {
-            $wsname = $ncbigenome->{workspace_name};
-        }
-        elsif(defined($ncbigenome->{source}))
-        {
-            $wsname = $self->util_workspace_names($ncbigenome->{source});
-        }
-        my $gn_type = "User upload";
-        if( $ncbigenome->{refseq_category} eq "reference genome") {
-           $gn_type = "Reference";
-        }
-        elsif($ncbigenome->{refseq_category} eq "representative genome") {
-           $gn_type = "Representative";
-        }
-        
-        print "\nNow loading ".$ncbigenome->{id}." with loader url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
-        if ($ncbigenome->{source} eq "refseq" || $ncbigenome->{source} eq "") {
-            my $genomeout;
-            my $genutilout;
-            my $gn_url = $ncbigenome->{ftp_dir}."/".$ncbigenome->{file}."_genomic.gbff.gz";
-            my $asm_level = ($ncbigenome->{assembly_level}) ? $ncbigenome->{assembly_level} : "unknown"; 
-            eval {
-                $genutilout = $loader->genbank_to_genome({
-		file => {
-                    ftp_url => $gn_url
-                },
-                genome_name => $ncbigenome->{accession},#{asm_name},
-                workspace_name => $wsname,
-                source => $ncbigenome->{source},
-                taxon_wsname => "ReferenceTaxons",
-                release => $ncbigenome->{version},
-                generate_ids_if_needed => 1,
-                type => $gn_type,
-                metadata => { 
-                    refid => $ncbigenome->{id},
-                    accession => $ncbigenome->{accession},
-                    refname => $ncbigenome->{accession},#{asm_name},
-                    url => $gn_url,
-                    assembly_level => $asm_level,
-                    version => $ncbigenome->{version}
-                }
-              });
-            };
-            if ($@) {
-                print "**********Received an exception from calling genbank_to_genome to load $ncbigenome->{id}:\n";
-                print "Exception message: " . $@->{"message"} . "\n";
-                print "JSONRPC code: " . $@->{"code"} . "\n";
-                print "Method: " . $@->{"method_name"} . "\n";
-                print "Client-side exception:\n";
-                print $@;
-                print "\nServer-side exception:\n";
-                print $@->{"data"};
-            }
-            else
-            {
-                $genomeout = {
-                  "ref" => $genutilout->{genome_ref},
-                  id => $ncbigenome->{id},
-                  workspace_name => $wsname,
-                  source_id => $ncbigenome->{id},
-                  accession => $ncbigenome->{accession},
-                  name => $ncbigenome->{asm_name},
-                  version => $ncbigenome->{version},
-                  source => $ncbigenome->{source},
-                  domain => $ncbigenome->{domain}
-               };
-
-               my $gn_solrCore = "GenomeFeatures_ci";
-               if ($params->{index_in_solr} == 1) {
-                    $self->index_genomes_in_solr({
-                        solr_core => $gn_solrCore,             
-                        genomes => [$genomeout]
-                    });
-               }
-               push(@{$output},$genomeout);
-               if (@{$output} < 10) {
-                   $msg .= "Loaded genome: ".$genomeout->{id}." into workspace ".$genomeout->{workspace_name}.";\n";
-               }
-               print "!!!!!!!!!!!!!--Loading of $ncbigenome->{id} succeeded--!!\n";
-            }
-            print "**********************Genome loading process ends on " . scalar localtime . "************************\n";
-        } elsif ($ncbigenome->{source} eq "phytozome") {
-            #NEED SAM TO PUT CODE FOR HIS LOADER HERE
-	        my $genomeout = {
-                "ref" => $wsname."/".$ncbigenome->{id},
-                id => $ncbigenome->{id},
-                workspace_name => $wsname,
-                source_id => $ncbigenome->{id},
-                accession => $ncbigenome->{accession},
-                name => $ncbigenome->{name},
-                ftp_dir => $ncbigenome->{ftp_dir},
-                version => $ncbigenome->{version},
-                source => $ncbigenome->{source},
-                domain => $ncbigenome->{domain}
-            };
-            push(@{$output},$genomeout);
-        }
-    }
-    $msg .= "\nLoaded a total of ". scalar @{$output}. " genomes!\n";
-    print $msg . "\n";
-
-    if ($params->{create_report}) {
-        print $msg . "\n";
-        $self->util_create_report({
-            message => $msg,
-            workspace => $params->{workspace_name}
-        });
-        $output = [$params->{workspace_name}."/load_genomes"];
-    }
-
-    #END load_genomes
-    my @_bad_returns;
-    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'load_genomes');
     }
     return($output);
 }
@@ -2596,7 +2324,7 @@ sub index_genomes_in_solr
     $params = $self->util_args($params,[],{
         genomes => {},
         create_report => 0,
-        solr_core => "GenomeFeatures_ci",
+        solr_core => "GenomeFeatures_prod",
         workspace_name => undef
     });
 
@@ -3457,6 +3185,584 @@ sub index_taxa_in_solr
 
 
 
+=head2 load_genomes
+
+  $output = $obj->load_genomes($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a ReferenceDataManager.LoadGenomesParams
+$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+LoadGenomesParams is a reference to a hash where the following keys are defined:
+	data has a value which is a string
+	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
+	index_in_solr has a value which is a ReferenceDataManager.bool
+	workspace_name has a value which is a string
+	create_report has a value which is a ReferenceDataManager.bool
+ReferenceGenomeData is a reference to a hash where the following keys are defined:
+	accession has a value which is a string
+	version_status has a value which is a string
+	asm_name has a value which is a string
+	ftp_dir has a value which is a string
+	file has a value which is a string
+	id has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+	refseq_category has a value which is a string
+	tax_id has a value which is a string
+	assembly_level has a value which is a string
+bool is an int
+KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+	id has a value which is a string
+	workspace_name has a value which is a string
+	source_id has a value which is a string
+	accession has a value which is a string
+	name has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a ReferenceDataManager.LoadGenomesParams
+$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+LoadGenomesParams is a reference to a hash where the following keys are defined:
+	data has a value which is a string
+	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
+	index_in_solr has a value which is a ReferenceDataManager.bool
+	workspace_name has a value which is a string
+	create_report has a value which is a ReferenceDataManager.bool
+ReferenceGenomeData is a reference to a hash where the following keys are defined:
+	accession has a value which is a string
+	version_status has a value which is a string
+	asm_name has a value which is a string
+	ftp_dir has a value which is a string
+	file has a value which is a string
+	id has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+	refseq_category has a value which is a string
+	tax_id has a value which is a string
+	assembly_level has a value which is a string
+bool is an int
+KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+	id has a value which is a string
+	workspace_name has a value which is a string
+	source_id has a value which is a string
+	accession has a value which is a string
+	name has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+Loads specified genomes into KBase workspace and indexes in SOLR on demand
+
+=back
+
+=cut
+
+sub load_genomes
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'load_genomes');
+    }
+
+    my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
+    my($output);
+    #BEGIN load_genomes
+    $params = $self->util_initialize_call($params,$ctx);
+    $params = $self->util_args($params,[],{
+        data => undef,
+        genomes => [],
+        index_in_solr => 0,
+        create_report => 0,
+        workspace_name => undef
+    });
+#my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service=ver parameter when master is done.
+    my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $ncbigenomes;
+    $output = [];
+    my $msg = "";
+
+    if (defined($params->{data})) {
+        my $array = [split(/;/,$params->{data})];
+        $ncbigenomes = [{
+            accession => $array->[0],
+            status => $array->[1],
+            name => $array->[2],
+            ftp_dir => $array->[3],
+            file => $array->[4],
+            id => $array->[5],
+            version => $array->[6],
+            source => $array->[7],
+            domain => $array->[8]
+        }];
+    } else {
+        $ncbigenomes = $params->{genomes};
+    }
+
+    for (my $i=0; $i < @{$ncbigenomes}; $i++) {
+        my $ncbigenome = $ncbigenomes->[$i];
+        print "\n******************Genome#: $i ********************";
+        my $wsname = "";
+        if(defined( $ncbigenome->{workspace_name}))
+        {
+            $wsname = $ncbigenome->{workspace_name};
+        }
+        elsif(defined($ncbigenome->{source}))
+        {
+            $wsname = $self->util_workspace_names($ncbigenome->{source});
+        }
+        else
+        {
+            $wsname = "ReferenceDataManager";    
+        }
+
+        my $gn_type = "User upload";
+        if( $ncbigenome->{refseq_category} eq "reference genome") {
+           $gn_type = "Reference";
+        }
+        elsif($ncbigenome->{refseq_category} eq "representative genome") {
+           $gn_type = "Representative";
+        }
+        
+        print "\nNow loading ".$ncbigenome->{id}." with loader url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
+        if ($ncbigenome->{source} eq "refseq" || $ncbigenome->{source} eq "") {
+            my $rastgenome;
+            my $genutilout;
+            my $gn_url = $ncbigenome->{ftp_dir}."/".$ncbigenome->{file}."_genomic.gbff.gz";
+            my $asm_level = ($ncbigenome->{assembly_level}) ? $ncbigenome->{assembly_level} : "unknown"; 
+            eval {
+                $genutilout = $loader->genbank_to_genome({
+		file => {
+                    ftp_url => $gn_url
+                },
+                genome_name => $ncbigenome->{accession},#{asm_name},
+                workspace_name => $wsname,
+                source => $ncbigenome->{source},
+                taxon_wsname => "ReferenceTaxons",
+                release => $ncbigenome->{version},
+                generate_ids_if_needed => 1,
+                type => $gn_type,
+                metadata => { 
+                    refid => $ncbigenome->{id},
+                    accession => $ncbigenome->{accession},
+                    refname => $ncbigenome->{accession},#{asm_name},
+                    url => $gn_url,
+                    assembly_level => $asm_level,
+                    version => $ncbigenome->{version}
+                }
+              });
+            };
+            if ($@) {
+                print "**********Received an exception from calling genbank_to_genome to load $ncbigenome->{id}:\n";
+                print "Exception message: " . $@->{"message"} . "\n";
+                print "JSONRPC code: " . $@->{"code"} . "\n";
+                print "Method: " . $@->{"method_name"} . "\n";
+                print "Client-side exception:\n";
+                print $@;
+                print "\nServer-side exception:\n";
+                print $@->{"data"};
+            }
+            else
+            {
+                $genomeout = {
+                  "ref" => $genutilout->{genome_ref},
+                  id => $ncbigenome->{id},
+                  workspace_name => $wsname,
+                  source_id => $ncbigenome->{id},
+                  accession => $ncbigenome->{accession},
+                  name => $ncbigenome->{asm_name},
+                  version => $ncbigenome->{version},
+                  source => $ncbigenome->{source},
+                  domain => $ncbigenome->{domain}
+               };
+
+               my $gn_solrCore = "GenomeFeatures_prod";
+               if ($params->{index_in_solr} == 1) {
+                    $self->index_genomes_in_solr({
+                        solr_core => $gn_solrCore,             
+                        genomes => [$genomeout]
+                    });
+               }
+               push(@{$output},$genomeout);
+               if (@{$output} < 10) {
+                   $msg .= "Loaded genome: ".$genomeout->{id}." into workspace ".$genomeout->{workspace_name}.";\n";
+               }
+               print "!!!!!!!!!!!!!--Loading of $ncbigenome->{id} succeeded--!!\n";
+            }
+            print "**********************Genome loading process ends on " . scalar localtime . "************************\n";
+        } elsif ($ncbigenome->{source} eq "phytozome") {
+            #NEED SAM TO PUT CODE FOR HIS LOADER HERE
+	        my $genomeout = {
+                "ref" => $wsname."/".$ncbigenome->{id},
+                id => $ncbigenome->{id},
+                workspace_name => $wsname,
+                source_id => $ncbigenome->{id},
+                accession => $ncbigenome->{accession},
+                name => $ncbigenome->{name},
+                ftp_dir => $ncbigenome->{ftp_dir},
+                version => $ncbigenome->{version},
+                source => $ncbigenome->{source},
+                domain => $ncbigenome->{domain}
+            };
+            push(@{$output},$genomeout);
+        }
+    }
+    $msg .= "\nLoaded a total of ". scalar @{$output}. " genomes!\n";
+    print $msg . "\n";
+
+    if ($params->{create_report}) {
+        print $msg . "\n";
+        $self->util_create_report({
+            message => $msg,
+            workspace => $params->{workspace_name}
+        });
+        $output = [$params->{workspace_name}."/load_genomes"];
+    }
+
+    #END load_genomes
+    my @_bad_returns;
+    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'load_genomes');
+    }
+    return($output);
+}
+
+
+
+
+=head2 rast_genomes
+
+  $output = $obj->rast_genomes($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a ReferenceDataManager.RASTGenomesParams
+$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+RASTGenomesParams is a reference to a hash where the following keys are defined:
+	data has a value which is a string
+	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
+	index_in_solr has a value which is a ReferenceDataManager.bool
+	workspace_name has a value which is a string
+	create_report has a value which is a ReferenceDataManager.bool
+	call_features_rRNA_SEED has a value which is a ReferenceDataManager.bool
+	call_features_tRNA_trnascan has a value which is a ReferenceDataManager.bool
+	call_selenoproteins has a value which is a ReferenceDataManager.bool
+	call_pyrrolysoproteins has a value which is a ReferenceDataManager.bool
+	call_features_repeat_region_SEED has a value which is a ReferenceDataManager.bool
+	call_features_insertion_sequences has a value which is a ReferenceDataManager.bool
+	call_features_strep_suis_repeat has a value which is a ReferenceDataManager.bool
+	call_features_strep_pneumo_repeat has a value which is a ReferenceDataManager.bool
+	call_features_crispr has a value which is a ReferenceDataManager.bool
+	call_features_CDS_glimmer3 has a value which is a ReferenceDataManager.bool
+	call_features_CDS_prodigal has a value which is a ReferenceDataManager.bool
+	annotate_proteins_kmer_v2 has a value which is a ReferenceDataManager.bool
+	kmer_v1_parameters has a value which is a ReferenceDataManager.bool
+	annotate_proteins_similarity has a value which is a ReferenceDataManager.bool
+	resolve_overlapping_features has a value which is a ReferenceDataManager.bool
+	find_close_neighbors has a value which is a ReferenceDataManager.bool
+	call_features_prophage_phispy has a value which is a ReferenceDataManager.bool
+ReferenceGenomeData is a reference to a hash where the following keys are defined:
+	accession has a value which is a string
+	version_status has a value which is a string
+	asm_name has a value which is a string
+	ftp_dir has a value which is a string
+	file has a value which is a string
+	id has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+	refseq_category has a value which is a string
+	tax_id has a value which is a string
+	assembly_level has a value which is a string
+bool is an int
+KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+	id has a value which is a string
+	workspace_name has a value which is a string
+	source_id has a value which is a string
+	accession has a value which is a string
+	name has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a ReferenceDataManager.RASTGenomesParams
+$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+RASTGenomesParams is a reference to a hash where the following keys are defined:
+	data has a value which is a string
+	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
+	index_in_solr has a value which is a ReferenceDataManager.bool
+	workspace_name has a value which is a string
+	create_report has a value which is a ReferenceDataManager.bool
+	call_features_rRNA_SEED has a value which is a ReferenceDataManager.bool
+	call_features_tRNA_trnascan has a value which is a ReferenceDataManager.bool
+	call_selenoproteins has a value which is a ReferenceDataManager.bool
+	call_pyrrolysoproteins has a value which is a ReferenceDataManager.bool
+	call_features_repeat_region_SEED has a value which is a ReferenceDataManager.bool
+	call_features_insertion_sequences has a value which is a ReferenceDataManager.bool
+	call_features_strep_suis_repeat has a value which is a ReferenceDataManager.bool
+	call_features_strep_pneumo_repeat has a value which is a ReferenceDataManager.bool
+	call_features_crispr has a value which is a ReferenceDataManager.bool
+	call_features_CDS_glimmer3 has a value which is a ReferenceDataManager.bool
+	call_features_CDS_prodigal has a value which is a ReferenceDataManager.bool
+	annotate_proteins_kmer_v2 has a value which is a ReferenceDataManager.bool
+	kmer_v1_parameters has a value which is a ReferenceDataManager.bool
+	annotate_proteins_similarity has a value which is a ReferenceDataManager.bool
+	resolve_overlapping_features has a value which is a ReferenceDataManager.bool
+	find_close_neighbors has a value which is a ReferenceDataManager.bool
+	call_features_prophage_phispy has a value which is a ReferenceDataManager.bool
+ReferenceGenomeData is a reference to a hash where the following keys are defined:
+	accession has a value which is a string
+	version_status has a value which is a string
+	asm_name has a value which is a string
+	ftp_dir has a value which is a string
+	file has a value which is a string
+	id has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+	refseq_category has a value which is a string
+	tax_id has a value which is a string
+	assembly_level has a value which is a string
+bool is an int
+KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+	id has a value which is a string
+	workspace_name has a value which is a string
+	source_id has a value which is a string
+	accession has a value which is a string
+	name has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+Loads specified genomes into KBase workspace and indexes in SOLR on demand
+
+=back
+
+=cut
+
+sub rast_genomes
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to rast_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'rast_genomes');
+    }
+
+    my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
+    my($output);
+    #BEGIN rast_genomes
+    $params = $self->util_initialize_call($params,$ctx);
+    $params = $self->util_args($params,[],{
+        data => undef,
+        genomes => [],
+        index_in_solr => 0,
+        create_report => 0,
+        workspace_name => undef
+=begin
+        call_features_rRNA_SEED=>0,
+        call_features_tRNA_trnascan=>0,
+        call_selenoproteins=>0,
+        call_pyrrolysoproteins=>0,
+        call_features_repeat_region_SEED=>0,
+        call_features_insertion_sequences=>0,
+        call_features_strep_suis_repeat=>0,
+        call_features_strep_pneumo_repeat=>0,
+        call_features_crispr=>0,
+        call_features_CDS_glimmer3=>0,
+        call_features_CDS_prodigal=>0,
+        annotate_proteins_kmer_v2=>0,
+        kmer_v1_parameters=>0,
+        annotate_proteins_similarity=>1,
+        resolve_overlapping_features=>0,
+        find_close_neighbors=>'1',
+        call_features_prophage_phispy=>0
+=cut
+    });
+    my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
+    my $ncbigenomes;
+    $output = [];
+    my $msg = "";
+
+    if (defined($params->{data})) {
+        my $array = [split(/;/,$params->{data})];
+        $ncbigenomes = [{
+            genome_id => $array->[0],
+            scientific_name => $array->[1],
+            domain => $array->[2],
+            genetic_code => $array->[3]
+        }];
+    } else {
+        $ncbigenomes = $params->{genomes};
+    }
+
+    #foreach my $ncbigenome (@{$ncbigenomes}) {
+    for (my $i=0; $i < @{$ncbigenomes}; $i++) {
+        my $ncbigenome = $ncbigenomes->[$i];
+        print "\n******************Genome#: $i ********************";
+        my $wsname = "";
+        if(defined( $ncbigenome->{workspace_name}))
+        {
+            $wsname = $ncbigenome->{workspace_name};
+        }
+        elsif(defined($ncbigenome->{source}))
+        {
+            $wsname = $self->util_workspace_names($ncbigenome->{source});
+        }
+        else
+        {
+            $wsname = "ReferenceDataManager";    
+        }
+        my $rdm_rast_ws = $wsname . "_RAST";
+        $self->util_ws_client()->create_workspace({workspace => $rdm_rast_ws});
+        
+        print "\nNow rasting ".$ncbigenome->{genome_id}." with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
+        my $rastgenome;
+        my $rast_ret;
+        my $genome_obj_name = $ncbigenome->{genome_id};
+        my $genome_ref = $rdm_rast_ws . "/" . $genome_obj_name;
+        my $rast_params={
+             input_genome=>$genome_obj_name,
+             input_genome_workspace=>$wsname,
+=begin
+             call_features_rRNA_SEED=>0,
+             call_features_tRNA_trnascan=>0,
+             call_selenoproteins=>0,
+             call_pyrrolysoproteins=>0,
+             call_features_repeat_region_SEED=>0,
+             call_features_insertion_sequences=>0,
+             call_features_strep_suis_repeat=>0,
+             call_features_strep_pneumo_repeat=>0,
+             call_features_crispr=>0,
+             call_features_CDS_glimmer3=>0,
+             call_features_CDS_prodigal=>0,
+             annotate_proteins_kmer_v2=>0,
+             kmer_v1_parameters=>0,
+             annotate_proteins_similarity=>1,
+             resolve_overlapping_features=>0,
+             find_close_neighbors=>1,
+             call_features_prophage_phispy=>0,
+=cut
+             output_genome=>$genome_obj_name,
+             workspace=>$rdm_rast_ws
+        };
+        eval {
+          $rast_ret = $rast_client->annotate_genome($rast_params);
+          #$rastgenome = $self->util_ws_client()->get_objects([{ref=>$genome_ref}])->[0]->{data};
+        };
+        if ($@) {
+            print "**********Received an exception from calling genbank_to_genome to load $ncbigenome->{id}:\n";
+            print "Exception message: " . $@->{"message"} . "\n";
+            print "JSONRPC code: " . $@->{"code"} . "\n";
+            print "Method: " . $@->{"method_name"} . "\n";
+            print "Client-side exception:\n";
+            print $@;
+            print "\nServer-side exception:\n";
+            print $@->{"data"};
+        }
+        else
+        {
+            $rastgenome = {
+                  "ref" => $genome_ref,
+                  id => $rast_ret->{id},
+                  workspace_name => $rast_ret->{workspace}
+            };
+            
+            if ($params->{index_in_solr} == 1) {
+                my $gn_solrCore = "GenomeFeatures_RASTed";
+                $self->index_genomes_in_solr({
+                        solr_core => $gn_solrCore,             
+                        genomes => [$rastgenome]
+                });
+            }
+            push(@{$output},$rastgenome);
+            if (@{$output} < 10) {
+                   $msg .= "RASTed genome: ".$rastgenome->{id}." into workspace ".$rdm_rast_ws.";\n";
+            }
+            print "!!!!!!!!!!!!!--rasting of $ncbigenome->{id} succeeded--!!\n";
+         }
+         print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
+    }
+    $msg .= "\nRASTed a total of ". scalar @{$output}. " genomes!\n";
+    print $msg . "\n";
+
+    if ($params->{create_report}) {
+        print $msg . "\n";
+        $self->util_create_report({
+            message => $msg,
+            workspace => $params->{workspace_name}
+        });
+        $output = [$params->{workspace_name}."/rast_genomes"];
+    }
+
+    #END rast_genomes
+    my @_bad_returns;
+    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to rast_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'rast_genomes');
+    }
+    return($output);
+}
+
+
 =head2 update_loaded_genomes
 
   $output = $obj->update_loaded_genomes($params)
@@ -3560,7 +3866,7 @@ sub update_loaded_genomes
     $output = [];
 
     my $count = 0;
-    my $gn_solr_core = "GenomeFeatures_ci";
+    my $gn_solr_core = "GenomeFeatures_prod";
     my $tx_solr_core = "taxonomy_ci";
     my $gn_source = "refseq";
     if($params->{phtozome} == 1) {
@@ -3571,7 +3877,7 @@ sub update_loaded_genomes
     }
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only => $params->{update_only}});
 
-    for (my $i=0; $i < @{ $ref_genomes }; $i++) {
+    for (my $i=28659; $i < @{ $ref_genomes }; $i++) {
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
         
@@ -3906,100 +4212,6 @@ gc has a value which is a float
 
 
 
-=head2 LoadGenomesParams
-
-=over 4
-
-
-
-=item Description
-
-Arguments for the load_genomes function
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a reference to a hash where the following keys are defined:
-data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
-index_in_solr has a value which is a ReferenceDataManager.bool
-workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
-
-</pre>
-
-=end html
-
-=begin text
-
-a reference to a hash where the following keys are defined:
-data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
-index_in_solr has a value which is a ReferenceDataManager.bool
-workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
-
-
-=end text
-
-=back
-
-
-
-=head2 KBaseReferenceGenomeData
-
-=over 4
-
-
-
-=item Description
-
-Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a reference to a hash where the following keys are defined:
-ref has a value which is a string
-id has a value which is a string
-workspace_name has a value which is a string
-source_id has a value which is a string
-accession has a value which is a string
-name has a value which is a string
-version has a value which is a string
-source has a value which is a string
-domain has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-a reference to a hash where the following keys are defined:
-ref has a value which is a string
-id has a value which is a string
-workspace_name has a value which is a string
-source_id has a value which is a string
-accession has a value which is a string
-name has a value which is a string
-version has a value which is a string
-source has a value which is a string
-domain has a value which is a string
-
-
-=end text
-
-=back
-
-
-
 =head2 SolrGenomeFeatureData
 
 =over 4
@@ -4144,6 +4356,57 @@ row_start has a value which is an int
 row_count has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 KBaseReferenceGenomeData
+
+=over 4
+
+
+
+=item Description
+
+Structure of a single KBase genome in the list returned by the load_genomes, rast_genomes and update_loaded_genomes functions
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+ref has a value which is a string
+id has a value which is a string
+workspace_name has a value which is a string
+source_id has a value which is a string
+accession has a value which is a string
+name has a value which is a string
+version has a value which is a string
+source has a value which is a string
+domain has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+ref has a value which is a string
+id has a value which is a string
+workspace_name has a value which is a string
+source_id has a value which is a string
+accession has a value which is a string
+name has a value which is a string
+version has a value which is a string
+source has a value which is a string
+domain has a value which is a string
 
 
 =end text
@@ -4483,6 +4746,126 @@ taxa has a value which is a reference to a list where each element is a Referenc
 solr_core has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+
+
+=end text
+
+=back
+
+
+
+=head2 LoadGenomesParams
+
+=over 4
+
+
+
+=item Description
+
+Arguments for the load_genomes function
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+data has a value which is a string
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
+index_in_solr has a value which is a ReferenceDataManager.bool
+workspace_name has a value which is a string
+create_report has a value which is a ReferenceDataManager.bool
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+data has a value which is a string
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
+index_in_solr has a value which is a ReferenceDataManager.bool
+workspace_name has a value which is a string
+create_report has a value which is a ReferenceDataManager.bool
+
+
+=end text
+
+=back
+
+
+
+=head2 RASTGenomesParams
+
+=over 4
+
+
+
+=item Description
+
+Arguments for the rast_genomes function
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+data has a value which is a string
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
+index_in_solr has a value which is a ReferenceDataManager.bool
+workspace_name has a value which is a string
+create_report has a value which is a ReferenceDataManager.bool
+call_features_rRNA_SEED has a value which is a ReferenceDataManager.bool
+call_features_tRNA_trnascan has a value which is a ReferenceDataManager.bool
+call_selenoproteins has a value which is a ReferenceDataManager.bool
+call_pyrrolysoproteins has a value which is a ReferenceDataManager.bool
+call_features_repeat_region_SEED has a value which is a ReferenceDataManager.bool
+call_features_insertion_sequences has a value which is a ReferenceDataManager.bool
+call_features_strep_suis_repeat has a value which is a ReferenceDataManager.bool
+call_features_strep_pneumo_repeat has a value which is a ReferenceDataManager.bool
+call_features_crispr has a value which is a ReferenceDataManager.bool
+call_features_CDS_glimmer3 has a value which is a ReferenceDataManager.bool
+call_features_CDS_prodigal has a value which is a ReferenceDataManager.bool
+annotate_proteins_kmer_v2 has a value which is a ReferenceDataManager.bool
+kmer_v1_parameters has a value which is a ReferenceDataManager.bool
+annotate_proteins_similarity has a value which is a ReferenceDataManager.bool
+resolve_overlapping_features has a value which is a ReferenceDataManager.bool
+find_close_neighbors has a value which is a ReferenceDataManager.bool
+call_features_prophage_phispy has a value which is a ReferenceDataManager.bool
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+data has a value which is a string
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
+index_in_solr has a value which is a ReferenceDataManager.bool
+workspace_name has a value which is a string
+create_report has a value which is a ReferenceDataManager.bool
+call_features_rRNA_SEED has a value which is a ReferenceDataManager.bool
+call_features_tRNA_trnascan has a value which is a ReferenceDataManager.bool
+call_selenoproteins has a value which is a ReferenceDataManager.bool
+call_pyrrolysoproteins has a value which is a ReferenceDataManager.bool
+call_features_repeat_region_SEED has a value which is a ReferenceDataManager.bool
+call_features_insertion_sequences has a value which is a ReferenceDataManager.bool
+call_features_strep_suis_repeat has a value which is a ReferenceDataManager.bool
+call_features_strep_pneumo_repeat has a value which is a ReferenceDataManager.bool
+call_features_crispr has a value which is a ReferenceDataManager.bool
+call_features_CDS_glimmer3 has a value which is a ReferenceDataManager.bool
+call_features_CDS_prodigal has a value which is a ReferenceDataManager.bool
+annotate_proteins_kmer_v2 has a value which is a ReferenceDataManager.bool
+kmer_v1_parameters has a value which is a ReferenceDataManager.bool
+annotate_proteins_similarity has a value which is a ReferenceDataManager.bool
+resolve_overlapping_features has a value which is a ReferenceDataManager.bool
+find_close_neighbors has a value which is a ReferenceDataManager.bool
+call_features_prophage_phispy has a value which is a ReferenceDataManager.bool
 
 
 =end text

@@ -1,0 +1,52 @@
+#
+# Define basic display information
+#
+name     : RAST Reference Genomes
+
+tooltip  : |
+    RAST KBase genomes loaded from NCBI reference database
+
+screenshots :
+    []
+
+icon: icon.png
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            [index_genomes_in_solr]
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    data :
+        ui-name : |
+            Genome data
+        short-hint : |
+            Genome data in semi-colon separated string
+        long-hint  : |
+            Genome data in the format of 'genome_id;scientific_name;domain;genetic_code'
+    
+    index_in_solr :
+         ui-name : |
+             Index in Solr
+         short-hint : |
+             Indicate to send the genome info to Solr to be indexed
+         long-hint : |
+             Indicate to send the genome info to Solr to be indexed
+
+
+description : |
+    <p>RAST genomes in KBase and index in solr if want </p>

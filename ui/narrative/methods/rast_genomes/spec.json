@@ -1,0 +1,73 @@
+{
+  "ver" : "1.0.0",
+  "name" : "RAST a list of genomes in a KBase workspace and indexes in SOLR on demand",
+  "authors" : [ "chenry", "qzhang" ],
+  "contact" : "help@kbase.us",
+  "visble" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : null,
+    "output" : "kbaseReportView"
+  },
+  "parameters" : [ {
+    "default_values" : [""],
+    "advanced" : false,
+    "id" : "data",
+    "allow_multiple" : false,
+    "optional" : false,
+    "field_type" : "text",
+    "text_options" : {
+      "valid_as" : "text"
+    }
+  }, {
+    "id" : "index_in_solr",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["0"],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }],
+  "job_id_output_field": "docker",
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "ReferenceDataManager",
+      "method" : "rast_genomes",
+      "input_mapping" : [
+        {
+          "input_parameter": "data",
+          "target_property": "data"
+        },
+        {
+          "input_parameter": "index_in_solr",
+          "target_property": "index_in_solr"
+        },
+        {
+          "constant_value" : "1",
+          "target_property": "index_in_solr"
+        },
+        {
+          "constant_value" : "1",
+          "target_property": "create_report"
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace_name"
+        }
+      ],
+      "output_mapping" : [
+        {
+          "target_property" : "report_ref",
+    	  "service_method_output_path" : [
+				0,
+				0
+        	]
+        }
+      ]
+    }
+  }
+}

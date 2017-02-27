@@ -82,38 +82,6 @@ module ReferenceDataManager {
         Lists genomes loaded into KBase from selected reference sources (ensembl, phytozome, refseq)
     */
     funcdef list_loaded_genomes(ListLoadedGenomesParams params) returns (list<LoadedReferenceGenomeData> output);
-  
-    /*
-        Arguments for the load_genomes function
-    */
-    typedef structure {
-        string data;
-        list<ReferenceGenomeData> genomes;
-        bool index_in_solr;
-        string workspace_name;
-        bool create_report;
-    } LoadGenomesParams;
-    
-    /*  
-        Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
-    */  
-    typedef structure {
-        string ref;
-        string id;
-        string workspace_name;
-        string source_id;
-        string accession;
-        string name;
-        string version;
-        string source;
-        string domain;
-    } KBaseReferenceGenomeData;
-
-    /*
-        Loads specified genomes into KBase workspace and indexes in SOLR on demand
-    */
-    funcdef load_genomes(LoadGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
-
 
     /*
         Struct containing data for a single genome element output by the list_solr_genomes and index_genomes_in_solr functions 
@@ -175,6 +143,23 @@ module ReferenceDataManager {
         Lists genomes indexed in SOLR
     */
     funcdef list_solr_genomes(ListSolrDocsParams params) returns (list<SolrGenomeFeatureData> output) authentication required;
+
+
+    /*  
+        Structure of a single KBase genome in the list returned by the load_genomes, rast_genomes and update_loaded_genomes functions
+    */  
+    typedef structure {
+        string ref;
+        string id;
+        string workspace_name;
+        string source_id;
+        string accession;
+        string name;
+        string version;
+        string source;
+        string domain;
+    } KBaseReferenceGenomeData;
+
 
     /*
         Arguments for the index_genomes_in_solr function
@@ -302,9 +287,60 @@ module ReferenceDataManager {
     */
     funcdef index_taxa_in_solr(IndexTaxaInSolrParams params) returns (list<SolrTaxonData> output) authentication required;
     
-   /*
-        Arguments for the update_loaded_genomes function
+  
+    /*
+        Arguments for the load_genomes function
+    */
+    typedef structure {
+        string data;
+        list<ReferenceGenomeData> genomes;
+        bool index_in_solr;
+        string workspace_name;
+        bool create_report;
+    } LoadGenomesParams;
+    
+    /*
+        Loads specified genomes into KBase workspace and indexes in SOLR on demand
+    */
+    funcdef load_genomes(LoadGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
+   
 
+    /*
+        Arguments for the rast_genomes function
+    */
+    typedef structure {
+        string data;
+        list<ReferenceGenomeData> genomes;
+        bool index_in_solr;
+        string workspace_name;
+        bool create_report;
+        bool call_features_rRNA_SEED;
+        bool call_features_tRNA_trnascan;
+        bool call_selenoproteins;
+        bool call_pyrrolysoproteins;
+        bool call_features_repeat_region_SEED;
+        bool call_features_insertion_sequences;
+        bool call_features_strep_suis_repeat;
+        bool call_features_strep_pneumo_repeat;
+        bool call_features_crispr;
+        bool call_features_CDS_glimmer3;
+        bool call_features_CDS_prodigal;
+        bool annotate_proteins_kmer_v2;
+        bool kmer_v1_parameters;
+        bool annotate_proteins_similarity;
+        bool resolve_overlapping_features;
+        bool find_close_neighbors;
+        bool call_features_prophage_phispy;
+    } RASTGenomesParams;
+    
+    /*
+        Loads specified genomes into KBase workspace and indexes in SOLR on demand
+    */
+    funcdef rast_genomes(RASTGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
+
+
+    /*
+        Arguments for the update_loaded_genomes function
     */
     typedef structure {
         bool ensembl;
@@ -318,4 +354,5 @@ module ReferenceDataManager {
         Updates the loaded genomes in KBase for the specified source databases
     */
     funcdef update_loaded_genomes(UpdateLoadedGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
+
 };
