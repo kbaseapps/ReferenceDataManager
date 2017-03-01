@@ -303,6 +303,22 @@ module ReferenceDataManager {
         Loads specified genomes into KBase workspace and indexes in SOLR on demand
     */
     funcdef load_genomes(LoadGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
+
+    /*
+        Arguments for the load_refgenomes function
+    */
+    typedef structure {
+        bool ensembl;
+        bool refseq;
+        bool phytozome;
+        string workspace_name;
+        bool create_report;
+    } LoadRefGenomesParams;
+    
+    /*
+        Loads Reference genomes into KBase workspace without indexing
+    */
+    funcdef load_refgenomes(LoadRefGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
    
 
     /*
@@ -329,6 +345,7 @@ module ReferenceDataManager {
         bool ensembl;
         bool refseq;
         bool phytozome;
+        bool update_only;
         string workspace_name;
         bool create_report;
     } UpdateLoadedGenomesParams;

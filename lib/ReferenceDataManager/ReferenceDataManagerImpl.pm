@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '36bb1fbe3802c2c256dbe8e6273767c9394bd755';
+our $GIT_COMMIT_HASH = 'c6cc79d3b28e11326734bfc9c930201c7efa2efe';
 
 =head1 NAME
 
@@ -3328,7 +3328,7 @@ sub load_genomes
         $ncbigenomes = $params->{genomes};
     }
 
-    for (my $i=0; $i < @{$ncbigenomes}; $i++) {
+    for (my $i=50000; $i < @{$ncbigenomes}; $i++) {
         my $ncbigenome = $ncbigenomes->[$i];
         print "\n******************Genome#: $i ********************";
         my $wsname = "";
@@ -3462,6 +3462,118 @@ sub load_genomes
 
 
 
+=head2 load_refgenomes
+
+  $output = $obj->load_refgenomes($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a ReferenceDataManager.LoadRefGenomesParams
+$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+LoadRefGenomesParams is a reference to a hash where the following keys are defined:
+	ensembl has a value which is a ReferenceDataManager.bool
+	refseq has a value which is a ReferenceDataManager.bool
+	phytozome has a value which is a ReferenceDataManager.bool
+	workspace_name has a value which is a string
+	create_report has a value which is a ReferenceDataManager.bool
+bool is an int
+KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+	id has a value which is a string
+	workspace_name has a value which is a string
+	source_id has a value which is a string
+	accession has a value which is a string
+	name has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a ReferenceDataManager.LoadRefGenomesParams
+$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+LoadRefGenomesParams is a reference to a hash where the following keys are defined:
+	ensembl has a value which is a ReferenceDataManager.bool
+	refseq has a value which is a ReferenceDataManager.bool
+	phytozome has a value which is a ReferenceDataManager.bool
+	workspace_name has a value which is a string
+	create_report has a value which is a ReferenceDataManager.bool
+bool is an int
+KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+	id has a value which is a string
+	workspace_name has a value which is a string
+	source_id has a value which is a string
+	accession has a value which is a string
+	name has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+Loads Reference genomes into KBase workspace without indexing
+
+=back
+
+=cut
+
+sub load_refgenomes
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to load_refgenomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'load_refgenomes');
+    }
+
+    my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
+    my($output);
+    #BEGIN load_refgenomes
+    $params = $self->util_initialize_call($params,$ctx);
+    $params = $self->util_args($params,[],{
+        refseq => 1,
+        phytozome => 0,
+        ensembl => 0, 
+        create_report => 0,
+        workspace_name => undef
+    });
+
+    $output = [];
+    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only=>0});
+    $output = $self->load_genomes( {genomes =>$ref_genomes, index_in_solr => 0} ); 
+    #END load_refgenomes
+    my @_bad_returns;
+    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to load_refgenomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'load_refgenomes');
+    }
+    return($output);
+}
+
+
+
+
 =head2 rast_genomes
 
   $output = $obj->rast_genomes($params)
@@ -3481,23 +3593,6 @@ RASTGenomesParams is a reference to a hash where the following keys are defined:
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
-	call_features_rRNA_SEED has a value which is a ReferenceDataManager.bool
-	call_features_tRNA_trnascan has a value which is a ReferenceDataManager.bool
-	call_selenoproteins has a value which is a ReferenceDataManager.bool
-	call_pyrrolysoproteins has a value which is a ReferenceDataManager.bool
-	call_features_repeat_region_SEED has a value which is a ReferenceDataManager.bool
-	call_features_insertion_sequences has a value which is a ReferenceDataManager.bool
-	call_features_strep_suis_repeat has a value which is a ReferenceDataManager.bool
-	call_features_strep_pneumo_repeat has a value which is a ReferenceDataManager.bool
-	call_features_crispr has a value which is a ReferenceDataManager.bool
-	call_features_CDS_glimmer3 has a value which is a ReferenceDataManager.bool
-	call_features_CDS_prodigal has a value which is a ReferenceDataManager.bool
-	annotate_proteins_kmer_v2 has a value which is a ReferenceDataManager.bool
-	kmer_v1_parameters has a value which is a ReferenceDataManager.bool
-	annotate_proteins_similarity has a value which is a ReferenceDataManager.bool
-	resolve_overlapping_features has a value which is a ReferenceDataManager.bool
-	find_close_neighbors has a value which is a ReferenceDataManager.bool
-	call_features_prophage_phispy has a value which is a ReferenceDataManager.bool
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
 	version_status has a value which is a string
@@ -3537,23 +3632,6 @@ RASTGenomesParams is a reference to a hash where the following keys are defined:
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
-	call_features_rRNA_SEED has a value which is a ReferenceDataManager.bool
-	call_features_tRNA_trnascan has a value which is a ReferenceDataManager.bool
-	call_selenoproteins has a value which is a ReferenceDataManager.bool
-	call_pyrrolysoproteins has a value which is a ReferenceDataManager.bool
-	call_features_repeat_region_SEED has a value which is a ReferenceDataManager.bool
-	call_features_insertion_sequences has a value which is a ReferenceDataManager.bool
-	call_features_strep_suis_repeat has a value which is a ReferenceDataManager.bool
-	call_features_strep_pneumo_repeat has a value which is a ReferenceDataManager.bool
-	call_features_crispr has a value which is a ReferenceDataManager.bool
-	call_features_CDS_glimmer3 has a value which is a ReferenceDataManager.bool
-	call_features_CDS_prodigal has a value which is a ReferenceDataManager.bool
-	annotate_proteins_kmer_v2 has a value which is a ReferenceDataManager.bool
-	kmer_v1_parameters has a value which is a ReferenceDataManager.bool
-	annotate_proteins_similarity has a value which is a ReferenceDataManager.bool
-	resolve_overlapping_features has a value which is a ReferenceDataManager.bool
-	find_close_neighbors has a value which is a ReferenceDataManager.bool
-	call_features_prophage_phispy has a value which is a ReferenceDataManager.bool
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
 	version_status has a value which is a string
@@ -3744,6 +3822,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
+	update_only has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -3770,6 +3849,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
+	update_only has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -3818,7 +3898,7 @@ sub update_loaded_genomes
         refseq => 1,
         phytozome => 0,
         ensembl => 0, 
-        update_only => 0,
+        update_only => 1,
         create_report => 0,
         workspace_name => undef
     });
@@ -3829,22 +3909,15 @@ sub update_loaded_genomes
     my $count = 0;
     my $gn_solr_core = "GenomeFeatures_prod";
     my $tx_solr_core = "taxonomy_prod";
-    my $gn_source = "refseq";
-    if($params->{phtozome} == 1) {
-        $gn_source = "Phytozome";
-    }
-    elsif($params->{ensembl} == 1) {
-        $gn_source = "Ensembl";
-    }
-    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only => $params->{update_only}});
+    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only=>$params->{update_only}});
 
-    for (my $i=50003; $i < @{ $ref_genomes }; $i++) {#at 50000, the genome_id is:GCF_000705845 
-        print "\n***************Ref genome #". $i. "****************\n";
-        my $gnm = $ref_genomes->[$i];
-=begin  
     if (! $self->_ping()) {
         die "\nError--Solr server not responding:\n" . $self->_error->{response};
     }
+    for (my $i=50001; $i < @{ $ref_genomes }; $i++) {#at 50000, the genome_id is:GCF_000705845 
+        print "\n***************Ref genome #". $i. "****************\n";
+        my $gnm = $ref_genomes->[$i];
+    
         #check if the genome is already present in the database by querying SOLR
         my $gn_status = $self->_checkGenomeStatus( $gnm, $gn_solr_core );
        
@@ -3862,16 +3935,6 @@ sub update_loaded_genomes
         }else{
                 print "Current version already in KBase"; #check for annotation update
         }
-=cut
-############skipping indexing starting from 50000, avoid SOLR just to load the genomes into workspace################
-        $count ++;
-        $self->load_genomes( {genomes => [$gnm], index_in_solr => 0} ); 
-        push(@{$output},$gnm);
-        if ($count < 10) {
-        $msg .= $gnm->{accession}.";".$gnm->{status}.";".$gnm->{name}.";".$gnm->{ftp_dir}.";".$gnm->{file}.";".$gnm->{id}.";".$gnm->{version}.";".$gnm->{source}.";".$gnm->{domain}."\n";
-        }
-############END skipping indexing starting from 50000################
-        
     }
     $msg .= "Updated ".@{$output}." genomes!";
     print $msg . "\n";
@@ -4770,6 +4833,49 @@ create_report has a value which is a ReferenceDataManager.bool
 
 
 
+=head2 LoadRefGenomesParams
+
+=over 4
+
+
+
+=item Description
+
+Arguments for the load_refgenomes function
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+ensembl has a value which is a ReferenceDataManager.bool
+refseq has a value which is a ReferenceDataManager.bool
+phytozome has a value which is a ReferenceDataManager.bool
+workspace_name has a value which is a string
+create_report has a value which is a ReferenceDataManager.bool
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+ensembl has a value which is a ReferenceDataManager.bool
+refseq has a value which is a ReferenceDataManager.bool
+phytozome has a value which is a ReferenceDataManager.bool
+workspace_name has a value which is a string
+create_report has a value which is a ReferenceDataManager.bool
+
+
+=end text
+
+=back
+
+
+
 =head2 RASTGenomesParams
 
 =over 4
@@ -4792,23 +4898,6 @@ genomes has a value which is a reference to a list where each element is a Refer
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
-call_features_rRNA_SEED has a value which is a ReferenceDataManager.bool
-call_features_tRNA_trnascan has a value which is a ReferenceDataManager.bool
-call_selenoproteins has a value which is a ReferenceDataManager.bool
-call_pyrrolysoproteins has a value which is a ReferenceDataManager.bool
-call_features_repeat_region_SEED has a value which is a ReferenceDataManager.bool
-call_features_insertion_sequences has a value which is a ReferenceDataManager.bool
-call_features_strep_suis_repeat has a value which is a ReferenceDataManager.bool
-call_features_strep_pneumo_repeat has a value which is a ReferenceDataManager.bool
-call_features_crispr has a value which is a ReferenceDataManager.bool
-call_features_CDS_glimmer3 has a value which is a ReferenceDataManager.bool
-call_features_CDS_prodigal has a value which is a ReferenceDataManager.bool
-annotate_proteins_kmer_v2 has a value which is a ReferenceDataManager.bool
-kmer_v1_parameters has a value which is a ReferenceDataManager.bool
-annotate_proteins_similarity has a value which is a ReferenceDataManager.bool
-resolve_overlapping_features has a value which is a ReferenceDataManager.bool
-find_close_neighbors has a value which is a ReferenceDataManager.bool
-call_features_prophage_phispy has a value which is a ReferenceDataManager.bool
 
 </pre>
 
@@ -4822,23 +4911,6 @@ genomes has a value which is a reference to a list where each element is a Refer
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
-call_features_rRNA_SEED has a value which is a ReferenceDataManager.bool
-call_features_tRNA_trnascan has a value which is a ReferenceDataManager.bool
-call_selenoproteins has a value which is a ReferenceDataManager.bool
-call_pyrrolysoproteins has a value which is a ReferenceDataManager.bool
-call_features_repeat_region_SEED has a value which is a ReferenceDataManager.bool
-call_features_insertion_sequences has a value which is a ReferenceDataManager.bool
-call_features_strep_suis_repeat has a value which is a ReferenceDataManager.bool
-call_features_strep_pneumo_repeat has a value which is a ReferenceDataManager.bool
-call_features_crispr has a value which is a ReferenceDataManager.bool
-call_features_CDS_glimmer3 has a value which is a ReferenceDataManager.bool
-call_features_CDS_prodigal has a value which is a ReferenceDataManager.bool
-annotate_proteins_kmer_v2 has a value which is a ReferenceDataManager.bool
-kmer_v1_parameters has a value which is a ReferenceDataManager.bool
-annotate_proteins_similarity has a value which is a ReferenceDataManager.bool
-resolve_overlapping_features has a value which is a ReferenceDataManager.bool
-find_close_neighbors has a value which is a ReferenceDataManager.bool
-call_features_prophage_phispy has a value which is a ReferenceDataManager.bool
 
 
 =end text
@@ -4867,6 +4939,7 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
+update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -4880,6 +4953,7 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
+update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 

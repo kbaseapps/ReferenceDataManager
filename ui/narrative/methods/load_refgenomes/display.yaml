@@ -1,0 +1,59 @@
+#
+# Define basic display information
+#
+name     : Load reference genomes to KBase
+
+tooltip  : |
+    Load reference genomes from NCBI reference database to KBase workspace
+
+screenshots :
+    []
+
+icon: icon.png
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    refseq :
+        ui-name : |
+            Load RefSeq genomes
+        short-hint : |
+            Load into KBase RefSeq genomes from NCBI
+        long-hint  : |
+            Load into KBase RefSeq genomes from NCBI
+
+    phytozome :
+        ui-name : |
+            Load Phytozome genomes
+        short-hint : |
+            Load into KBase Phytozome genomes
+        long-hint  : |
+            Load into KBase Phytozome genomes
+            
+    ensembl :
+        ui-name : |
+            Load Ensembl genomes
+        short-hint : |
+            Load into KBase Ensembl genomes
+        long-hint  : |
+            Load into KBase Ensembl genomes
+
+description : |
+    <p>Load genomes from source databases</p>
