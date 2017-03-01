@@ -3813,9 +3813,6 @@ sub update_loaded_genomes
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
     my($output);
     #BEGIN update_loaded_genomes
-    if (! $self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         refseq => 1,
@@ -3845,6 +3842,9 @@ sub update_loaded_genomes
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
 =begin  
+    if (! $self->_ping()) {
+        die "\nError--Solr server not responding:\n" . $self->_error->{response};
+    }
         #check if the genome is already present in the database by querying SOLR
         my $gn_status = $self->_checkGenomeStatus( $gnm, $gn_solr_core );
        
