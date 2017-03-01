@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '69a401c7289661ffd9f9eec0680e5ea72ee48929';
+our $GIT_COMMIT_HASH = '36bb1fbe3802c2c256dbe8e6273767c9394bd755';
 
 =head1 NAME
 
@@ -193,7 +193,7 @@ sub _listGenomesInSolr {
 #
 sub _listTaxaInSolr {
     my ($self, $solrCore, $fields, $rowStart, $rowCount, $grp) = @_;
-    $solrCore = ($solrCore) ? $solrCore : "taxonomy_prod";
+    $solrCore = ($solrCore) ? $solrCore : "taxonomy_ci";
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 10;
     $fields = ($fields) ? $fields : "*";
@@ -1359,7 +1359,7 @@ sub _list_ncbi_refgenomes
             $current_genome->{assembly_level} = $attribs[11];
 
             if( $update_only == 1 ) {
-                my $gn_solr_core = "GenomeFeatures_prod";
+                my $gn_solr_core = "GenomeFeatures_ci";
                 if( ($self->_checkGenomeStatus( $current_genome, $gn_solr_core ))=~/(new|updated)/i ) {
                     push(@{$output},$current_genome);
                 }
@@ -1904,7 +1904,7 @@ sub list_loaded_genomes
 =begin
 ##NOTE:The following line is needed only for the case if you want to index a large number (>100k) genome_features, 
 #because of the reality that there will be interruption of all sorts.
-                                    my $gn_solrCore = "GenomeFeatures_prod";
+                                    my $gn_solrCore = "GenomeFeatures_ci";
                                     if($self->_exists($gn_solrCore, {genome_id=>$curr_gn_info->{name}})==0) {
                                         print "Not in " . $gn_solrCore . ": " . $curr_gn_info->{id} . "--" . $curr_gn_info->{name} . "\n";
                                         #indexing in SOLR for every $batchCount of genomes
@@ -2324,7 +2324,7 @@ sub index_genomes_in_solr
     $params = $self->util_args($params,[],{
         genomes => {},
         create_report => 0,
-        solr_core => "GenomeFeatures_prod",
+        solr_core => "GenomeFeatures_ci",
         workspace_name => undef
     });
 
@@ -2582,7 +2582,7 @@ sub list_loaded_taxa
 	}
 
 	#indexing in SOLR for every $batchCount of taxa
-	#$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy_prod"});
+	#$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy_ci"});
 
         if(exists($params->{batch}) && scalar(@$output) >= $params->{batch}){
             last;
@@ -2713,7 +2713,7 @@ sub list_solr_taxa
     }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        solr_core => "taxonomy_prod",
+        solr_core => "taxonomy_ci",
         row_start => 0,
         row_count => 100,
         group_option => "",
@@ -3105,7 +3105,7 @@ sub index_taxa_in_solr
     $params = $self->util_args($params,[],{
         taxa => {},
         create_report => 0,
-        solr_core => "taxonomy_prod" 
+        solr_core => "taxonomy_ci" 
     });
 
     my $msg = "";
@@ -3355,7 +3355,7 @@ sub load_genomes
         
         print "\nNow loading ".$ncbigenome->{id}." with loader url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         if ($ncbigenome->{source} eq "refseq" || $ncbigenome->{source} eq "") {
-            my $rastgenome;
+            my $genomeout;
             my $genutilout;
             my $gn_url = $ncbigenome->{ftp_dir}."/".$ncbigenome->{file}."_genomic.gbff.gz";
             my $asm_level = ($ncbigenome->{assembly_level}) ? $ncbigenome->{assembly_level} : "unknown"; 
@@ -3405,7 +3405,7 @@ sub load_genomes
                   domain => $ncbigenome->{domain}
                };
 
-               my $gn_solrCore = "GenomeFeatures_prod";
+               my $gn_solrCore = "GenomeFeatures_ci";
                if ($params->{index_in_solr} == 1) {
                     $self->index_genomes_in_solr({
                         solr_core => $gn_solrCore,             
@@ -3615,25 +3615,6 @@ sub rast_genomes
         index_in_solr => 0,
         create_report => 0,
         workspace_name => undef
-=begin
-        call_features_rRNA_SEED=>0,
-        call_features_tRNA_trnascan=>0,
-        call_selenoproteins=>0,
-        call_pyrrolysoproteins=>0,
-        call_features_repeat_region_SEED=>0,
-        call_features_insertion_sequences=>0,
-        call_features_strep_suis_repeat=>0,
-        call_features_strep_pneumo_repeat=>0,
-        call_features_crispr=>0,
-        call_features_CDS_glimmer3=>0,
-        call_features_CDS_prodigal=>0,
-        annotate_proteins_kmer_v2=>0,
-        kmer_v1_parameters=>0,
-        annotate_proteins_similarity=>1,
-        resolve_overlapping_features=>0,
-        find_close_neighbors=>'1',
-        call_features_prophage_phispy=>0
-=cut
     });
     my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
     my $ncbigenomes;
@@ -3669,7 +3650,7 @@ sub rast_genomes
         {
             $wsname = "ReferenceDataManager";    
         }
-        my $rdm_rast_ws = $wsname . "_RAST";
+        my $rdm_rast_ws = "ReferenceDataManager_RAST"; #$wsname . "_RAST";
         $self->util_ws_client()->create_workspace({workspace => $rdm_rast_ws});
         
         print "\nNow rasting ".$ncbigenome->{genome_id}." with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
@@ -3679,31 +3660,12 @@ sub rast_genomes
         my $genome_ref = $rdm_rast_ws . "/" . $genome_obj_name;
         my $rast_params={
              input_genome=>$genome_obj_name,
-             input_genome_workspace=>$wsname,
-=begin
-             call_features_rRNA_SEED=>0,
-             call_features_tRNA_trnascan=>0,
-             call_selenoproteins=>0,
-             call_pyrrolysoproteins=>0,
-             call_features_repeat_region_SEED=>0,
-             call_features_insertion_sequences=>0,
-             call_features_strep_suis_repeat=>0,
-             call_features_strep_pneumo_repeat=>0,
-             call_features_crispr=>0,
-             call_features_CDS_glimmer3=>0,
-             call_features_CDS_prodigal=>0,
-             annotate_proteins_kmer_v2=>0,
-             kmer_v1_parameters=>0,
-             annotate_proteins_similarity=>1,
-             resolve_overlapping_features=>0,
-             find_close_neighbors=>1,
-             call_features_prophage_phispy=>0,
-=cut
+             src_workspace=>$wsname,
              output_genome=>$genome_obj_name,
-             workspace=>$rdm_rast_ws
+             dest_workspace=>$rdm_rast_ws
         };
         eval {
-          $rast_ret = $rast_client->annotate_genome($rast_params);
+          $rast_ret = $raster->annotate_genome($rast_params);
           #$rastgenome = $self->util_ws_client()->get_objects([{ref=>$genome_ref}])->[0]->{data};
         };
         if ($@) {
@@ -3761,6 +3723,8 @@ sub rast_genomes
     }
     return($output);
 }
+
+
 
 
 =head2 update_loaded_genomes
@@ -3866,7 +3830,7 @@ sub update_loaded_genomes
     $output = [];
 
     my $count = 0;
-    my $gn_solr_core = "GenomeFeatures_prod";
+    my $gn_solr_core = "GenomeFeatures_ci";
     my $tx_solr_core = "taxonomy_ci";
     my $gn_source = "refseq";
     if($params->{phtozome} == 1) {
@@ -3877,10 +3841,10 @@ sub update_loaded_genomes
     }
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only => $params->{update_only}});
 
-    for (my $i=28659; $i < @{ $ref_genomes }; $i++) {
+    for (my $i=50000; $i < @{ $ref_genomes }; $i++) {#at 50000, the genome_id is:GCF_000705845 
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
-        
+=begin  
         #check if the genome is already present in the database by querying SOLR
         my $gn_status = $self->_checkGenomeStatus( $gnm, $gn_solr_core );
        
@@ -3898,8 +3862,17 @@ sub update_loaded_genomes
         }else{
                 print "Current version already in KBase"; #check for annotation update
         }
+=cut
+############skipping indexing starting from 50000, avoid SOLR just to load the genomes into workspace################
+        $count ++;
+        $self->load_genomes( {genomes => [$gnm], index_in_solr => 0} ); 
+        push(@{$output},$gnm);
+        if ($count < 10) {
+        $msg .= $gnm->{accession}.";".$gnm->{status}.";".$gnm->{name}.";".$gnm->{ftp_dir}.";".$gnm->{file}.";".$gnm->{id}.";".$gnm->{version}.";".$gnm->{source}.";".$gnm->{domain}."\n";
+        }
+############END skipping indexing starting from 50000################
+        
     }
-
     $msg .= "Updated ".@{$output}." genomes!";
     print $msg . "\n";
 
