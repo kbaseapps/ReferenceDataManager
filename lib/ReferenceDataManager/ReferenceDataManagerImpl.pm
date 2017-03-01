@@ -193,7 +193,7 @@ sub _listGenomesInSolr {
 #
 sub _listTaxaInSolr {
     my ($self, $solrCore, $fields, $rowStart, $rowCount, $grp) = @_;
-    $solrCore = ($solrCore) ? $solrCore : "taxonomy_ci";
+    $solrCore = ($solrCore) ? $solrCore : "taxonomy_prod";
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 10;
     $fields = ($fields) ? $fields : "*";
@@ -1359,7 +1359,7 @@ sub _list_ncbi_refgenomes
             $current_genome->{assembly_level} = $attribs[11];
 
             if( $update_only == 1 ) {
-                my $gn_solr_core = "GenomeFeatures_ci";
+                my $gn_solr_core = "GenomeFeatures_prod";
                 if( ($self->_checkGenomeStatus( $current_genome, $gn_solr_core ))=~/(new|updated)/i ) {
                     push(@{$output},$current_genome);
                 }
@@ -1904,7 +1904,7 @@ sub list_loaded_genomes
 =begin
 ##NOTE:The following line is needed only for the case if you want to index a large number (>100k) genome_features, 
 #because of the reality that there will be interruption of all sorts.
-                                    my $gn_solrCore = "GenomeFeatures_ci";
+                                    my $gn_solrCore = "GenomeFeatures_prod";
                                     if($self->_exists($gn_solrCore, {genome_id=>$curr_gn_info->{name}})==0) {
                                         print "Not in " . $gn_solrCore . ": " . $curr_gn_info->{id} . "--" . $curr_gn_info->{name} . "\n";
                                         #indexing in SOLR for every $batchCount of genomes
@@ -2324,7 +2324,7 @@ sub index_genomes_in_solr
     $params = $self->util_args($params,[],{
         genomes => {},
         create_report => 0,
-        solr_core => "GenomeFeatures_ci",
+        solr_core => "GenomeFeatures_prod",
         workspace_name => undef
     });
 
@@ -2582,7 +2582,7 @@ sub list_loaded_taxa
 	}
 
 	#indexing in SOLR for every $batchCount of taxa
-	#$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy_ci"});
+	#$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy_prod"});
 
         if(exists($params->{batch}) && scalar(@$output) >= $params->{batch}){
             last;
@@ -2713,7 +2713,7 @@ sub list_solr_taxa
     }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        solr_core => "taxonomy_ci",
+        solr_core => "taxonomy_prod",
         row_start => 0,
         row_count => 100,
         group_option => "",
@@ -3105,7 +3105,7 @@ sub index_taxa_in_solr
     $params = $self->util_args($params,[],{
         taxa => {},
         create_report => 0,
-        solr_core => "taxonomy_ci" 
+        solr_core => "taxonomy_prod" 
     });
 
     my $msg = "";
@@ -3405,7 +3405,7 @@ sub load_genomes
                   domain => $ncbigenome->{domain}
                };
 
-               my $gn_solrCore = "GenomeFeatures_ci";
+               my $gn_solrCore = "GenomeFeatures_prod";
                if ($params->{index_in_solr} == 1) {
                     $self->index_genomes_in_solr({
                         solr_core => $gn_solrCore,             
@@ -3827,8 +3827,8 @@ sub update_loaded_genomes
     $output = [];
 
     my $count = 0;
-    my $gn_solr_core = "GenomeFeatures_ci";
-    my $tx_solr_core = "taxonomy_ci";
+    my $gn_solr_core = "GenomeFeatures_prod";
+    my $tx_solr_core = "taxonomy_prod";
     my $gn_source = "refseq";
     if($params->{phtozome} == 1) {
         $gn_source = "Phytozome";
@@ -3838,7 +3838,7 @@ sub update_loaded_genomes
     }
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only => $params->{update_only}});
 
-    for (my $i=50000; $i < @{ $ref_genomes }; $i++) {#at 50000, the genome_id is:GCF_000705845 
+    for (my $i=50003; $i < @{ $ref_genomes }; $i++) {#at 50000, the genome_id is:GCF_000705845 
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
 =begin  

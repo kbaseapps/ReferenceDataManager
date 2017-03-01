@@ -314,23 +314,6 @@ module ReferenceDataManager {
         bool index_in_solr;
         string workspace_name;
         bool create_report;
-        bool call_features_rRNA_SEED;
-        bool call_features_tRNA_trnascan;
-        bool call_selenoproteins;
-        bool call_pyrrolysoproteins;
-        bool call_features_repeat_region_SEED;
-        bool call_features_insertion_sequences;
-        bool call_features_strep_suis_repeat;
-        bool call_features_strep_pneumo_repeat;
-        bool call_features_crispr;
-        bool call_features_CDS_glimmer3;
-        bool call_features_CDS_prodigal;
-        bool annotate_proteins_kmer_v2;
-        bool kmer_v1_parameters;
-        bool annotate_proteins_similarity;
-        bool resolve_overlapping_features;
-        bool find_close_neighbors;
-        bool call_features_prophage_phispy;
     } RASTGenomesParams;
     
     /*
