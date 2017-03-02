@@ -3328,7 +3328,7 @@ sub load_genomes
         $ncbigenomes = $params->{genomes};
     }
 
-    for (my $i=50000; $i < @{$ncbigenomes}; $i++) {
+    for (my $i=0; $i < @{$ncbigenomes}; $i++) {
         my $ncbigenome = $ncbigenomes->[$i];
         print "\n******************Genome#: $i ********************";
         my $wsname = "";
@@ -3902,7 +3902,7 @@ sub update_loaded_genomes
         refseq => 1,
         phytozome => 0,
         ensembl => 0, 
-        update_only => 1,
+        update_only => 0,
         create_report => 0,
         workspace_name => undef
     });
