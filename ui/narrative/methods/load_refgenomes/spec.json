@@ -47,11 +47,11 @@
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
-    "default_values":["0"],
-    "field_type" : "int",
-    "text_options" : {
-      "valid_as" : "int"
-    }
+    "default_values":[""],
+    "field_type" : "text",
+       "text_options" : {
+           "validate_as": "int"
+       }
   }],
   "job_id_output_field": "docker",
   "behavior" : {
