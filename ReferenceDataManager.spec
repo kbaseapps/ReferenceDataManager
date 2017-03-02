@@ -311,6 +311,7 @@ module ReferenceDataManager {
         bool ensembl;
         bool refseq;
         bool phytozome;
+        int start;
         string workspace_name;
         bool create_report;
     } LoadRefGenomesParams;
