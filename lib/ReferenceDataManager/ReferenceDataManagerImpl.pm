@@ -1193,7 +1193,10 @@ sub _indexGenomeFeatureData
         my $ws_ref = {"ref" => $ws_gn->{ref}};
         my $gn_id = $ws_gn->{name};
         #check if the genome is already present in the database by querying SOLR
-        if($self->_exists($gn_solr_core, {genome_id=>$gn_id})==0) {
+        if($self->_exists($gn_solr_core, {genome_id=>$gn_id})==1) {
+            print $gn_id . " has already been indexed in solr " . $gn_solr_core;
+        }
+        else {
             print "Not in " . $gn_solr_core . ": " . $gn_id . "\n";
             $count ++;
             print "\nStart to fetch the object(s) for " . $gn_id .  " on " . scalar localtime . "\n";
