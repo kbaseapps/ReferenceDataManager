@@ -54,6 +54,14 @@ parameters :
             Load into KBase Ensembl genomes
         long-hint  : |
             Load into KBase Ensembl genomes
+    
+    start :
+        ui-name : |
+            Start at
+        short-hint : |
+            Starting count of the genomes to load
+        long-hint  : |
+            Starting count of the genomes to load
 
 description : |
     <p>Load genomes from source databases</p>
