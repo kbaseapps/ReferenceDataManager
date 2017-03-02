@@ -837,7 +837,7 @@ sub _exists
         eval {
             $xmlRef = $xs->XMLin($response->{response});
         };
-        print "\n$url result:\n" . Dumper($xmlRef->{result}) . "\n";
+        #print "\n$url result:\n" . Dumper($xmlRef->{result}) . "\n";
         if ($xmlRef->{lst}->{'int'}->{status}->{content} eq 0){
             if ($xmlRef->{result}->{numFound} gt 0) {
             return 1;
@@ -1023,6 +1023,150 @@ sub _getGenomeInfo
 }
 
 #
+# Internal method 
+# Build the genome solr object for the sake of the search UI/search service
+#
+sub _buildSolrGenome
+{
+    my ($self, $ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date) = @_;
+
+    my $ws_gnobj = {
+        object_id => "kb|ws_ref:" . $ws_ref->{ref},
+        object_name => "kb|g." . $ws_gn_data->{id}, 
+        object_type => $ws_gn_info->[2], 
+        ws_ref => $ws_ref->{ref},
+        genome_id => $ws_gn_data->{id},
+        genome_source_id => $ws_gn_info->[10]->{"Source ID"},
+        genome_source => $ws_gn_data->{source},
+        genetic_code => $ws_gn_data->{genetic_code},
+        domain => $ws_gn_data->{domain},
+        scientific_name => $ws_gn_data->{scientific_name},
+        genome_dna_size => $ws_gn_info->[10]->{Size},
+        num_contigs => $ws_gn_info->[10]->{"Number contigs"},#$ws_gn_data->{num_contigs},
+        assembly_ref => $ws_gn_data->{assembly_ref},
+        gc_content => $ws_gn_info->[10]->{"GC content"},
+        complete => $ws_gn_asmlevel,
+        taxonomy => $ws_gn_tax,
+        taxonomy_ref => $ws_gn_data->{taxon_ref},
+        workspace_name => $ws_gn_info->[7],
+        num_cds => $numCDs,
+        #gnmd5checksum => $ws_gn_info->[8],
+        save_date => $ws_gn_save_date            
+   };
+   return $ws_gnobj;
+}
+
+#
+# Internal method 
+# Build the genome_feature solr object
+#
+sub _buildSolrGenomeFeature
+{
+    my ($self, $ws_gn_feature, $ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date) = @_;
+
+    my $ws_gn_aliases;
+    my $ws_gn_nm;
+    my $loc_contig;
+    my $loc_begin;
+    my $loc_end;
+    my $loc_strand;
+    my $ws_gn_loc;
+    my $ws_gn_onterms ={};
+    my $ws_gn_roles;
+    my $ws_gn_funcs;
+    
+    if( defined($ws_gn_feature->{aliases})) {
+        $ws_gn_nm = $ws_gn_feature->{aliases}[0] unless $ws_gn_feature->{aliases}[0]=~/^(NP_|WP_|YP_|GI|GeneID)/i;
+        $ws_gn_aliases = join(";", @{$ws_gn_feature->{aliases}});
+        $ws_gn_aliases =~s/ *; */;;/g;
+    }
+    else {
+        $ws_gn_nm = undef;
+        $ws_gn_aliases = undef;
+    }
+        
+    $ws_gn_funcs = $ws_gn_feature->{function};
+    $ws_gn_funcs = join(";;", split(/\s*;\s+|\s+[\@\/]\s+/, $ws_gn_funcs));
+        
+    if( defined($ws_gn_feature->{roles}) ) {
+        $ws_gn_roles = join(";;", $ws_gn_feature->{roles});
+    }
+    else {
+        $ws_gn_roles = undef;
+    }
+    
+    $loc_contig = "";
+    $loc_begin = 0;
+    $loc_end = "";
+    $loc_strand = "";
+    $ws_gn_loc = $ws_gn_feature->{location};
+        
+    my $end = 0;
+    foreach my $contig_loc (@{$ws_gn_loc}) {
+        $loc_contig = $loc_contig . ";;" unless $loc_contig eq "";
+        $loc_contig = $loc_contig . $contig_loc->[0];
+        
+        $loc_begin = $loc_begin . ";;" unless $loc_begin eq "";
+        $loc_begin = $loc_begin . $contig_loc->[1];
+        
+        if( $contig_loc->[2] eq "+") {
+            $end = $contig_loc->[1] + $contig_loc->[3];
+        }
+        else {
+            $end = $contig_loc->[1] - $contig_loc->[3];
+        }
+        $loc_end = $loc_end . ";;" unless $loc_end eq "";
+        $loc_end = $loc_end . $end;
+        
+        $loc_strand = $loc_strand . ";;" unless $loc_strand eq "";
+        $loc_strand = $loc_strand . $contig_loc->[2];
+    }
+    
+    $ws_gn_onterms = $ws_gn_feature->{ontology_terms};
+    
+    my $ws_gnft = {
+            #genome data (redundant)
+                genome_source_id => $ws_gn_info->[10]->{"Source ID"},
+                genome_id => $ws_gn_data->{id},
+                ws_ref => $ws_ref->{ref},
+                genome_source => $ws_gn_data->{source},
+                genetic_code => $ws_gn_data->{genetic_code},
+                domain => $ws_gn_data->{domain},
+                scientific_name => $ws_gn_data->{scientific_name},
+                genome_dna_size => $ws_gn_info->[10]->{Size},
+                num_contigs => $ws_gn_info->[10]->{"Number contigs"},#$ws_gn_data->{num_contigs},
+                assembly_ref => $ws_gn_data->{assembly_ref},
+                gc_content => $ws_gn_info->[10]->{"GC content"},
+                complete => $ws_gn_asmlevel,
+                taxonomy => $ws_gn_tax,
+                taxonomy_ref => $ws_gn_data->{taxon_ref},
+                workspace_name => $ws_gn_info->[7],
+                num_cds => $numCDs,
+                save_date => $ws_gn_save_date,
+            #feature data
+                genome_feature_id => $ws_gn_data->{id} . "|feature:" . $ws_gn_feature->{id},
+                object_id => "kb|ws_ref:". $ws_ref->{ref}. "|feature:" . $ws_gn_feature->{id},
+                object_name => $ws_gn_info->[1] . "|feature:" . $ws_gn_feature->{id},
+                object_type => $ws_gn_info->[2] . ".Feature",
+                feature_type => $ws_gn_feature->{type},
+                feature_id => $ws_gn_feature->{id},
+                functions => $ws_gn_funcs,
+                roles => $ws_gn_roles,
+                md5 => $ws_gn_feature->{md5},
+                gene_name => $ws_gn_nm,
+                protein_translation_length => ($ws_gn_feature->{protein_translation_length}) != "" ? $ws_gn_feature->{protein_translation_length} : 0,
+                dna_sequence_length => ($ws_gn_feature->{dna_sequence_length}) != "" ? $ws_gn_feature->{dna_sequence_length} : 0,
+                aliases => $ws_gn_aliases,
+                location_contig => $loc_contig,
+                location_strand => $loc_strand,
+                location_begin => $loc_begin,
+                location_end => $loc_end,
+                ontology_namespaces => $ws_gn_feature->{ontology_terms}
+    };
+    return $ws_gnft;
+}
+
+#
 #Internal method, to fetch genome records for a given set of ws_ref's and index the genome_feature combo in SOLR.
 #First call get_objects2() to get the genome object one at a time.
 #Then plow through the genome object data to assemble the data items for a Solr genome_feature object.
@@ -1033,217 +1177,107 @@ sub _getGenomeInfo
 sub _indexGenomeFeatureData 
 {
     my ($self, $solrCore, $ws_gnData) = @_;
-    my $ws_gnrefs = [];
-
-    foreach my $ws_gn (@{$ws_gnData}) {
-        push @{$ws_gnrefs}, {
-            "ref" => $ws_gn->{ref}
-        };
-    }
-
+    
     my $ws_gnout;
     my $solr_gnftData = [];
     my $gnft_batch = [];
     my $batchCount = 10000;
-    #foreach my $ws_ref (@{$ws_gnrefs}) { 
-    for( my $gf_i = 0; $gf_i < @{$ws_gnrefs}; $gf_i++ ) {
-        my $ws_ref = $ws_gnrefs->[$gf_i];
-        print "\nStart to fetch the object(s) for "  . $gf_i . ". " . $ws_ref->{ref} .  " on " . scalar localtime . "\n";
-        eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
+    my $gn_solr_core = "GenomeFeatures_prod";
+    my $count = 0;
+
+    if (! $self->_ping()) {
+        die "\nError--Solr server not responding:\n" . $self->_error->{response};
+    }
+
+    foreach my $ws_gn (@{$ws_gnData}) { 
+        my $ws_ref = {"ref" => $ws_gn->{ref}};
+        my $gn_id = $ws_gn->{name};
+        #check if the genome is already present in the database by querying SOLR
+        if($self->_exists($gn_solr_core, {genome_id=>$gn_id})==0) {
+            print "Not in " . $gn_solr_core . ": " . $gn_id . "\n";
+            $count ++;
+            print "\nStart to fetch the object(s) for " . $gn_id .  " on " . scalar localtime . "\n";
+            eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
                         objects => [$ws_ref]
-                }); 
-        };
-        if($@) {
+                    });
+            };
+            if($@) {
                 print "Cannot get object information!\n";
                 print "ERROR:".$@;
                 if(defined($@->{status_line})) {
                     print $@->{status_line}."\n";
                 }
-        }
-        else {
-            $ws_gnout = $ws_gnout->{data};#a reference to a list where each element is a Workspace.ObjectData
-            print "Done getting genome object info for " . $ws_ref->{ref} . " on " . scalar localtime . "\n";
-            my $ws_gn_data;#to hold a value which is a Workspace.objectData
-            my $ws_gn_info;#to hold a value which is a Workspace.object_info
-            my $ws_gn_onterms ={};
-            my $ws_gn_features = {};
-            my $ws_gn_tax;
-            my $ws_gn_aliases;
-            my $ws_gn_nm;
-            my $loc_contig;
-            my $loc_begin;
-            my $loc_end;
-            my $loc_strand;
-            my $ws_gn_loc;
-            my $ws_gn_save_date;
-            my $numCDs = 0;
-            my $ws_gn_asmlevel;
+            }
+            else {
+                print "Done getting genome object info for " . $gn_id . " on " . scalar localtime . "\n";
+                $ws_gnout = $ws_gnout->{data};#a reference to a list where each element is a Workspace.ObjectData
+                my $ws_gn_data;#to hold a value which is a Workspace.objectData
+                my $ws_gn_info;#to hold a value which is a Workspace.object_info
+                my $ws_gn_features = {};
+                my $ws_gn_tax;
+                my $ws_gn_save_date;
+                my $numCDs = 0;
+                my $ws_gn_asmlevel;
 
-            #fetch individual data item to assemble the genome_feature info for $solr_gnftData
-            for (my $i=0; $i < @{$ws_gnout}; $i++) {
-                $ws_gn_data = $ws_gnout -> [$i] -> {data};#an UnspecifiedObject
-                $ws_gn_info = $ws_gnout -> [$i] -> {info};#is a reference to a list containing 11 items
-                $ws_gn_features = $ws_gn_data->{features};
-                $ws_gn_tax = $ws_gn_data->{taxonomy};
-                $ws_gn_tax =~s/ *; */;;/g;
-                $ws_gn_save_date = $ws_gn_info -> [3];
-                $ws_gn_asmlevel = ($ws_gn_info->[10]->{assembly_level}=~/Complete Genome/i);
-                $numCDs  = 0;
-                foreach my $feature (@{$ws_gn_features}) {
-                    $numCDs++ if $feature->{type} = 'CDS';
-                }
+                #fetch individual data item to assemble the genome_feature info for $solr_gnftData
+                for (my $i=0; $i < @{$ws_gnout}; $i++) {
+                    $ws_gn_data = $ws_gnout -> [$i] -> {data};#an UnspecifiedObject
+                    $ws_gn_info = $ws_gnout -> [$i] -> {info};#is a reference to a list containing 11 items
+                    $ws_gn_features = $ws_gn_data->{features};
+                    $ws_gn_tax = $ws_gn_data->{taxonomy};
+                    $ws_gn_tax =~s/ *; */;;/g;
+                    $ws_gn_save_date = $ws_gn_info -> [3];
+                    $ws_gn_asmlevel = ($ws_gn_info->[10]->{assembly_level}=~/Complete Genome/i);
+                            
+                    $numCDs  = 0;
+                    foreach my $feature (@{$ws_gn_features}) {
+                        $numCDs++ if $feature->{type} = 'CDS';
+                    }
 
-                ###1)---Build the genome solr object for the sake of the search UI/search service
-                my $ws_gnobj = {
-                          object_id => "kb|ws_ref:" . $ws_ref->{ref},
-                          object_name => "kb|g." . $ws_gn_data->{id}, ########
-                          object_type => $ws_gn_info->[2], ########refseq_category => $ws_gn_data->{type},
-                          ws_ref => $ws_ref->{ref},
-                          genome_id => $ws_gn_data->{id},
-                          genome_source_id => $ws_gn_info->[10]->{"Source ID"},
-                          genome_source => $ws_gn_data->{source},
-                          genetic_code => $ws_gn_data->{genetic_code},
-                          domain => $ws_gn_data->{domain},
-                          scientific_name => $ws_gn_data->{scientific_name},
-                          genome_dna_size => $ws_gn_info->[10]->{Size},
-                          num_contigs => $ws_gn_info->[10]->{"Number contigs"},#$ws_gn_data->{num_contigs},
-                          assembly_ref => $ws_gn_data->{assembly_ref},
-                          gc_content => $ws_gn_info->[10]->{"GC content"},
-                          complete => $ws_gn_asmlevel,
-                          taxonomy => $ws_gn_tax,
-                          taxonomy_ref => $ws_gn_data->{taxon_ref},
-                          workspace_name => $ws_gn_info->[7],
-                          num_cds => $numCDs,
-                          #gnmd5checksum => $ws_gn_info->[8],
-                          save_date => $ws_gn_save_date,            
-                };  
-                push @{$solr_gnftData}, $ws_gnobj;
-                push @{$gnft_batch}, $ws_gnobj;
-                ###---end Build the genome solr object---
+                    ###1)---Build the genome solr object for the sake of the search UI/search service
+                    my $ws_gnobj = $self->_buildSolrGenome($ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
+                    push @{$solr_gnftData}, $ws_gnobj;
+                    push @{$gnft_batch}, $ws_gnobj;
                 
-                ###2)---Build the genome_feature solr object
-                for (my $ii=0; $ii < @{$ws_gn_features}; $ii++) {
-                    if( defined($ws_gn_features->[$ii]->{aliases})) {
-                        $ws_gn_nm = $ws_gn_features->[$ii]->{aliases}[0] unless $ws_gn_features->[$ii]->{aliases}[0]=~/^(NP_|WP_|YP_|GI|GeneID)/i;
-                        $ws_gn_aliases = join(";", @{$ws_gn_features->[$ii]->{aliases}});
-                        $ws_gn_aliases =~s/ *; */;;/g;
-                    }
-                    else {
-                        $ws_gn_nm = undef;
-                        $ws_gn_aliases = undef;
-                    }
-
-                    my $ws_gn_funcs = $ws_gn_features->[$ii]->{function};
-                    $ws_gn_funcs = join(";;", split(/\s*;\s+|\s+[\@\/]\s+/, $ws_gn_funcs));
-
-                    my $ws_gn_roles;
-                    if( defined($ws_gn_features->[$ii]->{roles}) ) {
-                        $ws_gn_roles = join(";;", $ws_gn_features->[$ii]->{roles});
-                    }
-                    else {
-                        $ws_gn_roles = undef;
-                    }
-                    $loc_contig = "";
-                    $loc_begin = 0;
-                    $loc_end = "";
-                    $loc_strand = "";
-                    $ws_gn_loc = $ws_gn_features->[$ii]->{location};
-
-                    my $end = 0;
-                    foreach my $contig_loc (@{$ws_gn_loc}) {
-                        $loc_contig = $loc_contig . ";;" unless $loc_contig eq "";
-                        $loc_contig = $loc_contig . $contig_loc->[0];
-
-                        $loc_begin = $loc_begin . ";;" unless $loc_begin eq "";
-                        $loc_begin = $loc_begin . $contig_loc->[1];
-
-                        if( $contig_loc->[2] eq "+") {
-                            $end = $contig_loc->[1] + $contig_loc->[3];
+                    ###2)---Build the genome_feature solr object
+                    for (my $ii=0; $ii < @{$ws_gn_features}; $ii++) {
+                        my $ws_gnft = $self->_buildSolrGenomeFeature($ws_gn_features->[$ii], $ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
+                        push @{$solr_gnftData}, $ws_gnft;
+                        push @{$gnft_batch}, $ws_gnft;
+                        
+                        if(@{$gnft_batch} >= $batchCount) {
+                            eval {
+                                $self->_indexInSolr($solrCore, $gnft_batch);
+                            };
+                            if($@) {
+                                print "Failed to index the genome_feature(s)!\n";
+                                print "ERROR:". Dumper( $@ );
+                                if(defined($@->{status_line})) {
+                                    print $@->{status_line}."\n";
+                                }
+                            }
+                            else {
+                                print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
+                            }
+                            $gnft_batch = [];
                         }
-                        else {
-                            $end = $contig_loc->[1] - $contig_loc->[3];
-                        }
-                        $loc_end = $loc_end . ";;" unless $loc_end eq "";
-                        $loc_end = $loc_end . $end;
-
-                        $loc_strand = $loc_strand . ";;" unless $loc_strand eq "";
-                        $loc_strand = $loc_strand . $contig_loc->[2];
                     }
-
-                    $ws_gn_onterms = $ws_gn_features->[$ii]->{ontology_terms};
-
-                    my $ws_gnft = {
-                          #genome data (redundant)
-                          genome_source_id => $ws_gn_info->[10]->{"Source ID"},
-                          genome_id => $ws_gn_data->{id},
-                          ws_ref => $ws_ref->{ref},
-                          genome_source => $ws_gn_data->{source},
-                          genetic_code => $ws_gn_data->{genetic_code},
-                          domain => $ws_gn_data->{domain},
-                          scientific_name => $ws_gn_data->{scientific_name},
-                          genome_dna_size => $ws_gn_info->[10]->{Size},
-                          num_contigs => $ws_gn_info->[10]->{"Number contigs"},#$ws_gn_data->{num_contigs},
-                          assembly_ref => $ws_gn_data->{assembly_ref},
-                          gc_content => $ws_gn_info->[10]->{"GC content"},
-                          complete => $ws_gn_asmlevel,
-                          taxonomy => $ws_gn_tax,
-                          taxonomy_ref => $ws_gn_data->{taxon_ref},
-                          workspace_name => $ws_gn_info->[7],
-                          num_cds => $numCDs,
-                          save_date => $ws_gn_save_date,
-                          #feature data
-                          genome_feature_id => $ws_gn_data->{id} . "|feature:" . $ws_gn_features->[$ii]->{id},
-                          object_id => "kb|ws_ref:". $ws_ref->{ref}. "|feature:" . $ws_gn_features->[$ii]->{id},
-                          object_name => $ws_gn_info->[1] . "|feature:" . $ws_gn_features->[$ii]->{id},
-                          object_type => $ws_gn_info->[2] . ".Feature",
-                          feature_type => $ws_gn_features->[$ii]->{type},
-                          feature_id => $ws_gn_features->[$ii]->{id},
-                          functions => $ws_gn_funcs,
-                          roles => $ws_gn_roles,
-                          md5 => $ws_gn_features->[$ii]->{md5},
-                          gene_name => $ws_gn_nm,
-                          protein_translation_length => ($ws_gn_features->[$ii]->{protein_translation_length}) != "" ? $ws_gn_features->[$ii]->{protein_translation_length} : 0,
-                          dna_sequence_length => ($ws_gn_features->[$ii]->{dna_sequence_length}) != "" ? $ws_gn_features->[$ii]->{dna_sequence_length} : 0,
-                          aliases => $ws_gn_aliases,
-                          location_contig => $loc_contig,
-                          location_strand => $loc_strand,
-                          location_begin => $loc_begin,
-                          location_end => $loc_end,
-                          ontology_namespaces => $ws_gn_features->[$ii]->{ontology_terms}
-                    };
-                    push @{$solr_gnftData}, $ws_gnft;
-                    push @{$gnft_batch}, $ws_gnft;
-                    if(@{$gnft_batch} >= $batchCount) {
+                    #after looping through all features, index the leftover set of genomeFeature objects
+                    if(@{$gnft_batch} > 0) {
                         eval {
-                              $self->_indexInSolr($solrCore, $gnft_batch);
+                            $self->_indexInSolr($solrCore, $gnft_batch);
                         };
                         if($@) {
-                              print "Failed to index the genome_feature(s)!\n";
-                              print "ERROR:". Dumper( $@ );
-                              if(defined($@->{status_line})) {
-                                  print $@->{status_line}."\n";
-                              }
+                            print "Failed to index the genome_feature(s)!\n";
+                            print "ERROR:". Dumper( $@ );
+                            if(defined($@->{status_line})) {
+                                print $@->{status_line}."\n";
+                            }
                         }
                         else {
-                              print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
-                              $gnft_batch = [];
+                            print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
                         }
-                    }
-                }
-                if(@{$gnft_batch} > 0) {
-                    eval {
-                        $self->_indexInSolr($solrCore, $gnft_batch);
-                    };
-                    if($@) {
-                        print "Failed to index the genome_feature(s)!\n";
-                        print "ERROR:". Dumper( $@ );
-                        if(defined($@->{status_line})) {
-                            print $@->{status_line}."\n";
-                        }
-                    }
-                    else {
-                        print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
                         $gnft_batch = [];
                     }
                 }
@@ -2322,15 +2356,21 @@ sub index_genomes_in_solr
     }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        genomes => {},
+        genomes => undef,
         create_report => 0,
         solr_core => "GenomeFeatures_prod",
         workspace_name => undef
     });
 
     my $msg = "";
-    
-    my $genomes = $params->{genomes};
+    my $genomes;
+
+    if (!defined($params->{genomes})) {
+        $genomes = $self->list_loaded_genomes({refseq => 1});
+    } else {
+        $genomes = $params->{genomes};
+    }
+
     my $solrCore = $params->{solr_core};
     print "\nTotal genomes to be indexed: ". @{$genomes} . "\n";
 
@@ -3399,7 +3439,7 @@ sub load_genomes
                   workspace_name => $wsname,
                   source_id => $ncbigenome->{id},
                   accession => $ncbigenome->{accession},
-                  name => $ncbigenome->{asm_name},
+                  name => $ncbigenome->{id},#{asm_name},
                   version => $ncbigenome->{version},
                   source => $ncbigenome->{source},
                   domain => $ncbigenome->{domain}

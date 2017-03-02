@@ -34,7 +34,7 @@ eval {
     #$impl->{_workspace_map}->{refseq} = "RefSeq_Genomes";
     #$impl->{_workspace_map}->{refseq} = "KBasePublicRichGenomesV5";
 
-#=begin
+=begin
     #Testing update_loaded_genomes function
     my $wsgnmret;
     eval {
@@ -51,7 +51,7 @@ eval {
         print Data::Dumper->Dump([$wsgnmret->[0]])."\n";
     }
     ok(defined($wsgnmret->[0]),"update_loaded_genomes command returned at least one record");
-#=cut
+=cut
     
 =begin passed tests
 
@@ -92,7 +92,7 @@ eval {
     my $stret;
     eval {
         $stret = $impl->list_solr_taxa({
-            solr_core => "taxonomy_ci",
+            solr_core => "taxonomy_test",#"taxonomy_ci",
             group_option => "taxonomy_id"
         });
     };
@@ -112,8 +112,8 @@ eval {
     my $refret;
     eval {
         $refret = $impl->list_reference_genomes({
-            source => "refseq",
-            domain => "bacteria",#"bacteria,archaea,plant,fungi",
+            refseq => 1,
+            gn_domain => "bacteria",#"bacteria,archaea,plant,fungi",
             update_only => 0 
         });
     };
@@ -187,6 +187,30 @@ eval {
 #=end of "list and load NCBI genomes
 =cut
 
+=begin test load_refgenomes
+    #Testing load_refgenomes function
+    my $rret;
+    eval {
+        $rret = $impl->load_refgenomes({
+                refseq=>1,
+                start=>100
+        });
+    };
+    ok(!$@,"load_refgenomes command successful");
+    if ($@) {
+        print "ERROR:".$@;
+        my $err = $@;
+        print "Error type: " . ref($err) . "\n";
+        print "Error message: " . $err->{message} . "\n";
+        print "Error error: " . $err->{error} . "\n";
+        print "Error data: " .$err->{data} . "\n";
+    } else {
+        print "Loaded " . scalar @{$rret} . " genomes:\n";
+        print Data::Dumper->Dump([$rret->[@{$rret}-1]])."\n";
+    }
+    ok(defined($rret->[0]),"load_refgenomes command returned at least one genome");
+=cut
+
 =begin test delete solr documents
     #Delete docs or wipe out the whole $delcore's content----USE CAUTION!
     my $delcore = "QZtest";
@@ -204,8 +228,8 @@ eval {
     my $wsret;
     eval {
         $wsret = $impl->list_loaded_genomes({
-            refseq => 0,
-	    phytozome => 1,
+            refseq => 1,
+	    phytozome => 0,
 	    ensembl => 0	
 	});
     };
@@ -221,28 +245,29 @@ eval {
     ok(defined($wsret->[0]),"list_loaded_genomes command returned at least one genome");
 =cut
 
-=begin testing index_genomes_in_solr
+#=begin testing index_genomes_in_solr
     #Testing index_genomes_in_solr
-    my $slrcore = "QZtest";#"genomes";#"GenomeFeatures_prod";
+    my $slrcore = "GenomeFeatures_prod";
     my $ret;
     eval {
         $ret = $impl->index_genomes_in_solr({
-             genomes => $wsret,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
+                #genomes => $wsret,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
              solr_core => $slrcore
         });
     };
     ok(!$@,"index_genomes_in_solr command successful");
     if ($@) {
-		my $err = $@;
-		print "Error type: " . ref($err) . "\n";
-		print "Error message: " . $err->{message} . "\n";
-		print "Error error: " . $err->{error} . "\n";
-		print "Error data: " .$err->{data} . "\n";
+        print "ERROR:".$@;
+        #my $err = $@;
+        #print "Error type: " . ref($err) . "\n";
+        #print "Error message: " . $err->{message} . "\n";
+        #print "Error error: " . $err->{error} . "\n";
+        #print "Error data: " .$err->{data} . "\n";
     } else {
         print "Number of records:".@{$ret}."\n";
         print "First record:\n";
         print Data::Dumper->Dump([$ret->[0]])."\n";
-    }
+   }
     ok(defined($ret->[0]),"\nindex_genomes_in_solr command returned at least one genome");
 #=end of test indexing genome features    
 =cut
@@ -300,7 +325,6 @@ eval {
     #Test _exists() function
     my $exist_ret;
     #my $crit = 'parent_taxon_ref:"1779/116411/1",rank:"species",scientific_lineage:"cellular organisms; Bacteria; Proteobacteria; Alphaproteobacteria; Rhizobiales; Bradyrhizobiaceae; Bradyrhizobium",scientific_name:"Bradyrhizobium sp. rp3", domain:"Bacteria"';
-
     my $searchCriteria = {
         parent_taxon_ref => '1779/116411/1',
         rank => 'species',
@@ -309,7 +333,7 @@ eval {
         domain => 'Bacteria'
     };
     eval {
-        $exist_ret = $impl->_exists("taxonomy_ci", $searchCriteria);
+        $exist_ret = $impl->_exists("GenomeFeatures_ci", $searchCriteria);
     };
     ok(!$@, "_exists() command successful");
     if ($@) { 
