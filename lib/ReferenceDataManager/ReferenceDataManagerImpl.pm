@@ -1190,7 +1190,7 @@ sub _indexGenomeFeatureData
     }
 
     #foreach my $ws_gn (@{$ws_gnData}) { 
-    for( my $gf_i = 22000; $gf_i < @{$ws_gnData}; $gf_i++ ) {
+    for( my $gf_i = 36000; $gf_i < @{$ws_gnData}; $gf_i++ ) {
         my $ws_gn = $ws_gnData->[$gf_i]; 
         my $ws_ref = {"ref" => $ws_gn->{ref}};
         my $gn_id = $ws_gn->{name};
@@ -1259,7 +1259,7 @@ sub _indexGenomeFeatureData
                             if($@) {
                                 print "Failed to index the genome_feature(s)!\n";
                                 print "ERROR:". Dumper( $@ );
-                                if(defined($@->{status_line})) {
+                                if(ref($@) eq 'HASH' && defined($@->{status_line})) {
                                     print $@->{status_line}."\n";
                                 }
                             }
@@ -1277,7 +1277,7 @@ sub _indexGenomeFeatureData
                         if($@) {
                             print "Failed to index the genome_feature(s)!\n";
                             print "ERROR:". Dumper( $@ );
-                            if(defined($@->{status_line})) {
+                            if(ref($@) eq 'HASH' && defined($@->{status_line})) {
                                 print $@->{status_line}."\n";
                             }
                         }
@@ -1919,12 +1919,12 @@ sub list_loaded_genomes
                  if($@) {
                         print "Cannot list objects!\n";
                         print "ERROR:" . $@;#->{message}."\n";
-                        if(defined($@->{status_line})) {
+                        if(ref($@) eq 'HASH' && defined($@->{status_line})) {
                             print "ERROR:" . $@->{status_line}."\n";
                         }
                  }
                  else {
-                    print "\nGenome object count=" . @{$wsoutput}. "\n";
+                    #print "Genome object count=" . @{$wsoutput}. "\n";
                     my $ws_objinfo;
                     my $obj_src;
                     my $curr_gn_info;
@@ -2167,7 +2167,7 @@ sub list_solr_genomes
     if($@) {
         print "Cannot list genomes in SOLR information!\n";
         print "ERROR:".$@;
-        if(defined($@->{status_line})) {
+        if(ref($@) eq 'HASH' && defined($@->{status_line})) {
             print $@->{status_line}."\n";
         }
     }
@@ -2780,7 +2780,7 @@ sub list_solr_taxa
     if($@) {
         print "Cannot list taxa in SOLR information!\n";
         print "ERROR:".$@;
-        if(defined($@->{status_line})) {
+        if(ref($@) eq 'HASH' && defined($@->{status_line})) {
             print $@->{status_line}."\n";
         }
     }
@@ -3175,7 +3175,7 @@ sub index_taxa_in_solr
             if($@) {
                 print "Failed to index the taxa!\n";
                 print "ERROR:". Dumper( $@ );
-                if(defined($@->{status_line})) {
+                if(ref($@) eq 'HASH' && defined($@->{status_line})) {
                     print $@->{status_line}."\n";
                 }
             }
@@ -3198,7 +3198,7 @@ sub index_taxa_in_solr
             if($@) {
                 print "Failed to index the taxa!\n";
                 print "ERROR:".$@;
-                if(defined($@->{status_line})) {
+                if(ref($@) eq 'HASH' && defined($@->{status_line})) {
                     print $@->{status_line}."\n";
                 }
             }
