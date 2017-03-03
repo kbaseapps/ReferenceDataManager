@@ -3612,7 +3612,7 @@ sub load_refgenomes
     $output = [];
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only=>0});
     @{$ref_genomes} = @{$ref_genomes}[$params->{start}..@{$ref_genomes}-1];
-    $output = $self->load_genomes( {genomes =>$ref_genomes, index_in_solr=>$params-{index_in_solr}} ); 
+    $output = $self->load_genomes( {genomes =>$ref_genomes, index_in_solr=>$params->{index_in_solr}} ); 
     #END load_refgenomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");

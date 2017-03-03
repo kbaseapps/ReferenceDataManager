@@ -187,13 +187,14 @@ eval {
 #=end of "list and load NCBI genomes
 =cut
 
-=begin test load_refgenomes
+#=begin test load_refgenomes
     #Testing load_refgenomes function
     my $rret;
     eval {
         $rret = $impl->load_refgenomes({
                 refseq=>1,
-                start=>100
+                index_in_solr=>0,
+                start=>80000
         });
     };
     ok(!$@,"load_refgenomes command successful");
@@ -245,7 +246,7 @@ eval {
     ok(defined($wsret->[0]),"list_loaded_genomes command returned at least one genome");
 =cut
 
-#=begin testing index_genomes_in_solr
+=begin testing index_genomes_in_solr
     #Testing index_genomes_in_solr
     my $slrcore = "GenomeFeatures_prod";
     my $ret;
