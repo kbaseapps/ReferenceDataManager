@@ -1193,12 +1193,12 @@ sub _indexGenomeFeatureData
         my $ws_ref = {"ref" => $ws_gn->{ref}};
         my $gn_id = $ws_gn->{name};
         #check if the genome is already present in the database by querying SOLR
-        print "Checking SOLR for existence of genome " . $gn_id;
+        #print "Checking SOLR for existence of genome--";
         if($self->_exists($gn_solr_core, {genome_id=>$gn_id})==1) {
-             print ": has already been indexed in Solr " . $gn_solr_core . ".\n";
+             print $gn_id . ": has already been indexed in Solr " . $gn_solr_core . ".\n";
         }    
         else {
-            print ": Not in Solr " . $gn_solr_core . ".\n";         
+            print $gn_id . ": is not found in Solr " . $gn_solr_core . ".\n";         
             $count ++;
             print "\nStart to fetch the object(s) for " . $gn_id .  " on " . scalar localtime . "\n";
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
@@ -1209,7 +1209,7 @@ sub _indexGenomeFeatureData
             if($@) {
                 print "Cannot get object information!\n";
                 print "ERROR:".$@;
-                if(defined($@->{status_line})) {
+                if(ref($@) eq 'HASH' && defined($@->{status_line})) {
                     print $@->{status_line}."\n";
                 }
             }
