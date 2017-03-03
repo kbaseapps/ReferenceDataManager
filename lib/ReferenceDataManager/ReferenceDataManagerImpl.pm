@@ -1189,7 +1189,9 @@ sub _indexGenomeFeatureData
         die "\nError--Solr server not responding:\n" . $self->_error->{response};
     }
 
-    foreach my $ws_gn (@{$ws_gnData}) { 
+    #foreach my $ws_gn (@{$ws_gnData}) { 
+    for( my $gf_i = 22000; $gf_i < @{$ws_gnData}; $gf_i++ ) {
+        my $ws_gn = $ws_gnData->[$gf_i]; 
         my $ws_ref = {"ref" => $ws_gn->{ref}};
         my $gn_id = $ws_gn->{name};
         #check if the genome is already present in the database by querying SOLR
