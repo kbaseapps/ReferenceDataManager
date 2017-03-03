@@ -3962,7 +3962,7 @@ sub update_loaded_genomes
     if (! $self->_ping()) {
         die "\nError--Solr server not responding:\n" . $self->_error->{response};
     }
-    for (my $i=50001; $i < @{ $ref_genomes }; $i++) {#at 50000, the genome_id is:GCF_000705845 
+    for (my $i=0; $i < @{ $ref_genomes }; $i++) {#at 50000, the genome_id is:GCF_000705845 
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
     
