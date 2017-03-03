@@ -1193,11 +1193,12 @@ sub _indexGenomeFeatureData
         my $ws_ref = {"ref" => $ws_gn->{ref}};
         my $gn_id = $ws_gn->{name};
         #check if the genome is already present in the database by querying SOLR
+        print "Checking SOLR for existence of genome " . $gn_id;
         if($self->_exists($gn_solr_core, {genome_id=>$gn_id})==1) {
-            print $gn_id . " has already been indexed in solr " . $gn_solr_core;
-        }
+             print ": has already been indexed in Solr " . $gn_solr_core . ".\n";
+        }    
         else {
-            print "Not in " . $gn_solr_core . ": " . $gn_id . "\n";
+            print ": Not in Solr " . $gn_solr_core . ".\n";         
             $count ++;
             print "\nStart to fetch the object(s) for " . $gn_id .  " on " . scalar localtime . "\n";
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
