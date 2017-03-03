@@ -2384,7 +2384,7 @@ sub index_genomes_in_solr
             $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
     
-    $msg .= "Indexed ". scalar @{$output}. " genomes!\n";
+    $msg .= "Indexed ". scalar @{$output}. " genome_feature(s)!\n";
     print $msg . "\n";
     
     if ($params->{create_report}) {
