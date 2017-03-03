@@ -63,5 +63,13 @@ parameters :
         long-hint  : |
             Starting count of the genomes to load
 
+    index_in_solr :
+        ui-name : |
+            Index in Solr
+        short-hint : |
+            Index the genomes after load
+        long-hint  : |
+            Indicate to send the genomes to Solr for indexing after l ad
+
 description : |
-    <p>Load genomes from source databases</p>
+    <p>Load the NCBI reference genomes</p>

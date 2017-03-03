@@ -312,6 +312,7 @@ module ReferenceDataManager {
         bool refseq;
         bool phytozome;
         int start;
+        bool index_in_solr;
         string workspace_name;
         bool create_report;
     } LoadRefGenomesParams;

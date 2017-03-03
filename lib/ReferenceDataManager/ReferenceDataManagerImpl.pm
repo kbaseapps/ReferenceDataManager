@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '29f04b64d8211a5af690d2fd6ac023c0eddb1d73';
+our $GIT_COMMIT_HASH = '55cde386e056555457fa1ec77436d9baaf8b7f0e';
 
 =head1 NAME
 
@@ -3526,6 +3526,7 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
 	start has a value which is an int
+	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -3553,6 +3554,7 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
 	start has a value which is an int
+	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -3603,13 +3605,14 @@ sub load_refgenomes
         ensembl => 0,
         start => 0, 
         create_report => 0,
+        index_in_solr => 0,
         workspace_name => undef
     });
 
     $output = [];
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only=>0});
     @{$ref_genomes} = @{$ref_genomes}[$params->{start}..@{$ref_genomes}-1];
-    $output = $self->load_genomes( {genomes =>$ref_genomes, index_in_solr => 0} ); 
+    $output = $self->load_genomes( {genomes =>$ref_genomes, index_in_solr=>$params-{index_in_solr}} ); 
     #END load_refgenomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -4904,6 +4907,7 @@ ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 start has a value which is an int
+index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -4918,6 +4922,7 @@ ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 start has a value which is an int
+index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
