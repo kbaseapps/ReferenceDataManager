@@ -49,9 +49,9 @@ parameters :
         ui-name : |
             Offset start position
         short-hint : |
-            Skip this count less 1 of the genomes before indexing
+            Skip this count of the genomes before indexing
         long-hint  : |
-            Skip this count less 1 of the genomes before indexing
+            Skip this count of the genomes before indexing
 
 description : |
     <p>Send KBaseReferenceGenomeData genomes for index in Solr</p>
