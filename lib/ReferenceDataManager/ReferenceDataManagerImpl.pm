@@ -2172,13 +2172,22 @@ sub list_solr_genomes
         }
     }
     else {
-        #print "\nList of genomes: \n" . Dumper($solrout) . "\n";  
         $output = ($grpOpt eq "") ? $solrout->{response}->{response}->{docs} : $solrout->{response}->{grouped}->{$grpOpt}->{groups};
 
         if (@{$output} < 10) {
-            my $curr = @{$output}-1;
-            $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
+            #my $curr = @{$output}-1;
+            $msg .= $output;#Data::Dumper->Dump([$output->[$curr]])."\n";
         }
+    }
+    $msg = ($msg ne "") ? $msg : "Nothing found!";
+    print $msg . "\n";     
+
+    if ($params->{create_report}) {
+        $self->util_create_report({
+                message => $msg,
+                workspace => $params->{workspace_name}
+        });
+        $output = [$params->{workspace_name}."/list_solr_genomes"];
     }
 
     #END list_solr_genomes
@@ -2780,9 +2789,20 @@ sub list_solr_taxa
         $output = ($grpOpt eq "") ? $solrout->{response}->{response}->{docs} : $solrout->{response}->{grouped}->{$grpOpt}->{groups}; 
 
         if (@{$output} < 10) {
-            my $curr = @{$output}-1;
-            $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
+            #my $curr = @{$output}-1;
+            $msg .= $output; #Data::Dumper->Dump([$output->[$curr]])."\n";
         } 
+    }
+
+    $msg = ($msg ne "") ? $msg : "Nothing found!";
+    print $msg . "\n";     
+
+    if ($params->{create_report}) {
+        $self->util_create_report({
+                message => $msg,
+                workspace => $params->{workspace_name}
+        });
+        $output = [$params->{workspace_name}."/list_solr_taxa"];
     }
     #END list_solr_taxa
     my @_bad_returns;
