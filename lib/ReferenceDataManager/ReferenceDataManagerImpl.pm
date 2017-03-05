@@ -271,7 +271,7 @@ sub _buildQueryString {
         # Remove last occurance of ' AND '
         $qStr =~ s/ AND $//g;
     }
-    my $solrGroup = $groupOption ? "&group=true&group.field=$groupOption" : "";
+    my $solrGroup = $groupOption ? "&group=true&group.ngroups=true&group.field=$groupOption" : "";
     my $retStr = $paramFields . $qStr . $solrGroup;
     #print "Query string:\n$retStr\n";
     return $retStr;
@@ -2153,7 +2153,7 @@ sub list_solr_genomes
     });
 
     $output = [];
-    my $msg = "";
+    my $msg = "Found ";
     my $solrout;
     my $solrCore = $params -> {solr_core};
     my $fields = "*";
@@ -2172,12 +2172,19 @@ sub list_solr_genomes
         }
     }
     else {
-        $output = ($grpOpt eq "") ? $solrout->{response}->{response}->{docs} : $solrout->{response}->{grouped}->{$grpOpt}->{groups};
-
-        if (@{$output} < 10) {
-            #my $curr = @{$output}-1;
-            $msg .= $output;#Data::Dumper->Dump([$output->[$curr]])."\n";
+        if( $grpOpt eq "" ) {
+            $output = $solrout->{response}->{response}->{docs};
+            $msg .= $solrout->{response}->{response}->{numFound}." genome(s)";
         }
+        else {
+            my $grp = $solrout->{response}->{grouped}->{$grpOpt};
+            $output = $grp->{groups};
+            $msg .= $grp->{matches}." genome_feature(s) in " . $grp->{ngroups}." ". $grpOpt . " groups";
+        }
+        $msg .= " in SOLR.\n";
+        $msg .=  "Genome SOLR record example:\n";
+        my $curr = @{$output}-1;
+        $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
     $msg = ($msg ne "") ? $msg : "Nothing found!";
     print $msg . "\n";     
@@ -2766,14 +2773,14 @@ sub list_solr_taxa
         create_report => 0
     });
 
-    my $msg = "";
+    my $msg = "Found ";
     $output = [];
     my $solrout;
-    my $solrCore = $params -> {solr_core};
+    my $solrCore = $params->{solr_core};
     my $fields = "*";
-    my $startRow = $params -> {row_start};
-    my $topRows = $params -> {row_count};
-    my $grpOpt = $params -> {group_option}; #"taxonomy_id";    
+    my $startRow = $params->{row_start};
+    my $topRows = $params->{row_count};
+    my $grpOpt = $params->{group_option}; #"taxonomy_id";    
     eval {
         $solrout = $self->_listTaxaInSolr($solrCore, $fields, $startRow, $topRows, $grpOpt);
     };
@@ -2785,13 +2792,19 @@ sub list_solr_taxa
         }
     }
     else {
-        #print "\nList of taxa: \n" . Dumper($solrout) . "\n";  
-        $output = ($grpOpt eq "") ? $solrout->{response}->{response}->{docs} : $solrout->{response}->{grouped}->{$grpOpt}->{groups}; 
-
-        if (@{$output} < 10) {
-            #my $curr = @{$output}-1;
-            $msg .= $output; #Data::Dumper->Dump([$output->[$curr]])."\n";
-        } 
+        if( $grpOpt eq "" ) {
+            $output = $solrout->{response}->{response}->{docs};
+            $msg .= $solrout->{response}->{response}->{numFound}." taxa";
+        }
+        else {
+            my $grp = $solrout->{response}->{grouped}->{$grpOpt};
+            $output = $grp->{groups};
+            $msg .= $grp->{matches}." taxa in " . $grp->{ngroups}." ". $grpOpt . " groups";
+        }
+        $msg .= " in SOLR.\n";
+        $msg .=  "Taxon SOLR record example:\n";
+        my $curr = @{$output}-1;
+        $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
 
     $msg = ($msg ne "") ? $msg : "Nothing found!";

@@ -135,6 +135,7 @@ module ReferenceDataManager {
         string solr_core;
         int row_start;
         int row_count;
+        string group_option;
 	bool create_report;
         string workspace_name;
     } ListSolrDocsParams;

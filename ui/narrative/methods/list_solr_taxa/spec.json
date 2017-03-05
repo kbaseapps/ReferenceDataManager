@@ -58,6 +58,16 @@
         }
       ]
     }
+  }, {
+    "id" : "group_option",
+    "optional":true,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "text",
+    "text_options" : {
+        "validate_as": "text"
+    } 
   }],
   "job_id_output_field": "docker",
   "behavior" : {
@@ -77,6 +87,10 @@
         {
           "input_parameter": "row_count",
           "target_property": "row_count"
+        },
+        {
+          "input_parameter": "group_option",
+          "target_property": "group_option"
         },
         {
           "constant_value" : "1",

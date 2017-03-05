@@ -55,5 +55,13 @@ parameters :
         long-hint  : |
             Count of rows of result to display
 
+    group_option :
+        ui-name : |
+            Group by field
+        short-hint : |
+            Field to group the results by
+        long-hint  : |
+            Field to group the results by
+
 description : |
     <p>Lists taxa loaded into KBase and indexed in Solr of a given core</p>
