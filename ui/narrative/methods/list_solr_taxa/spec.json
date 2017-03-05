@@ -6,7 +6,7 @@
   "visble" : true,
   "categories" : ["active"],
   "widgets" : {
-    "input" : null,
+    "input" : "kbaseNarrativeMethodInput",
     "output" : "kbaseReportView"
   },
   "parameters" : [ {
