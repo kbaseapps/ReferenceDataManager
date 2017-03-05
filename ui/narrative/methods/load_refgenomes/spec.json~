@@ -53,7 +53,7 @@
       "unchecked_value": 0
     }
   }, {
-    "id": "start_offset",
+    "id": "start",
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
@@ -87,8 +87,12 @@
           "target_property": "index_in_solr"      
         },
         {
-          "input_parameter": "start_offset",
-          "target_property": "start_offset"
+          "input_parameter": "start",
+          "target_property": "start"
+        },
+        {
+          "constant_value" : "1",
+          "target_property": "create_report"
         },
 	{
           "narrative_system_variable": "workspace",
@@ -96,6 +100,13 @@
         }
       ],
       "output_mapping" : [
+        {
+          "target_property" : "report_ref",
+    	  "service_method_output_path" : [
+				0,
+				0
+        	]
+        }
       ]
     }
   }

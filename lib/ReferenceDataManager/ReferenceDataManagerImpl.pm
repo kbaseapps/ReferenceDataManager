@@ -2362,22 +2362,23 @@ sub index_genomes_in_solr
     }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        genomes => undef,
-        create_report => 0,
-        solr_core => "GenomeFeatures_prod",
-        workspace_name => undef
+        genomes=>undef,
+        solr_core=>"GenomeFeatures_prod",
+        workspace_name=>undef,
+        start_offset=>0
     });
 
     my $msg = "";
     my $genomes;
 
     if (!defined($params->{genomes})) {
-        $genomes = $self->list_loaded_genomes({refseq => 1});
+        $genomes = $self->list_loaded_genomes({refseq=>1});
     } else {
         $genomes = $params->{genomes};
     }
 
     my $solrCore = $params->{solr_core};
+    @{$genomes} = @{$genomes}[$params->{start_offset}..@{$genomes} - 1];
     print "\nTotal genomes to be indexed: ". @{$genomes} . "\n";
 
     $output = $self->_indexGenomeFeatureData($solrCore, $genomes);
@@ -2388,16 +2389,6 @@ sub index_genomes_in_solr
     
     $msg .= "Indexed ". scalar @{$output}. " genome_feature(s)!\n";
     print $msg . "\n";
-    
-    if ($params->{create_report}) {
-        print $msg . "\n";
-        $self->util_create_report({
-            message => $msg,
-            workspace => $params->{workspace_name}
-        });
-        $output = [$params->{workspace_nmae}."/index_genomes_in_solr"];
-    }
-
     #END index_genomes_in_solr
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -3348,7 +3339,6 @@ sub load_genomes
         data => undef,
         genomes => [],
         index_in_solr => 0,
-        create_report => 0,
         workspace_name => undef
     });
 #my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service=ver parameter when master is done.
@@ -3410,7 +3400,7 @@ sub load_genomes
 		file => {
                     ftp_url => $gn_url
                 },
-                genome_name => $ncbigenome->{accession},#{asm_name},
+                genome_name => $ncbigenome->{accession},
                 workspace_name => $wsname,
                 source => $ncbigenome->{source},
                 taxon_wsname => "ReferenceTaxons",
@@ -3420,7 +3410,7 @@ sub load_genomes
                 metadata => { 
                     refid => $ncbigenome->{id},
                     accession => $ncbigenome->{accession},
-                    refname => $ncbigenome->{accession},#{asm_name},
+                    refname => $ncbigenome->{accession},
                     url => $gn_url,
                     assembly_level => $asm_level,
                     version => $ncbigenome->{version}
@@ -3440,34 +3430,34 @@ sub load_genomes
             else
             {
                 $genomeout = {
-                  "ref" => $genutilout->{genome_ref},
-                  id => $ncbigenome->{id},
-                  workspace_name => $wsname,
-                  source_id => $ncbigenome->{id},
-                  accession => $ncbigenome->{accession},
-                  name => $ncbigenome->{id},#{asm_name},
-                  version => $ncbigenome->{version},
-                  source => $ncbigenome->{source},
-                  domain => $ncbigenome->{domain}
-               };
+                    "ref" => $genutilout->{genome_ref},
+                    id => $ncbigenome->{id},
+                    workspace_name => $wsname,
+                    source_id => $ncbigenome->{id},
+                    accession => $ncbigenome->{accession},
+                    name => $ncbigenome->{id},
+                    version => $ncbigenome->{version},
+                    source => $ncbigenome->{source},
+                    domain => $ncbigenome->{domain}
+                };
 
-               my $gn_solrCore = "GenomeFeatures_prod";
-               if ($params->{index_in_solr} == 1) {
+                my $gn_solrCore = "GenomeFeatures_prod";
+                if ($params->{index_in_solr} == 1) {
                     $self->index_genomes_in_solr({
                         solr_core => $gn_solrCore,             
                         genomes => [$genomeout]
                     });
-               }
-               push(@{$output},$genomeout);
-               if (@{$output} < 10) {
+                }
+                push(@{$output},$genomeout);
+                if (@{$output} < 10) {
                    $msg .= "Loaded genome: ".$genomeout->{id}." into workspace ".$genomeout->{workspace_name}.";\n";
-               }
-               print "!!!!!!!!!!!!!--Loading of $ncbigenome->{id} succeeded--!!\n";
+                }
+                print "!!!!!!!!!!!!!--Loading of $ncbigenome->{id} succeeded--!!\n";
             }
             print "**********************Genome loading process ends on " . scalar localtime . "************************\n";
         } elsif ($ncbigenome->{source} eq "phytozome") {
             #NEED SAM TO PUT CODE FOR HIS LOADER HERE
-	        my $genomeout = {
+            my $genomeout = {
                 "ref" => $wsname."/".$ncbigenome->{id},
                 id => $ncbigenome->{id},
                 workspace_name => $wsname,
@@ -3484,16 +3474,6 @@ sub load_genomes
     }
     $msg .= "\nLoaded a total of ". scalar @{$output}. " genomes!\n";
     print $msg . "\n";
-
-    if ($params->{create_report}) {
-        print $msg . "\n";
-        $self->util_create_report({
-            message => $msg,
-            workspace => $params->{workspace_name}
-        });
-        $output = [$params->{workspace_name}."/load_genomes"];
-    }
-
     #END load_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -3600,19 +3580,18 @@ sub load_refgenomes
     #BEGIN load_refgenomes
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        refseq => 1,
-        phytozome => 0,
-        ensembl => 0,
-        start => 0, 
-        create_report => 0,
-        index_in_solr => 0,
-        workspace_name => undef
+        refseq=>1,
+        phytozome=>0,
+        ensembl=>0,
+        start_offset=>0, 
+        index_in_solr=>0,
+        workspace_name=>undef
     });
 
     $output = [];
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only=>0});
-    @{$ref_genomes} = @{$ref_genomes}[$params->{start}..@{$ref_genomes}-1];
-    $output = $self->load_genomes( {genomes =>$ref_genomes, index_in_solr=>$params->{index_in_solr}} ); 
+    @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
+    $output = $self->load_genomes({genomes =>$ref_genomes, index_in_solr=>$params->{index_in_solr}}); 
     #END load_refgenomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -3948,12 +3927,12 @@ sub update_loaded_genomes
     #BEGIN update_loaded_genomes
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        refseq => 1,
-        phytozome => 0,
-        ensembl => 0, 
-        update_only => 0,
-        create_report => 0,
-        workspace_name => undef
+        refseq=>1,
+        phytozome=>0,
+        ensembl=>0, 
+        update_only=>0,
+        start_offset=>0,
+        workspace_name=>undef
     });
 
     my $msg = "";
@@ -3967,7 +3946,9 @@ sub update_loaded_genomes
     if (! $self->_ping()) {
         die "\nError--Solr server not responding:\n" . $self->_error->{response};
     }
-    for (my $i=0; $i < @{ $ref_genomes }; $i++) {#at 50000, the genome_id is:GCF_000705845 
+
+    @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
+    for (my $i=0; $i < @{$ref_genomes}; $i++) {
         print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
     
@@ -3991,15 +3972,6 @@ sub update_loaded_genomes
     }
     $msg .= "Updated ".@{$output}." genomes!";
     print $msg . "\n";
-
-    if ($params->{create_report}) {
-        print $msg . "\n";
-        $self->util_create_report({
-            message => $msg,
-            workspace => $params->{workspace_name}
-        });
-        $output = [$params->{workspace_name}."/update_loaded_genomes"];
-    }
 
     #END update_loaded_genomes
     my @_bad_returns;

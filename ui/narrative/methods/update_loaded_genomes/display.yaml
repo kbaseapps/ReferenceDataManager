@@ -55,5 +55,13 @@ parameters :
         long-hint  : |
             Update KBase Ensembl genomes
 
+    start_offset :
+        ui-name : |
+            Offset start position
+        short-hint : |
+            Skip this count less 1 of the genomes before updating
+        long-hint  : |
+            Skip this count less 1 of the genomes before updating
+
 description : |
     <p>Update genomes from source databases</p>

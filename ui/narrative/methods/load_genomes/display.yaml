@@ -47,6 +47,5 @@ parameters :
          long-hint : |
              Indicate to send the genome info to Solr to be indexed
 
-
 description : |
     <p>Load genomes into KBase and index in solr if want </p>

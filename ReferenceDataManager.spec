@@ -168,7 +168,7 @@ module ReferenceDataManager {
         list<KBaseReferenceGenomeData> genomes;
         string solr_core;
         string workspace_name;
-        bool create_report;
+        int start_offset;
     } IndexGenomesInSolrParams;
     
     /*
@@ -296,7 +296,6 @@ module ReferenceDataManager {
         list<ReferenceGenomeData> genomes;
         bool index_in_solr;
         string workspace_name;
-        bool create_report;
     } LoadGenomesParams;
     
     /*
@@ -311,10 +310,9 @@ module ReferenceDataManager {
         bool ensembl;
         bool refseq;
         bool phytozome;
-        int start;
+        int start_offset;
         bool index_in_solr;
         string workspace_name;
-        bool create_report;
     } LoadRefGenomesParams;
     
     /*
@@ -349,7 +347,7 @@ module ReferenceDataManager {
         bool phytozome;
         bool update_only;
         string workspace_name;
-        bool create_report;
+        int start_offset;
     } UpdateLoadedGenomesParams;
     
     /*

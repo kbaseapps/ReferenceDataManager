@@ -5,10 +5,9 @@
   "contact" : "help@kbase.us",
   "visble" : true,
   "categories" : ["active"],
-  "widgets" : {
-    "input" : null,
-    "output" : "kbaseReportView"
-  },
+  "widgets" : { 
+    "input" : "kbaseNarrativeMethodInput"
+  },  
   "parameters" : [ {
     "id" : "refseq",
     "optional":false,
@@ -42,6 +41,16 @@
       "checked_value": 1,
       "unchecked_value": 0
     }
+  }, {
+    "id" : "start_offset",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["0"],
+    "field_type" : "text",
+    "text_options":{
+        "validate_as" : "int"
+    }
   }],
   "job_id_output_field": "docker",
   "behavior" : {
@@ -63,8 +72,8 @@
           "target_property": "phytozome"
         },
         {
-          "constant_value" : "1",
-          "target_property": "create_report"
+          "input_parameter" : "start_offset",
+          "target_property": "start_offset"
         },
 	{
           "narrative_system_variable": "workspace",

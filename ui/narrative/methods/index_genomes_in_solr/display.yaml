@@ -35,7 +35,7 @@ parameters :
         short-hint : |
             KBase genome data
         long-hint  : |
-            KBase genome data of type 'KBaseReferenceGenomeData'
+            KBase genome data of type 'ReferenceDataManager.KBaseReferenceGenomeData'
 
     solr_core :
         ui-name : |
@@ -44,6 +44,14 @@ parameters :
             Name of the solr core
         long-hint  : |
             Name of the solr core
+
+    start_offset :
+        ui-name : |
+            Offset start position
+        short-hint : |
+            Skip this count less 1 of the genomes before indexing
+        long-hint  : |
+            Skip this count less 1 of the genomes before indexing
 
 description : |
     <p>Send KBaseReferenceGenomeData genomes for index in Solr</p>

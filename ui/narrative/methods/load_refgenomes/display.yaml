@@ -55,13 +55,13 @@ parameters :
         long-hint  : |
             Load into KBase Ensembl genomes
     
-    start :
+    start_offset:
         ui-name : |
             Start at
         short-hint : |
-            Starting count of the genomes to load
+            Skip this count less 1 of the genomes before loading
         long-hint  : |
-            Starting count of the genomes to load
+            Skip this count less 1 of the genomes before loading
 
     index_in_solr :
         ui-name : |

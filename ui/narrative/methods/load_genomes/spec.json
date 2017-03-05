@@ -5,10 +5,9 @@
   "contact" : "help@kbase.us",
   "visble" : true,
   "categories" : ["active"],
-  "widgets" : {
-    "input" : null,
-    "output" : "kbaseReportView"
-  },
+  "widgets" : { 
+    "input" : "kbaseNarrativeMethodInput"
+  }, 
   "parameters" : [ {
     "default_values" : [""],
     "advanced" : false,
@@ -49,10 +48,6 @@
         {
           "constant_value" : "1",
           "target_property": "index_in_solr"
-        },
-        {
-          "constant_value" : "1",
-          "target_property": "create_report"
         },
         {
           "narrative_system_variable": "workspace",
