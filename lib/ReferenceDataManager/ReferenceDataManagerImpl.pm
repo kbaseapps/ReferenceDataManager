@@ -1172,7 +1172,7 @@ sub _buildSolrGenomeFeature
 #Then plow through the genome object data to assemble the data items for a Solr genome_feature object.
 #Finally send the data document to Solr for indexing.
 #Input: a list of KBaseReferenceGenomeData
-#Output: a list of SolrGenomeFeatureData
+#Output: a list of SolrGenomeFeatureData (the first 10) and the total count of genome_features indexed
 #
 sub _indexGenomeFeatureData 
 {
@@ -1201,7 +1201,6 @@ sub _indexGenomeFeatureData
         }    
         else {
             print $gn_id . ": is not found in Solr " . $gn_solr_core . ".\n";         
-            $count ++;
             print "\nStart to fetch the object(s) for " . $gn_id .  " on " . scalar localtime . "\n";
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
@@ -1243,14 +1242,20 @@ sub _indexGenomeFeatureData
 
                     ###1)---Build the genome solr object for the sake of the search UI/search service
                     my $ws_gnobj = $self->_buildSolrGenome($ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
-                    push @{$solr_gnftData}, $ws_gnobj;
+                    if( @{$solr_gnftData} < 10 ) {
+                        push @{$solr_gnftData}, $ws_gnobj;
+                    }
                     push @{$gnft_batch}, $ws_gnobj;
+                    $count ++;
                 
                     ###2)---Build the genome_feature solr object
                     for (my $ii=0; $ii < @{$ws_gn_features}; $ii++) {
                         my $ws_gnft = $self->_buildSolrGenomeFeature($ws_gn_features->[$ii], $ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
-                        push @{$solr_gnftData}, $ws_gnft;
+                        if( @{$solr_gnftData} < 10 ) {
+                            push @{$solr_gnftData}, $ws_gnft;
+                        }
                         push @{$gnft_batch}, $ws_gnft;
+                        $count ++;
                         
                         if(@{$gnft_batch} >= $batchCount) {
                             eval {
@@ -1290,7 +1295,7 @@ sub _indexGenomeFeatureData
             }
         }
     }
-    return $solr_gnftData;
+    return {"genome_features"=>$solr_gnftData,"count"=>$count};
 }
 #
 #internal method, for fetching one taxon record to be indexed in solr
@@ -2398,12 +2403,14 @@ sub index_genomes_in_solr
     print "\nTotal genomes to be indexed: ". @{$genomes} . "\n";
 
     $output = $self->_indexGenomeFeatureData($solrCore, $genomes);
-    if (@{$output} < 10) {
-            my $curr = @{$output}-1;
-            $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
+    my $gnft_count = $output->{count};
+    $output = $output->{genome_features};
+    if (@{$output} > 0) {
+        my $curr = @{$output}-1;
+        $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
     
-    $msg .= "Indexed ". scalar @{$output}. " genome_feature(s)!\n";
+    $msg .= "Indexed ". $gnft_count. " genome_feature(s)!\n";
     print $msg . "\n";
     #END index_genomes_in_solr
     my @_bad_returns;
