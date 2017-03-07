@@ -6,7 +6,8 @@
   "visble" : true,
   "categories" : ["active"],
   "widgets" : {
-    "input" : "kbaseNarrativeMethodInput"
+    "input" : "kbaseNarrativeMethodInput",
+    "output" : "kbaseReportView"
   },
   "parameters" : [ {
     "id" : "genomes",
@@ -83,6 +84,13 @@
         }
       ],
       "output_mapping" : [
+        {
+          "target_property" : "report_ref",
+    	  "service_method_output_path" : [
+				0,
+				0
+        	]
+        }
       ]
     }
   }
