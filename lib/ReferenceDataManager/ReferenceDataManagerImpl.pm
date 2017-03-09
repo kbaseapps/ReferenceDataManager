@@ -1978,7 +1978,6 @@ sub list_loaded_genomes
     print $msg . "\n";     
 
     if ($params->{create_report}) {
-        print $msg . "\n";     
         $self->util_create_report({
                 message => $msg,
                 workspace => $params->{workspace_name}
@@ -2416,6 +2415,7 @@ sub index_genomes_in_solr
     
     $msg .= "Indexed ". $gnft_count. " genome_feature(s)!\n";
     print $msg . "\n";
+    
     if ($params->{create_report}) {
         $self->util_create_report({
             message => $msg,
@@ -3254,12 +3254,11 @@ sub index_taxa_in_solr
     print $msg . "\n";
 
     if ($params->{create_report}) {
-        print $msg . "\n";
         $self->util_create_report({
             message => $msg,
             workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace_name}."/indexed taxa_in_solr"];
+        $output = [$params->{workspace_name}."/indexed_taxa_in_solr"];
     }
     #END index_taxa_in_solr
     my @_bad_returns;
@@ -3525,6 +3524,15 @@ sub load_genomes
     }
     $msg .= "\nLoaded a total of ". scalar @{$output}. " genomes!\n";
     print $msg . "\n";
+    
+    if ($params->{create_report}) {
+        $self->util_create_report({
+                message => $msg,
+                workspace => $params->{workspace_name}
+        });
+        $output = [$params->{workspace_name}."/load_genomes"];
+    }
+
     #END load_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -3872,7 +3880,6 @@ sub rast_genomes
     print $msg . "\n";
 
     if ($params->{create_report}) {
-        print $msg . "\n";
         $self->util_create_report({
             message => $msg,
             workspace => $params->{workspace_name}
@@ -4029,6 +4036,15 @@ sub update_loaded_genomes
     }
     $msg .= "Updated ".@{$output}." genomes!";
     print $msg . "\n";
+    
+    if ($params->{create_report}) {
+        $self->util_create_report({
+                message => $msg,
+                workspace => $params->{workspace_name}
+        });
+        $output = [$params->{workspace_name}."/update_loaded_genomes"];
+    }
+
 
     #END update_loaded_genomes
     my @_bad_returns;
