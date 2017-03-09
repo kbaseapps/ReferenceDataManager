@@ -170,6 +170,7 @@ module ReferenceDataManager {
         string solr_core;
         string workspace_name;
         int start_offset;
+        bool create_report; 
     } IndexGenomesInSolrParams;
     
     /*

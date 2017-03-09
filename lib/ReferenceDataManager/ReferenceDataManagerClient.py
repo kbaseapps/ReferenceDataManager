@@ -41,8 +41,9 @@ class ReferenceDataManager(object):
            parameter "ensembl" of type "bool" (A boolean.), parameter
            "refseq" of type "bool" (A boolean.), parameter "phytozome" of
            type "bool" (A boolean.), parameter "updated_only" of type "bool"
-           (A boolean.), parameter "workspace_name" of String, parameter
-           "create_report" of type "bool" (A boolean.)
+           (A boolean.), parameter "domain" of String, parameter
+           "workspace_name" of String, parameter "create_report" of type
+           "bool" (A boolean.)
         :returns: instance of list of type "ReferenceGenomeData" (Struct
            containing data for a single genome output by the
            list_reference_genomes function) -> structure: parameter
@@ -50,7 +51,8 @@ class ReferenceDataManager(object):
            parameter "asm_name" of String, parameter "ftp_dir" of String,
            parameter "file" of String, parameter "id" of String, parameter
            "version" of String, parameter "source" of String, parameter
-           "domain" of String, parameter "refseq_category" of String
+           "domain" of String, parameter "refseq_category" of String,
+           parameter "tax_id" of String, parameter "assembly_level" of String
         """
         return self._client.call_method(
             'ReferenceDataManager.list_reference_genomes',
@@ -65,15 +67,17 @@ class ReferenceDataManager(object):
            "bool" (A boolean.), parameter "phytozome" of type "bool" (A
            boolean.), parameter "workspace_name" of String, parameter
            "create_report" of type "bool" (A boolean.)
-        :returns: instance of list of type "KBaseReferenceGenomeData" (Struct
-           containing data for a single genome output by the
+        :returns: instance of list of type "LoadedReferenceGenomeData"
+           (Struct containing data for a single genome output by the
            list_loaded_genomes function) -> structure: parameter "ref" of
            String, parameter "id" of String, parameter "workspace_name" of
            String, parameter "source_id" of String, parameter "accession" of
-           String, parameter "asm_name" of String, parameter "ftp_dir" of
-           String, parameter "version" of String, parameter "source" of
-           String, parameter "domain" of String, parameter "refseq_category"
-           of String, parameter "save_date" of String
+           String, parameter "name" of String, parameter "version" of String,
+           parameter "source" of String, parameter "domain" of String,
+           parameter "type" of String, parameter "save_date" of String,
+           parameter "contig_count" of Long, parameter "feature_count" of
+           Long, parameter "size_bytes" of Long, parameter "ftp_url" of
+           String, parameter "gc" of Double
         """
         return self._client.call_method(
             'ReferenceDataManager.list_loaded_genomes',
@@ -85,8 +89,9 @@ class ReferenceDataManager(object):
         :param params: instance of type "ListSolrDocsParams" (Arguments for
            the list_solr_genomes and list_solr_taxa functions) -> structure:
            parameter "solr_core" of String, parameter "row_start" of Long,
-           parameter "row_count" of Long, parameter "create_report" of type
-           "bool" (A boolean.)
+           parameter "row_count" of Long, parameter "group_option" of String,
+           parameter "create_report" of type "bool" (A boolean.), parameter
+           "workspace_name" of String
         :returns: instance of list of type "SolrGenomeFeatureData" (Struct
            containing data for a single genome element output by the
            list_solr_genomes and index_genomes_in_solr functions) ->
@@ -119,51 +124,21 @@ class ReferenceDataManager(object):
             'ReferenceDataManager.list_solr_genomes',
             [params], self._service_ver, context)
 
-    def load_genomes(self, params, context=None):
-        """
-        Loads specified genomes into KBase workspace and indexes in SOLR on demand
-        :param params: instance of type "LoadGenomesParams" (Arguments for
-           the load_genomes function) -> structure: parameter "data" of
-           String, parameter "genomes" of list of type "ReferenceGenomeData"
-           (Struct containing data for a single genome output by the
-           list_reference_genomes function) -> structure: parameter
-           "accession" of String, parameter "version_status" of String,
-           parameter "asm_name" of String, parameter "ftp_dir" of String,
-           parameter "file" of String, parameter "id" of String, parameter
-           "version" of String, parameter "source" of String, parameter
-           "domain" of String, parameter "refseq_category" of String,
-           parameter "index_in_solr" of type "bool" (A boolean.), parameter
-           "workspace_name" of String, parameter "create_report" of type
-           "bool" (A boolean.)
-        :returns: instance of list of type "KBaseReferenceGenomeData" (Struct
-           containing data for a single genome output by the
-           list_loaded_genomes function) -> structure: parameter "ref" of
-           String, parameter "id" of String, parameter "workspace_name" of
-           String, parameter "source_id" of String, parameter "accession" of
-           String, parameter "asm_name" of String, parameter "ftp_dir" of
-           String, parameter "version" of String, parameter "source" of
-           String, parameter "domain" of String, parameter "refseq_category"
-           of String, parameter "save_date" of String
-        """
-        return self._client.call_method(
-            'ReferenceDataManager.load_genomes',
-            [params], self._service_ver, context)
-
     def index_genomes_in_solr(self, params, context=None):
         """
         Index specified genomes in SOLR from KBase workspace
         :param params: instance of type "IndexGenomesInSolrParams" (Arguments
            for the index_genomes_in_solr function) -> structure: parameter
-           "genomes" of list of type "KBaseReferenceGenomeData" (Struct
-           containing data for a single genome output by the
-           list_loaded_genomes function) -> structure: parameter "ref" of
-           String, parameter "id" of String, parameter "workspace_name" of
-           String, parameter "source_id" of String, parameter "accession" of
-           String, parameter "asm_name" of String, parameter "ftp_dir" of
-           String, parameter "version" of String, parameter "source" of
-           String, parameter "domain" of String, parameter "refseq_category"
-           of String, parameter "save_date" of String, parameter "solr_core"
-           of String, parameter "create_report" of type "bool" (A boolean.)
+           "genomes" of list of type "KBaseReferenceGenomeData" (Structure of
+           a single KBase genome in the list returned by the load_genomes,
+           rast_genomes and update_loaded_genomes functions) -> structure:
+           parameter "ref" of String, parameter "id" of String, parameter
+           "workspace_name" of String, parameter "source_id" of String,
+           parameter "accession" of String, parameter "name" of String,
+           parameter "version" of String, parameter "source" of String,
+           parameter "domain" of String, parameter "solr_core" of String,
+           parameter "workspace_name" of String, parameter "start_offset" of
+           Long, parameter "create_report" of type "bool" (A boolean.)
         :returns: instance of list of type "SolrGenomeFeatureData" (Struct
            containing data for a single genome element output by the
            list_solr_genomes and index_genomes_in_solr functions) ->
@@ -232,8 +207,9 @@ class ReferenceDataManager(object):
         :param params: instance of type "ListSolrDocsParams" (Arguments for
            the list_solr_genomes and list_solr_taxa functions) -> structure:
            parameter "solr_core" of String, parameter "row_start" of Long,
-           parameter "row_count" of Long, parameter "create_report" of type
-           "bool" (A boolean.)
+           parameter "row_count" of Long, parameter "group_option" of String,
+           parameter "create_report" of type "bool" (A boolean.), parameter
+           "workspace_name" of String
         :returns: instance of list of type "SolrTaxonData" (Struct containing
            data for a single taxon element output by the list_solr_taxa
            function) -> structure: parameter "taxonomy_id" of Long, parameter
@@ -253,32 +229,45 @@ class ReferenceDataManager(object):
             'ReferenceDataManager.list_solr_taxa',
             [params], self._service_ver, context)
 
-    def load_taxons(self, params, context=None):
+    def load_taxa(self, params, context=None):
         """
         Loads specified taxa into KBase workspace and indexes in SOLR on demand
         :param params: instance of type "LoadTaxonsParams" (Arguments for the
-           load_taxons function) -> structure: parameter "data" of String,
-           parameter "taxons" of list of type "ReferenceTaxonData" (Struct
-           containing data for a single taxon output by the list_loaded_taxa
-           function) -> structure: parameter "ref" of String, parameter "id"
-           of String, parameter "workspace_name" of String, parameter
-           "source_id" of String, parameter "accession" of String, parameter
-           "name" of String, parameter "ftp_dir" of String, parameter
-           "version" of String, parameter "source" of String, parameter
-           "domain" of String, parameter "index_in_solr" of type "bool" (A
-           boolean.), parameter "workspace_name" of String, parameter
-           "create_report" of type "bool" (A boolean.)
-        :returns: instance of list of type "ReferenceTaxonData" (Struct
-           containing data for a single taxon output by the list_loaded_taxa
-           function) -> structure: parameter "ref" of String, parameter "id"
-           of String, parameter "workspace_name" of String, parameter
-           "source_id" of String, parameter "accession" of String, parameter
-           "name" of String, parameter "ftp_dir" of String, parameter
-           "version" of String, parameter "source" of String, parameter
-           "domain" of String
+           load_taxa function) -> structure: parameter "data" of String,
+           parameter "taxons" of list of type "KBaseReferenceTaxonData"
+           (Struct containing data for a single taxon element output by the
+           list_loaded_taxa function) -> structure: parameter "taxonomy_id"
+           of Long, parameter "scientific_name" of String, parameter
+           "scientific_lineage" of String, parameter "rank" of String,
+           parameter "kingdom" of String, parameter "domain" of String,
+           parameter "aliases" of list of String, parameter "genetic_code" of
+           Long, parameter "parent_taxon_ref" of String, parameter
+           "embl_code" of String, parameter "inherited_div_flag" of Long,
+           parameter "inherited_GC_flag" of Long, parameter
+           "mitochondrial_genetic_code" of Long, parameter
+           "inherited_MGC_flag" of Long, parameter "GenBank_hidden_flag" of
+           Long, parameter "hidden_subtree_flag" of Long, parameter
+           "division_id" of Long, parameter "comments" of String, parameter
+           "index_in_solr" of type "bool" (A boolean.), parameter
+           "workspace_name" of String, parameter "create_report" of type
+           "bool" (A boolean.)
+        :returns: instance of list of type "SolrTaxonData" (Struct containing
+           data for a single taxon element output by the list_solr_taxa
+           function) -> structure: parameter "taxonomy_id" of Long, parameter
+           "scientific_name" of String, parameter "scientific_lineage" of
+           String, parameter "rank" of String, parameter "kingdom" of String,
+           parameter "domain" of String, parameter "ws_ref" of String,
+           parameter "aliases" of list of String, parameter "genetic_code" of
+           Long, parameter "parent_taxon_ref" of String, parameter
+           "embl_code" of String, parameter "inherited_div_flag" of Long,
+           parameter "inherited_GC_flag" of Long, parameter
+           "mitochondrial_genetic_code" of Long, parameter
+           "inherited_MGC_flag" of Long, parameter "GenBank_hidden_flag" of
+           Long, parameter "hidden_subtree_flag" of Long, parameter
+           "division_id" of Long, parameter "comments" of String
         """
         return self._client.call_method(
-            'ReferenceDataManager.load_taxons',
+            'ReferenceDataManager.load_taxa',
             [params], self._service_ver, context)
 
     def index_taxa_in_solr(self, params, context=None):
@@ -304,7 +293,8 @@ class ReferenceDataManager(object):
            Long, parameter "hidden_subtree_flag" of Long, parameter
            "division_id" of Long, parameter "comments" of String, parameter
            "ws_ref" of String, parameter "solr_core" of String, parameter
-           "create_report" of type "bool" (A boolean.)
+           "workspace_name" of String, parameter "create_report" of type
+           "bool" (A boolean.)
         :returns: instance of list of type "SolrTaxonData" (Struct containing
            data for a single taxon element output by the list_solr_taxa
            function) -> structure: parameter "taxonomy_id" of Long, parameter
@@ -324,6 +314,87 @@ class ReferenceDataManager(object):
             'ReferenceDataManager.index_taxa_in_solr',
             [params], self._service_ver, context)
 
+    def load_genomes(self, params, context=None):
+        """
+        Loads specified genomes into KBase workspace and indexes in SOLR on demand
+        :param params: instance of type "LoadGenomesParams" (Arguments for
+           the load_genomes function) -> structure: parameter "data" of
+           String, parameter "genomes" of list of type "ReferenceGenomeData"
+           (Struct containing data for a single genome output by the
+           list_reference_genomes function) -> structure: parameter
+           "accession" of String, parameter "version_status" of String,
+           parameter "asm_name" of String, parameter "ftp_dir" of String,
+           parameter "file" of String, parameter "id" of String, parameter
+           "version" of String, parameter "source" of String, parameter
+           "domain" of String, parameter "refseq_category" of String,
+           parameter "tax_id" of String, parameter "assembly_level" of
+           String, parameter "index_in_solr" of type "bool" (A boolean.),
+           parameter "workspace_name" of String
+        :returns: instance of list of type "KBaseReferenceGenomeData"
+           (Structure of a single KBase genome in the list returned by the
+           load_genomes, rast_genomes and update_loaded_genomes functions) ->
+           structure: parameter "ref" of String, parameter "id" of String,
+           parameter "workspace_name" of String, parameter "source_id" of
+           String, parameter "accession" of String, parameter "name" of
+           String, parameter "version" of String, parameter "source" of
+           String, parameter "domain" of String
+        """
+        return self._client.call_method(
+            'ReferenceDataManager.load_genomes',
+            [params], self._service_ver, context)
+
+    def load_refgenomes(self, params, context=None):
+        """
+        Loads Reference genomes into KBase workspace without indexing
+        :param params: instance of type "LoadRefGenomesParams" (Arguments for
+           the load_refgenomes function) -> structure: parameter "ensembl" of
+           type "bool" (A boolean.), parameter "refseq" of type "bool" (A
+           boolean.), parameter "phytozome" of type "bool" (A boolean.),
+           parameter "start_offset" of Long, parameter "index_in_solr" of
+           type "bool" (A boolean.), parameter "workspace_name" of String
+        :returns: instance of list of type "KBaseReferenceGenomeData"
+           (Structure of a single KBase genome in the list returned by the
+           load_genomes, rast_genomes and update_loaded_genomes functions) ->
+           structure: parameter "ref" of String, parameter "id" of String,
+           parameter "workspace_name" of String, parameter "source_id" of
+           String, parameter "accession" of String, parameter "name" of
+           String, parameter "version" of String, parameter "source" of
+           String, parameter "domain" of String
+        """
+        return self._client.call_method(
+            'ReferenceDataManager.load_refgenomes',
+            [params], self._service_ver, context)
+
+    def rast_genomes(self, params, context=None):
+        """
+        Loads specified genomes into KBase workspace and indexes in SOLR on demand
+        :param params: instance of type "RASTGenomesParams" (Arguments for
+           the rast_genomes function) -> structure: parameter "data" of
+           String, parameter "genomes" of list of type "ReferenceGenomeData"
+           (Struct containing data for a single genome output by the
+           list_reference_genomes function) -> structure: parameter
+           "accession" of String, parameter "version_status" of String,
+           parameter "asm_name" of String, parameter "ftp_dir" of String,
+           parameter "file" of String, parameter "id" of String, parameter
+           "version" of String, parameter "source" of String, parameter
+           "domain" of String, parameter "refseq_category" of String,
+           parameter "tax_id" of String, parameter "assembly_level" of
+           String, parameter "index_in_solr" of type "bool" (A boolean.),
+           parameter "workspace_name" of String, parameter "create_report" of
+           type "bool" (A boolean.)
+        :returns: instance of list of type "KBaseReferenceGenomeData"
+           (Structure of a single KBase genome in the list returned by the
+           load_genomes, rast_genomes and update_loaded_genomes functions) ->
+           structure: parameter "ref" of String, parameter "id" of String,
+           parameter "workspace_name" of String, parameter "source_id" of
+           String, parameter "accession" of String, parameter "name" of
+           String, parameter "version" of String, parameter "source" of
+           String, parameter "domain" of String
+        """
+        return self._client.call_method(
+            'ReferenceDataManager.rast_genomes',
+            [params], self._service_ver, context)
+
     def update_loaded_genomes(self, params, context=None):
         """
         Updates the loaded genomes in KBase for the specified source databases
@@ -331,17 +402,17 @@ class ReferenceDataManager(object):
            (Arguments for the update_loaded_genomes function) -> structure:
            parameter "ensembl" of type "bool" (A boolean.), parameter
            "refseq" of type "bool" (A boolean.), parameter "phytozome" of
-           type "bool" (A boolean.), parameter "workspace_name" of String,
-           parameter "create_report" of type "bool" (A boolean.)
-        :returns: instance of list of type "KBaseReferenceGenomeData" (Struct
-           containing data for a single genome output by the
-           list_loaded_genomes function) -> structure: parameter "ref" of
-           String, parameter "id" of String, parameter "workspace_name" of
-           String, parameter "source_id" of String, parameter "accession" of
-           String, parameter "asm_name" of String, parameter "ftp_dir" of
+           type "bool" (A boolean.), parameter "update_only" of type "bool"
+           (A boolean.), parameter "workspace_name" of String, parameter
+           "start_offset" of Long
+        :returns: instance of list of type "KBaseReferenceGenomeData"
+           (Structure of a single KBase genome in the list returned by the
+           load_genomes, rast_genomes and update_loaded_genomes functions) ->
+           structure: parameter "ref" of String, parameter "id" of String,
+           parameter "workspace_name" of String, parameter "source_id" of
+           String, parameter "accession" of String, parameter "name" of
            String, parameter "version" of String, parameter "source" of
-           String, parameter "domain" of String, parameter "refseq_category"
-           of String, parameter "save_date" of String
+           String, parameter "domain" of String
         """
         return self._client.call_method(
             'ReferenceDataManager.update_loaded_genomes',

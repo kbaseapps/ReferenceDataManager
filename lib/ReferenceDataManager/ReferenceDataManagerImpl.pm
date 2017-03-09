@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '55cde386e056555457fa1ec77436d9baaf8b7f0e';
+our $GIT_COMMIT_HASH = 'a91fb903c5736bfeefc6606f6301a5aed57fb1aa';
 
 =head1 NAME
 
@@ -2017,6 +2017,7 @@ ListSolrDocsParams is a reference to a hash where the following keys are defined
 	solr_core has a value which is a string
 	row_start has a value which is an int
 	row_count has a value which is an int
+	group_option has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 bool is an int
@@ -2072,6 +2073,7 @@ ListSolrDocsParams is a reference to a hash where the following keys are defined
 	solr_core has a value which is a string
 	row_start has a value which is an int
 	row_count has a value which is an int
+	group_option has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 bool is an int
@@ -2232,6 +2234,7 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
+	start_offset has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -2296,6 +2299,7 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
+	start_offset has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -2382,10 +2386,11 @@ sub index_genomes_in_solr
     }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        genomes=>undef,
-        solr_core=>"GenomeFeatures_prod",
-        workspace_name=>undef,
-        start_offset=>0
+        genomes => undef,
+        solr_core => "GenomeFeatures_prod",
+        workspace_name => undef,
+        create_report => 0,
+        start_offset => 0
     });
 
     my $msg = "";
@@ -2685,6 +2690,7 @@ ListSolrDocsParams is a reference to a hash where the following keys are defined
 	solr_core has a value which is a string
 	row_start has a value which is an int
 	row_count has a value which is an int
+	group_option has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 bool is an int
@@ -2721,6 +2727,7 @@ ListSolrDocsParams is a reference to a hash where the following keys are defined
 	solr_core has a value which is a string
 	row_start has a value which is an int
 	row_count has a value which is an int
+	group_option has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 bool is an int
@@ -3286,7 +3293,6 @@ LoadGenomesParams is a reference to a hash where the following keys are defined:
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
 	version_status has a value which is a string
@@ -3325,7 +3331,6 @@ LoadGenomesParams is a reference to a hash where the following keys are defined:
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
 	version_status has a value which is a string
@@ -3551,10 +3556,9 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
-	start has a value which is an int
+	start_offset has a value which is an int
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -3579,10 +3583,9 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
-	start has a value which is an int
+	start_offset has a value which is an int
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -3910,7 +3913,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	phytozome has a value which is a ReferenceDataManager.bool
 	update_only has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
+	start_offset has a value which is an int
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -3937,7 +3940,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	phytozome has a value which is a ReferenceDataManager.bool
 	update_only has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
+	start_offset has a value which is an int
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -4456,6 +4459,7 @@ a reference to a hash where the following keys are defined:
 solr_core has a value which is a string
 row_start has a value which is an int
 row_count has a value which is an int
+group_option has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 
@@ -4469,6 +4473,7 @@ a reference to a hash where the following keys are defined:
 solr_core has a value which is a string
 row_start has a value which is an int
 row_count has a value which is an int
+group_option has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 
@@ -4550,6 +4555,7 @@ a reference to a hash where the following keys are defined:
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 solr_core has a value which is a string
 workspace_name has a value which is a string
+start_offset has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -4562,6 +4568,7 @@ a reference to a hash where the following keys are defined:
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 solr_core has a value which is a string
 workspace_name has a value which is a string
+start_offset has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
 
@@ -4890,7 +4897,6 @@ data has a value which is a string
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
 
@@ -4903,7 +4909,6 @@ data has a value which is a string
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
 
 
 =end text
@@ -4932,10 +4937,9 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
-start has a value which is an int
+start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
 
@@ -4947,10 +4951,9 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
-start has a value which is an int
+start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
 
 
 =end text
@@ -5024,7 +5027,7 @@ refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
+start_offset has a value which is an int
 
 </pre>
 
@@ -5038,7 +5041,7 @@ refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
+start_offset has a value which is an int
 
 
 =end text
