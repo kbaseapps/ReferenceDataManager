@@ -1761,7 +1761,6 @@ sub list_reference_genomes
     print $summary . "\n";     
 
     if ($params->{create_report}) {
-        print $summary . "\n";
         $self->util_create_report({
             message => $summary,
             workspace => $params->{workspace_name}
@@ -2412,6 +2411,13 @@ sub index_genomes_in_solr
     
     $msg .= "Indexed ". $gnft_count. " genome_feature(s)!\n";
     print $msg . "\n";
+    if ($params->{create_report}) {
+        $self->util_create_report({
+            message => $msg,
+            workspace => $params->{workspace_name}
+        });  
+        $output = [$params->{workspace_name}."/index_genomes_in_solr"];
+    }    
     #END index_genomes_in_solr
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -3782,6 +3788,16 @@ sub rast_genomes
     } else {
         $ncbigenomes = $params->{genomes};
     }
+    
+    my $rdm_rast_ws = "ReferenceDataManager_RAST"; #$wsname . "_RAST";
+    eval {
+        $self->util_ws_client()->create_workspace($rdm_rast_ws);
+    };
+    if ($@) {
+        print $@;
+    }
+    else
+    {
 
     #foreach my $ncbigenome (@{$ncbigenomes}) {
     for (my $i=0; $i < @{$ncbigenomes}; $i++) {
@@ -3800,9 +3816,6 @@ sub rast_genomes
         {
             $wsname = "ReferenceDataManager";    
         }
-        my $rdm_rast_ws = "ReferenceDataManager_RAST"; #$wsname . "_RAST";
-        $self->util_ws_client()->create_workspace({workspace => $rdm_rast_ws});
-        
         print "\nNow rasting ".$ncbigenome->{genome_id}." with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         my $rastgenome;
         my $rast_ret;
@@ -3850,6 +3863,7 @@ sub rast_genomes
             print "!!!!!!!!!!!!!--rasting of $ncbigenome->{id} succeeded--!!\n";
          }
          print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
+    }
     }
     $msg .= "\nRASTed a total of ". scalar @{$output}. " genomes!\n";
     print $msg . "\n";
