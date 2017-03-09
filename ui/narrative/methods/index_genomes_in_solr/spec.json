@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : "kbaseNarrativeMethodInput",
-    "output" : null
+    "output" : "no-display"
   },
   "parameters" : [ {
     "id" : "genomes",
