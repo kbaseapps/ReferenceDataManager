@@ -6,8 +6,7 @@
   "visble" : true,
   "categories" : ["active"],
   "widgets" : {
-    "input" : "kbaseNarrativeMethodInput",
-    "output" : "kbaseReportView"
+    "input" : "kbaseNarrativeMethodInput"
   },
   "parameters" : [ {
     "id" : "genomes",
