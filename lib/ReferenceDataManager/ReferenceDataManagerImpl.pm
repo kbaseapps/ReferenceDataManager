@@ -924,11 +924,11 @@ sub _checkTaxonStatus
             #print $solr_response->{response}->{response}->{numFound} ."\n";
 
             if ($record->{taxonomy_id} eq $current_genome->{tax_id} && lc $record->{domain} ne "unknown"){
-                $status = "Taxon inKBase";
+                $status = "Taxon with domain " . $record->{domain} . " in KBase";
                 last;
             }
             else{
-                $status = "Unknown domain";
+                $status = "Taxon with domain \"Unknown\" in KBase";
                 last;
             }
         }
@@ -3800,16 +3800,19 @@ sub rast_genomes
         $ncbigenomes = $params->{genomes};
     }
     
-    my $rdm_rast_ws = "ReferenceDataManager_RAST"; #$wsname . "_RAST";
+    my $rdm_rast_ws = "ReferenceGenomes_RAST"; #$wsname . "_RAST";
     eval {
-        $self->util_ws_client()->create_workspace($rdm_rast_ws);
+        $self->util_ws_client()->create_workspace({workspace=>$rdm_rast_ws,globalread=>"r",description=>"ws for RAST-ed Refseq Genomes"});
     };
     if ($@) {
         print $@;
+	if( $@!~/is already in use/ ) {
+           print "Failed to create the workspace " . $rdm_rast_ws;
+           exit 0;
+	}
     }
     else
     {
-
     #foreach my $ncbigenome (@{$ncbigenomes}) {
     for (my $i=0; $i < @{$ncbigenomes}; $i++) {
         my $ncbigenome = $ncbigenomes->[$i];
@@ -4021,7 +4024,7 @@ sub update_loaded_genomes
        
         if ($gn_status=~/(new|updated)/i) { 
                 #check if the taxon of the genome (named in KBase as $gnm->{tax_id} . "_taxon") is loaded in a KBase workspace
-                if( ($self->_checkTaxonStatus($gnm, $tx_solr_core))=~/inKBase/i ){
+                if( ($self->_checkTaxonStatus($gnm, $tx_solr_core))=~/in KBase/i ){
                     $count ++;
                     print "A '" . $gn_status . "' genome with taxon in KBase found, update_total=" . $count;
                     $self->load_genomes( {genomes => [$gnm], index_in_solr => 1} ); 
