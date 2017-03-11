@@ -1938,12 +1938,12 @@ sub list_loaded_genomes
                             $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                             $obj_src = $ws_objinfo->[10]->{Source};
                             if( $obj_src && $i == 0 ) {#phytozome
-                                if( $obj_src =~ /phytozome*/) {#check the source to include phytozome genomes only
+                                if( $obj_src =~ /phytozome*/i) {#check the source to include phytozome genomes only
                                     push @{$output}, $curr_gn_info; 
                                 }
                             }
                             elsif( $obj_src && $i == 1 ) {#refseq genomes (exclude 'plant')
-                                if( $obj_src =~ /refseq*/) {#check the source to exclude phytozome genomes
+                                if( $obj_src =~ /refseq*/i) {#check the source to exclude phytozome genomes
                                     push @{$output}, $curr_gn_info;
 =begin
 ##NOTE:The following line is needed only for the case if you want to index a large number (>100k) genome_features, 
@@ -1959,7 +1959,7 @@ sub list_loaded_genomes
                             }
                             elsif( $obj_src && $i == 2 ) {#ensembl genomes #TODO
                                 if( $obj_src !~ /phytozome*/ && $obj_src !~ /refseq*/ ) {
-                                    if( $ws_objinfo->[10]->{Domain} !~ /Plant/ && $ws_objinfo->[10]->{Domain} !~ /Bacteria/ ) {    
+                                    if( $ws_objinfo->[10]->{Domain} !~ /Plant/i && $ws_objinfo->[10]->{Domain} !~ /Bacteria/i ) {    
                                         push @{$output}, $curr_gn_info; 
                                     }       
                                 }
