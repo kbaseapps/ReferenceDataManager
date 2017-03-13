@@ -1351,6 +1351,63 @@ sub _indexInSolr
 
 #################### End subs for accessing SOLR #######################
 
+#
+# internal method, for deleting a genome's SOLR entries that have the ws_ref version greater than 1
+# For sanity check of the first round of RDM genome loading and indexing, due to concurrent loading, 
+# some genomes were loaded twice within a few seconds period when indexing in SOLR did not have 
+# enough time to complete.
+# The input parameter $gnm_ver is default to '1' for the first round, meaning to keep this version and 
+# delete the rest versions if any, an int.
+# Input parameter $gnm_id is the genome_id, a string
+# Input parameter $solr_core is the SOLR core name, a string
+#
+sub _deleteGenomeFeatures
+{
+    my ($self, $gnm_id, $gnm_ver, $solr_core) = @_;
+
+    if (!$self->_ping()) {
+        die "\nError--Solr server not responding:\n" . $self->_error->{response};
+    }
+    
+    $solr_core = "GenomeFeatures_prod" unless $solr_core;
+    $gnm_ver = 1 unless $gnm_ver;
+
+    my $status = "";
+    my $params = {
+        fl => "ws_ref,genome_feature_id",
+        wt => "json"
+    };
+    my $query = { 
+        genome_id => $gnm_id 
+    };
+    my $ws_ver= "";
+
+    my $solr_response = $self->_searchSolr($solr_core, $params, $query, "json");
+    my $found = $solr_response->{response}->{response}->{numFound};
+    if ($found == 0 ) {
+        $status = "Genome not found";
+    }
+    else {
+        my $solr_records = $solr_response->{response}->{response}->{docs};
+        print "\n\nFound " . $found . " genome_feature(s)\n";
+        my $ver = $solr_records->[0]->{ws_ref};
+        $ver =~ s/^(.*\/)(\d+)$/$1/;
+        $ver .= $gnm_ver;
+    
+    my $solrCore = "/$solr_core";
+
+    # Build the <query/> string that concatenates all the criteria into query tags
+    my $queryCriteria = "<delete><query>genome_id:$gnm_id</query>";
+    $queryCriteria .= "<query>-ws_ref:$ver</query></delete>&commit=false";
+    #print "The deletion query string is: \n" . "$queryCriteria \n";
+
+    my $solrQuery = $self->{_SOLR_URL}.$solrCore."/update?stream.body=".$queryCriteria;
+    print "The final deletion query string is: \n" . "$solrQuery \n";
+
+    #return $self->_sendRequest("$solrQuery", "GET");
+    }
+}
+
 #################### Start subs for accessing NCBI ########################
 
 #
@@ -1965,7 +2022,7 @@ sub list_loaded_genomes
                                 }
                             }
                             
-                            if (@{$output} < 10) {
+                            if (@{$output} < 10  && @{$output} > 0) {
                                 $msg .= $curr_gn_info->{accession}.";".$curr_gn_info->{workspace_name}.";".$curr_gn_info->{domain}.";".$curr_gn_info->{source}.";".$curr_gn_info->{save_date}.";".$curr_gn_info->{contig_count}." contigs;".$curr_gn_info->{feature_count}." features; KBase id:".$curr_gn_info->{ref}."\n";
                             }
                         }
@@ -2549,7 +2606,7 @@ sub list_loaded_taxa
     my $msg = "";
     my $output = [];
 
-    my $wsname = $params ->{workspace_name};
+    my $wsname = $params->{workspace_name};
     my $wsinfo;
     my $wsoutput;
     my $taxonout;
@@ -2572,7 +2629,6 @@ sub list_loaded_taxa
     print "I: Fetching ".($maxid-($minid-1))." taxon objects.\n";
     print "I: Paging through $pages of $batch_count objects\n"; 
     for (my $m = $first_page; $m <= $pages; $m++) {
-
         my ($minObjID,$maxObjID)=(( $batch_count * $m ) + 1,$batch_count * ( $m + 1));
 
         #set limit based on whats been done before
@@ -2646,14 +2702,14 @@ sub list_loaded_taxa
             push(@{$output}, $curr_taxon);
 	    push(@{$solr_taxa}, $curr_taxon);
 
-            if (@{$output} < 10) {
+            if (@{$output} < 10  && @{$output} > 0) {
                 my $curr = @{$output}-1;
                 $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
             }
 	}
 
 	#indexing in SOLR for every $batchCount of taxa
-	#$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy_prod"});
+	$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy"});
 
         if(exists($params->{batch}) && scalar(@$output) >= $params->{batch}){
             last;
@@ -3195,42 +3251,55 @@ sub index_taxa_in_solr
     $params = $self->util_args($params,[],{
         taxa => {},
         create_report => 0,
+        workspace_name => undef,
         solr_core => "taxonomy_prod" 
     });
 
+    my $taxa;
+    if (!defined($params->{taxa})) {
+        $taxa = $self->list_loaded_taxa({
+                workspace_name => "ReferenceTaxons",
+                create_report => 0
+            });
+    } else {
+        $taxa = $params->{taxa};
+    }
+    my $solrCore = $params->{solr_core};
+    
     my $msg = "";
     $output = [];
-    my $taxa = $params->{taxa};
-    my $solrCore = $params->{solr_core};
     my $solrBatch = [];
     my $solrBatchCount = 10000;
-    print "\nTotal taxa to be indexed: ". @{$taxa} . "\n";
+    print "\nTotal taxa to be indexed: ". @{$taxa} . " to $solrCore.\n";
 
     for (my $i = 0; $i < @{$taxa}; $i++) {
-        my $taxonData = $taxa -> [$i] -> {taxon};#an UnspecifiedObject
-        my $wref = $taxa -> [$i] -> {ws_ref};
-        my $current_taxon = $self -> _getTaxon($taxonData, $wref);
+        my $taxonData = $taxa->[$i]->{taxon};#an UnspecifiedObject
+        my $wref = $taxa->[$i]->{ws_ref};
+        my $current_taxon = $self->_getTaxon($taxonData, $wref);
 
         push(@{$solrBatch}, $current_taxon);
         if(@{$solrBatch} >= $solrBatchCount) {
             eval {
-                $self -> _indexInSolr($solrCore, $solrBatch );
+                $self->_indexInSolr($solrCore, $solrBatch );
             };
             if($@) {
                 print "Failed to index the taxa!\n";
-                print "ERROR:". Dumper( $@ );
+                if( defined ($@)){
+                    print "ERROR:".Dumper($@);
+                }
                 if(ref($@) eq 'HASH' && defined($@->{status_line})) {
                     print $@->{status_line}."\n";
                 }
             }
             else {
                 print "\nIndexed ". @{$solrBatch} . " taxa.\n";
+                push(@{$output}, $solrBatch);
                 $solrBatch = [];
             }
         }
 
-        push(@{$output}, $current_taxon);
-        if (@{$output} < 10) {
+        #push(@{$output}, $current_taxon);
+        if (@{$output} < 10 && @{$output} > 0){
             my $curr = @{$output}-1;
             $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
         }
@@ -3241,12 +3310,15 @@ sub index_taxa_in_solr
             };
             if($@) {
                 print "Failed to index the taxa!\n";
-                print "ERROR:".$@;
+                if( defined ($@)){
+                    print "ERROR:". Dumper($@);
+                }
                 if(ref($@) eq 'HASH' && defined($@->{status_line})) {
                     print $@->{status_line}."\n";
                 }
             }
             else {
+                push(@{$output}, $solrBatch);
                 print "\nIndexed ". @{$solrBatch} . " taxa.\n";
             }
     }
@@ -3499,7 +3571,7 @@ sub load_genomes
                     });
                 }
                 push(@{$output},$genomeout);
-                if (@{$output} < 10) {
+                if (@{$output} < 10  && @{$output} > 0) {
                    $msg .= "Loaded genome: ".$genomeout->{id}." into workspace ".$genomeout->{workspace_name}.";\n";
                 }
                 print "!!!!!!!!!!!!!--Loading of $ncbigenome->{id} succeeded--!!\n";
@@ -3871,7 +3943,7 @@ sub rast_genomes
                 });
             }
             push(@{$output},$rastgenome);
-            if (@{$output} < 10) {
+            if (@{$output} < 10  && @{$output} > 0) {
                    $msg .= "RASTed genome: ".$rastgenome->{id}." into workspace ".$rdm_rast_ws.";\n";
             }
             print "!!!!!!!!!!!!!--rasting of $ncbigenome->{id} succeeded--!!\n";
@@ -4029,7 +4101,7 @@ sub update_loaded_genomes
                     $count ++;
                     print "A '" . $gn_status . "' genome with taxon in KBase found, update_total=" . $count;
                     $self->load_genomes( {genomes => [$gnm], index_in_solr => 1} ); 
-                    push(@{$output},$gnm);
+                    push(@{$output},{genome_id=>$gnm->{id}});
                     if ($count < 10) {
                         $msg .= $gnm->{accession}.";".$gnm->{status}.";".$gnm->{name}.";".$gnm->{ftp_dir}.";".$gnm->{file}.";".$gnm->{id}.";".$gnm->{version}.";".$gnm->{source}.";".$gnm->{domain}."\n";
                     }
@@ -4048,7 +4120,6 @@ sub update_loaded_genomes
         });
         $output = [$params->{workspace_name}."/update_loaded_genomes"];
     }
-
 
     #END update_loaded_genomes
     my @_bad_returns;
