@@ -35,7 +35,7 @@ parameters :
         short-hint : |
             KBase taxon data
         long-hint  : |
-            KBase taxon data of type 'KBaseReferenceGenomeData'
+            KBase taxon data of type 'ReferenceDataManager.LoadedReferenceTaxonData'
 
     solr_core :
         ui-name : |
@@ -46,4 +46,4 @@ parameters :
             Name of the solr core
 
 description : |
-    <p>Send KBaseReferenceGenomeData taxa for index in Solr</p>
+    <p>Send KBase Reference Taxon Data for index in Solr</p>

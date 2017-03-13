@@ -4008,11 +4008,12 @@ sub update_loaded_genomes
     my $count = 0;
     my $gn_solr_core = "GenomeFeatures_prod";
     my $tx_solr_core = "taxonomy_prod";
-    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only=>$params->{update_only}});
 
     if (! $self->_ping()) {
         die "\nError--Solr server not responding:\n" . $self->_error->{response};
     }
+    
+    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only=>$params->{update_only}});
 
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
     for (my $i=0; $i < @{$ref_genomes}; $i++) {
