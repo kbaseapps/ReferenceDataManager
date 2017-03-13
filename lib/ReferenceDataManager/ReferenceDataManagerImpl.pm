@@ -2709,7 +2709,7 @@ sub list_loaded_taxa
 	}
 
 	#indexing in SOLR for every $batchCount of taxa
-	$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy"});
+        #$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy"});
 
         if(exists($params->{batch}) && scalar(@$output) >= $params->{batch}){
             last;
@@ -3249,7 +3249,7 @@ sub index_taxa_in_solr
     }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        taxa => {},
+        taxa => undef,
         create_report => 0,
         workspace_name => undef,
         solr_core => "taxonomy_prod" 
@@ -3260,7 +3260,7 @@ sub index_taxa_in_solr
         $taxa = $self->list_loaded_taxa({
                 workspace_name => "ReferenceTaxons",
                 create_report => 0
-            });
+        });
     } else {
         $taxa = $params->{taxa};
     }
@@ -3293,7 +3293,7 @@ sub index_taxa_in_solr
             }
             else {
                 print "\nIndexed ". @{$solrBatch} . " taxa.\n";
-                push(@{$output}, $solrBatch);
+                push(@{$output}, @{$solrBatch});
                 $solrBatch = [];
             }
         }
@@ -3318,7 +3318,7 @@ sub index_taxa_in_solr
                 }
             }
             else {
-                push(@{$output}, $solrBatch);
+                push(@{$output}, @{$solrBatch});
                 print "\nIndexed ". @{$solrBatch} . " taxa.\n";
             }
     }
