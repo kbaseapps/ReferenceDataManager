@@ -77,6 +77,10 @@
           "target_property": "taxa"
         },
         {
+          "input_parameter": "start_offset",
+          "target_property": "start_offset"
+        },
+        {
           "constant_value" : "1",
           "target_property": "create_report"
         },
