@@ -20,6 +20,16 @@
 	"valid_ws_types" : ["LoadedReferenceTaxonData"]
     }
   }, {
+    "id" : "start_offset",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["0"],
+    "field_type" : "text",
+    "text_options":{
+	"validate_as" : "int"
+    }
+  }, {
     "id" : "solr_core",
     "optional":false,
     "advanced":false,

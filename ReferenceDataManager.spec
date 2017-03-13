@@ -282,6 +282,7 @@ module ReferenceDataManager {
         string solr_core;
         string workspace_name;
         bool create_report;
+        int start_offset;
     } IndexTaxaInSolrParams;
     
     /*

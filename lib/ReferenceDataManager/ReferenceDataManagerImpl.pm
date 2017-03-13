@@ -3252,6 +3252,7 @@ sub index_taxa_in_solr
         taxa => undef,
         create_report => 0,
         workspace_name => undef,
+        start_offset => 0,
         solr_core => "taxonomy_prod" 
     });
 
@@ -3259,6 +3260,7 @@ sub index_taxa_in_solr
     if (!defined($params->{taxa})) {
         $taxa = $self->list_loaded_taxa({
                 workspace_name => "ReferenceTaxons",
+                minid => $params->{start_offset},
                 create_report => 0
         });
     } else {

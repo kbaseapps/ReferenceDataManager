@@ -45,5 +45,13 @@ parameters :
         long-hint  : |
             Name of the solr core
 
+    start_offset :
+        ui-name : |
+            Offset start position
+        short-hint : |
+            Skip this count of the taxa before indexing
+        long-hint  : |
+            Skip this count of the taxa before indexing
+
 description : |
     <p>Send KBase Reference Taxon Data for index in Solr</p>
