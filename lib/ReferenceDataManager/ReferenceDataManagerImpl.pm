@@ -3332,7 +3332,7 @@ sub index_taxa_in_solr
             message => $msg,
             workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace_name}."/indexed_taxa_in_solr"];
+        $output = [$params->{workspace_name}."/index_taxa_in_solr"];
     }
     #END index_taxa_in_solr
     my @_bad_returns;
