@@ -459,7 +459,7 @@ sub _deleteRecords
         $queryCriteria .= "<query>$key:". URI::Escape::uri_escape($criteria->{$key}) . "</query>";
     }
 
-    $queryCriteria .= "</delete>&commit=true";
+    $queryCriteria .= "</delete>&commit=false";
     #print "The deletion query string is: \n" . "$queryCriteria \n";
 
     my $solrQuery = $self->{_SOLR_URL}.$solrCore."/update?stream.body=".$queryCriteria;
@@ -1205,7 +1205,7 @@ sub _indexGenomeFeatureData
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
                         objects => [$ws_ref]
-                    });
+                });
             };
             if($@) {
                 print "Cannot get object information!\n";
@@ -1350,63 +1350,6 @@ sub _indexInSolr
 }
 
 #################### End subs for accessing SOLR #######################
-
-#
-# internal method, for deleting a genome's SOLR entries that have the ws_ref version greater than 1
-# For sanity check of the first round of RDM genome loading and indexing, due to concurrent loading, 
-# some genomes were loaded twice within a few seconds period when indexing in SOLR did not have 
-# enough time to complete.
-# The input parameter $gnm_ver is default to '1' for the first round, meaning to keep this version and 
-# delete the rest versions if any, an int.
-# Input parameter $gnm_id is the genome_id, a string
-# Input parameter $solr_core is the SOLR core name, a string
-#
-sub _deleteGenomeFeatures
-{
-    my ($self, $gnm_id, $gnm_ver, $solr_core) = @_;
-
-    if (!$self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
-    
-    $solr_core = "GenomeFeatures_prod" unless $solr_core;
-    $gnm_ver = 1 unless $gnm_ver;
-
-    my $status = "";
-    my $params = {
-        fl => "ws_ref,genome_feature_id",
-        wt => "json"
-    };
-    my $query = { 
-        genome_id => $gnm_id 
-    };
-    my $ws_ver= "";
-
-    my $solr_response = $self->_searchSolr($solr_core, $params, $query, "json");
-    my $found = $solr_response->{response}->{response}->{numFound};
-    if ($found == 0 ) {
-        $status = "Genome not found";
-    }
-    else {
-        my $solr_records = $solr_response->{response}->{response}->{docs};
-        print "\n\nFound " . $found . " genome_feature(s)\n";
-        my $ver = $solr_records->[0]->{ws_ref};
-        $ver =~ s/^(.*\/)(\d+)$/$1/;
-        $ver .= $gnm_ver;
-    
-    my $solrCore = "/$solr_core";
-
-    # Build the <query/> string that concatenates all the criteria into query tags
-    my $queryCriteria = "<delete><query>genome_id:$gnm_id</query>";
-    $queryCriteria .= "<query>-ws_ref:$ver</query></delete>&commit=false";
-    #print "The deletion query string is: \n" . "$queryCriteria \n";
-
-    my $solrQuery = $self->{_SOLR_URL}.$solrCore."/update?stream.body=".$queryCriteria;
-    print "The final deletion query string is: \n" . "$solrQuery \n";
-
-    #return $self->_sendRequest("$solrQuery", "GET");
-    }
-}
 
 #################### Start subs for accessing NCBI ########################
 
@@ -1992,15 +1935,16 @@ sub list_loaded_genomes
                     if( @{$wsoutput} > 0 ) {
                         for (my $j=0; $j < @{$wsoutput}; $j++) {
                             $ws_objinfo = $wsoutput->[$j];
-                            $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                             $obj_src = $ws_objinfo->[10]->{Source};
                             if( $obj_src && $i == 0 ) {#phytozome
                                 if( $obj_src =~ /phytozome*/i) {#check the source to include phytozome genomes only
+                                    $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info; 
                                 }
                             }
                             elsif( $obj_src && $i == 1 ) {#refseq genomes (exclude 'plant')
-                                if( $obj_src =~ /refseq*/i) {#check the source to exclude phytozome genomes
+                                if( $obj_src =~ /refseq*/i && $ws_objinfo->[4] == 1) {#check the source to exclude phytozome genomes
+                                    $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info;
 =begin
 ##NOTE:The following line is needed only for the case if you want to index a large number (>100k) genome_features, 
@@ -2016,7 +1960,8 @@ sub list_loaded_genomes
                             }
                             elsif( $obj_src && $i == 2 ) {#ensembl genomes #TODO
                                 if( $obj_src !~ /phytozome*/ && $obj_src !~ /refseq*/ ) {
-                                    if( $ws_objinfo->[10]->{Domain} !~ /Plant/i && $ws_objinfo->[10]->{Domain} !~ /Bacteria/i ) {    
+                                    if( $ws_objinfo->[10]->{Domain} !~ /Plant/i && $ws_objinfo->[10]->{Domain} !~ /Bacteria/i ) {
+                                        $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                         push @{$output}, $curr_gn_info; 
                                     }       
                                 }
@@ -2461,7 +2406,7 @@ sub index_genomes_in_solr
     my $solrCore = $params->{solr_core};
     @{$genomes} = @{$genomes}[$params->{start_offset}..@{$genomes} - 1];
     print "\nTotal genomes to be indexed: ". @{$genomes} . "\n";
-
+exit 0;
     $output = $self->_indexGenomeFeatureData($solrCore, $genomes);
     my $gnft_count = $output->{count};
     $output = $output->{genome_features};
