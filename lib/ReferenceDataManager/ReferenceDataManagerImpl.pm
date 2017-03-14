@@ -2406,7 +2406,6 @@ sub index_genomes_in_solr
     my $solrCore = $params->{solr_core};
     @{$genomes} = @{$genomes}[$params->{start_offset}..@{$genomes} - 1];
     print "\nTotal genomes to be indexed: ". @{$genomes} . "\n";
-exit 0;
     $output = $self->_indexGenomeFeatureData($solrCore, $genomes);
     my $gnft_count = $output->{count};
     $output = $output->{genome_features};
