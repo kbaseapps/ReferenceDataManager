@@ -1953,7 +1953,7 @@ sub list_loaded_genomes
                                 }
                             }
                             elsif( $obj_src && $i == 1 ) {#refseq genomes (exclude 'plant')
-                                if( $obj_src =~ /refseq*/i && $ws_objinfo->[4] == 1) {#check the source to exclude phytozome genomes
+                                if( $obj_src =~ /refseq*/i && $ws_objinfo->[4] == 2) {#check the source to exclude phytozome genomes
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info;
                             
