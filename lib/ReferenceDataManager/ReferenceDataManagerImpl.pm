@@ -1946,12 +1946,20 @@ sub list_loaded_genomes
                                 if( $obj_src =~ /phytozome*/i) {#check the source to include phytozome genomes only
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info; 
+                            
+                            if (@{$output} < 10  && @{$output} > 0) {
+                                $msg .= $curr_gn_info->{accession}.";".$curr_gn_info->{workspace_name}.";".$curr_gn_info->{domain}.";".$curr_gn_info->{source}.";".$curr_gn_info->{save_date}.";".$curr_gn_info->{contig_count}." contigs;".$curr_gn_info->{feature_count}." features; KBase id:".$curr_gn_info->{ref}."\n";
+                            }
                                 }
                             }
                             elsif( $obj_src && $i == 1 ) {#refseq genomes (exclude 'plant')
                                 if( $obj_src =~ /refseq*/i && $ws_objinfo->[4] == 1) {#check the source to exclude phytozome genomes
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info;
+                            
+                            if (@{$output} < 10  && @{$output} > 0) {
+                                $msg .= $curr_gn_info->{accession}.";".$curr_gn_info->{workspace_name}.";".$curr_gn_info->{domain}.";".$curr_gn_info->{source}.";".$curr_gn_info->{save_date}.";".$curr_gn_info->{contig_count}." contigs;".$curr_gn_info->{feature_count}." features; KBase id:".$curr_gn_info->{ref}."\n";
+                            }
 =begin
 ##NOTE:The following line is needed only for the case if you want to index a large number (>100k) genome_features, 
 #because of the reality that there will be interruption of all sorts.
@@ -1969,12 +1977,12 @@ sub list_loaded_genomes
                                     if( $ws_objinfo->[10]->{Domain} !~ /Plant/i && $ws_objinfo->[10]->{Domain} !~ /Bacteria/i ) {
                                         $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                         push @{$output}, $curr_gn_info; 
-                                    }       
-                                }
-                            }
                             
                             if (@{$output} < 10  && @{$output} > 0) {
                                 $msg .= $curr_gn_info->{accession}.";".$curr_gn_info->{workspace_name}.";".$curr_gn_info->{domain}.";".$curr_gn_info->{source}.";".$curr_gn_info->{save_date}.";".$curr_gn_info->{contig_count}." contigs;".$curr_gn_info->{feature_count}." features; KBase id:".$curr_gn_info->{ref}."\n";
+                            }
+                                    }       
+                                }
                             }
                         }
                     }
