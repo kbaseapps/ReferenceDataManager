@@ -1368,13 +1368,15 @@ sub _list_ncbi_refgenomes
     my ($self, $source, $division, $update_only) = @_;
        
     $source = "refseq" unless $source;
-    $division = "bacteria" unless $division; 
     $update_only = 0 unless $update_only;
 
     my $output = [];
     my $summary = "";
     my $count = 0;
     
+    if(!defined($division)) {
+        return undef;
+    }
     my @divisions = split /,/, $division;
     foreach my $dvsn (@divisions){
         $count = 0;
@@ -1739,21 +1741,24 @@ sub list_reference_genomes
     my $summary = "";
     $output = [];
 
+    my $gn_domain = $params->{domain};    
     my $gn_source = "refseq";
     if($params->{refseq} == 1) {
         $gn_source = "refseq";
     }
     elsif($params->{phytozome} == 1) {
         $gn_source = "phytozome";
+        $gn_domain = undef;    
     }
     elsif($params->{ensembl} == 1) {
         $gn_source = "ensembl";
+        $gn_domain = undef;    
     }
     
-    my $gn_domain = $params->{domain};    
     print $gn_source . "---" . $gn_domain . "\n";
     
     my $list_items = $self->_list_ncbi_refgenomes($gn_source, $gn_domain, $params->{update_only});
+    if(defined($list_items)) {
     $output = $list_items->{ref_genomes};
     $summary = $list_items->{summary};
 
@@ -1766,6 +1771,7 @@ sub list_reference_genomes
             workspace => $params->{workspace_name}
         });  
         $output = [$params->{workspace_name}."/list_reference_genomes"];
+    }
     }    
     #END list_reference_genomes
     my @_bad_returns;
