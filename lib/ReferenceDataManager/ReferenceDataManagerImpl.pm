@@ -4016,6 +4016,7 @@ sub update_loaded_genomes
         phytozome=>0,
         ensembl=>0, 
         update_only=>0,
+        domain => "bacteria",
         start_offset=>0,
         workspace_name=>undef
     });
@@ -4031,7 +4032,7 @@ sub update_loaded_genomes
         die "\nError--Solr server not responding:\n" . $self->_error->{response};
     }
     
-    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only=>$params->{update_only}});
+    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},domain=>$params->{domain},update_only=>$params->{update_only}});
 
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
     for (my $i=0; $i < @{$ref_genomes}; $i++) {

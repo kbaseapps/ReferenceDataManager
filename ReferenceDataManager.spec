@@ -350,6 +350,7 @@ module ReferenceDataManager {
         bool phytozome;
         bool update_only;
         string workspace_name;
+        string domain;
         int start_offset;
     } UpdateLoadedGenomesParams;
     

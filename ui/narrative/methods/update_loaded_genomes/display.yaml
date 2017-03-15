@@ -54,6 +54,14 @@ parameters :
             Update KBase Ensembl genomes
         long-hint  : |
             Update KBase Ensembl genomes
+    
+    domain :
+        ui-name : |
+            Division of genomes
+        short-hint : |
+            List genomes of this division available in given source
+        long-hint  : |
+            List genomes of this division available in given source
 
     start_offset :
         ui-name : |
