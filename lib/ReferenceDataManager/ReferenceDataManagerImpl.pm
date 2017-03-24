@@ -1237,7 +1237,9 @@ sub _indexGenomeFeatureData
                             
                     $numCDs  = 0;
                     foreach my $feature (@{$ws_gn_features}) {
-                        $numCDs++ if $feature->{type} = 'CDS';
+                        if ($feature->{type} eq "gene") {
+                            $numCDs++;
+                        }
                     }
 
                     ###1)---Build the genome solr object for the sake of the search UI/search service
