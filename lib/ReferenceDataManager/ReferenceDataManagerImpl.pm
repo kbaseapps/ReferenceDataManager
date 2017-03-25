@@ -2419,7 +2419,7 @@ sub index_genomes_in_solr
     my $msg = "";
     my $genomes;
 
-    my $objVer = $params->{object_ver};
+    my $objVer = $params->{genome_ver};
     if (!defined($params->{genomes})) {
         $genomes = $self->list_loaded_genomes({refseq=>1,genome_ver=>$objVer});
     } else {
