@@ -42,6 +42,16 @@
       "checked_value": 1,
       "unchecked_value": 0
     }
+  }, {
+    "id": "genome_ver",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["1"],
+    "field_type" : "text",
+    "text_options":{
+	"validate_as" : "int"
+    }
   }],
   "job_id_output_field": "docker",
   "behavior" : {

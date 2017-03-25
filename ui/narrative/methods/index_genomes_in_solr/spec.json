@@ -30,6 +30,16 @@
 	"validate_as" : "int"
     }
   }, {
+    "id": "genome_ver",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["1"],
+    "field_type" : "text",
+    "text_options":{
+	"validate_as" : "int"
+    }
+  }, {
     "id" : "solr_core",
     "optional":false,
     "advanced":false,
@@ -43,12 +53,6 @@
           "display": "GenomeFeatures_ci",
           "id": "ci",
           "ui_name": "GenomeFeatures_ci"
-        },
-        {
-          "value": "GenomeFeatures_appdev",
-          "display": "GenomeFeatures_appdev",
-          "id": "appdev",
-          "ui_name": "GenomeFeatures_appdev"
         },
         {
           "value": "GenomeFeatures_prod",

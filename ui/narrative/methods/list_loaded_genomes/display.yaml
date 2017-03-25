@@ -24,7 +24,7 @@ suggestions :
         related :
             []
         next :
-            [load_genomes]
+            []
 
 
 #
@@ -54,6 +54,14 @@ parameters :
             List genomes loaded from Ensembl
         long-hint  : |
             List genomes loaded from Ensembl
+
+    genome_ver :
+        ui-name : |
+            Version of loaded genomes
+        short-hint : |
+            List genomes loaded for this version only
+        long-hint  : |
+            List genomes loaded for this version only
 
 description : |
     <p>Lists genomes loaded into KBase from source databases</p>
