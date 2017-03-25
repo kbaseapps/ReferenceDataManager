@@ -52,6 +52,7 @@ module ReferenceDataManager {
         bool refseq;
         bool phytozome;
 	string workspace_name;
+        int genome_ver;
 	bool create_report;
     } ListLoadedGenomesParams;
     
@@ -170,6 +171,7 @@ module ReferenceDataManager {
         string solr_core;
         string workspace_name;
         int start_offset;
+        int genome_ver;
         bool create_report; 
     } IndexGenomesInSolrParams;
     

@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = 'a91fb903c5736bfeefc6606f6301a5aed57fb1aa';
+our $GIT_COMMIT_HASH = '2dfb63601e3894a7f166c8fb86c8c7a2dd471a50';
 
 =head1 NAME
 
@@ -31,7 +31,7 @@ use Data::Dumper qw(Dumper);
 use LWP::UserAgent;
 use XML::Simple;
 use Try::Tiny;
-
+use DateTime;
 
 #The first thing every function should do is call this function
 sub util_initialize_call {
@@ -1807,6 +1807,7 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 LoadedReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1840,6 +1841,7 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 LoadedReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1895,6 +1897,7 @@ sub list_loaded_genomes
         phytozome => 0,
         refseq => 1,
         create_report => 0,
+        genome_ver => 1,
         workspace_name => undef
     });
     my $msg = "";
@@ -1955,7 +1958,7 @@ sub list_loaded_genomes
                                 }
                             }
                             elsif( $obj_src && $i == 1 ) {#refseq genomes (exclude 'plant')
-                                if( $obj_src =~ /refseq*/i && $ws_objinfo->[4] == 1) {#check the source to exclude phytozome genomes
+                                if( $obj_src =~ /refseq*/i && $ws_objinfo->[4] == $params->{genome_ver}) {#check the source to exclude phytozome genomes
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info;
                             
@@ -2252,6 +2255,7 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	start_offset has a value which is an int
+	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -2317,6 +2321,7 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	start_offset has a value which is an int
+	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -2407,14 +2412,16 @@ sub index_genomes_in_solr
         solr_core => "GenomeFeatures_prod",
         workspace_name => undef,
         create_report => 0,
+        genome_ver => 1,
         start_offset => 0
     });
 
     my $msg = "";
     my $genomes;
 
+    my $objVer = $params->{object_ver};
     if (!defined($params->{genomes})) {
-        $genomes = $self->list_loaded_genomes({refseq=>1});
+        $genomes = $self->list_loaded_genomes({refseq=>1,genome_ver=>$objVer});
     } else {
         $genomes = $params->{genomes};
     }
@@ -3074,6 +3081,7 @@ IndexTaxaInSolrParams is a reference to a hash where the following keys are defi
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
+	start_offset has a value which is an int
 LoadedReferenceTaxonData is a reference to a hash where the following keys are defined:
 	taxon has a value which is a ReferenceDataManager.KBaseReferenceTaxonData
 	ws_ref has a value which is a string
@@ -3131,6 +3139,7 @@ IndexTaxaInSolrParams is a reference to a hash where the following keys are defi
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
+	start_offset has a value which is an int
 LoadedReferenceTaxonData is a reference to a hash where the following keys are defined:
 	taxon has a value which is a ReferenceDataManager.KBaseReferenceTaxonData
 	ws_ref has a value which is a string
@@ -3957,6 +3966,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	phytozome has a value which is a ReferenceDataManager.bool
 	update_only has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	domain has a value which is a string
 	start_offset has a value which is an int
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -3984,6 +3994,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	phytozome has a value which is a ReferenceDataManager.bool
 	update_only has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	domain has a value which is a string
 	start_offset has a value which is an int
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -4297,6 +4308,7 @@ ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -4310,6 +4322,7 @@ ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
 
@@ -4610,6 +4623,7 @@ genomes has a value which is a reference to a list where each element is a Refer
 solr_core has a value which is a string
 workspace_name has a value which is a string
 start_offset has a value which is an int
+genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -4623,6 +4637,7 @@ genomes has a value which is a reference to a list where each element is a Refer
 solr_core has a value which is a string
 workspace_name has a value which is a string
 start_offset has a value which is an int
+genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
 
@@ -4910,6 +4925,7 @@ taxa has a value which is a reference to a list where each element is a Referenc
 solr_core has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+start_offset has a value which is an int
 
 </pre>
 
@@ -4922,6 +4938,7 @@ taxa has a value which is a reference to a list where each element is a Referenc
 solr_core has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+start_offset has a value which is an int
 
 
 =end text
@@ -5081,6 +5098,7 @@ refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+domain has a value which is a string
 start_offset has a value which is an int
 
 </pre>
@@ -5095,6 +5113,7 @@ refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+domain has a value which is a string
 start_offset has a value which is an int
 
 
