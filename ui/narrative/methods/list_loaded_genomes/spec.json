@@ -72,6 +72,10 @@
           "input_parameter": "phytozome",
           "target_property": "phytozome"
         },
+	{
+          "input_parameter": "genome_ver",
+          "target_property": "genome_ver"
+        },
         {
           "constant_value" : "1",
           "target_property": "create_report"
