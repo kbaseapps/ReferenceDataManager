@@ -82,6 +82,10 @@
           "input_parameter" : "start_offset",
           "target_property": "start_offset"
         },
+	{
+          "input_parameter" : "genome_ver",
+          "target_property": "genome_ver"
+        },
         {
           "narrative_system_variable": "workspace",
           "target_property": "workspace_name"
