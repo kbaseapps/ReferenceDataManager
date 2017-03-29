@@ -1,6 +1,6 @@
 {
   "ver" : "1.0.0",
-  "name" : "Uplate loaded genomes in reference databases",
+  "name" : "Uplate loaded refseq genomes in KBase",
   "authors" : [ "chenry", "qzhang" ],
   "contact" : "help@kbase.us",
   "visble" : true,
@@ -45,7 +45,7 @@
   }, {
     "id" : "start_offset",
     "optional":false,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":["0"],
     "field_type" : "text",
@@ -55,7 +55,7 @@
   }, {
     "id" : "domain",
     "optional":false,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":["bacteria"],
     "field_type" : "dropdown",

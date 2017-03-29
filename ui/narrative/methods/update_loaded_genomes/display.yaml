@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Update KBase reference genomes with NCBI database
+name     : Update KBase RefSeq genomes with NCBI database
 
 tooltip  : |
-    Update KBase reference genomes with NCBI reference database
+    Update KBase RefSeq genomes with NCBI database
 
 screenshots :
     []

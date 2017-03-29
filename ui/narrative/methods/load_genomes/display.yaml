@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Load (and Index) Reference Genomes
+name     : Load (and Index) Genomes
 
 tooltip  : |
-    Load genomes from NCBI reference database into KBase, with option to index in Solr or not
+    Load genomes from NCBI database into KBase, with option to index in Solr or not
 
 screenshots :
     []
@@ -48,4 +48,4 @@ parameters :
              Indicate to send the genome info to Solr to be indexed
 
 description : |
-    <p>Load genomes into KBase and index in solr if want </p>
+    <p>Load RefSeq genomes into KBase and index in solr if want </p>

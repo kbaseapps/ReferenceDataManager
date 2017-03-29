@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : List reference genomes in KBase
+name     : List RefSeq genomes in KBase
 
 tooltip  : |
-    List reference genomes loaded in KBase
+    List RefSeq genomes loaded in KBase
 
 screenshots :
     []

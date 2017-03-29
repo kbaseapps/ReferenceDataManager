@@ -170,11 +170,10 @@ sub util_create_report {
 #Internal Method: to list the genomes already in SOLR and return an array of those genomes
 #
 sub _listGenomesInSolr {
-    my ($self, $solrCore, $fields, $rowStart, $rowCount, $grp, $cmplt) = @_;
+    my ($self, $solrCore, $fields, $rowStart, $rowCount, $grp, $dmn, $cmplt) = @_;
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 10;
     $fields = ($fields) ? $fields : "*";
-    $cmplt = 1 unless $cmplt;
 
     my $params = {
         fl => $fields,
@@ -184,12 +183,20 @@ sub _listGenomesInSolr {
         hl => "false",
         start => $start
     };
-    my $query;
-    if( !defined( $cmplt ) ) {
-        $query = { q => "*" };
+    my $query = { q => "*" };
+        
+    if( defined( $cmplt ) {
+        if( defined( $dmn )) {
+            $query = { domain=>$dmn, complete=>$cmplt };
+        }
+        else {
+            $query = { complete=>$cmplt };
+        }
     }
     else {
-        $query = { domain=>"Bacteria", object_type=>"KBaseGenomes.Genome-8.2",complete=>$cmplt };
+        if( defined( $dmn )) {
+            $query = { domain=>$dmn};
+        }
     }
     
     return $self->_searchSolr($solrCore, $params, $query, "json", $grp);    
@@ -2183,20 +2190,18 @@ sub list_solr_genomes
         row_count => 10,
         group_option => "",
         create_report => 0,
+        domain => "Bacteria",
+        complete => undef,
         workspace_name => undef
     });
 
     $output = [];
     my $msg = "Found ";
     my $solrout;
-    my $solrCore = $params->{solr_core};
-    my $fields = "*";
-    my $startRow = $params->{row_start};
-    my $topRows = $params->{row_count};
-    my $grpOpt = $params->{group_option};
+    my $fields = "genome_id, ws_ref, scientific_name";
 
     eval {
-        $solrout = $self->_listGenomesInSolr($solrCore, $fields, $startRow, $topRows, $grpOpt);
+        $solrout = $self->_listGenomesInSolr($params->{solr_core}, $fields, $params->{row_start}, $params->{row_count}, $params->{group_option}, $params->{domain}, $params->{complete});
     };
     if($@) {
         print "Cannot list genomes in SOLR information!\n";

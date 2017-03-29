@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : List genomes in NCBI reference databases
+name     : List RefSeq genomes in NCBI databases
 
 tooltip  : |
-    List reference genomes contained in NCBI source databases
+    List RefSeq genomes contained in NCBI source databases
 
 screenshots :
     []
@@ -35,9 +35,9 @@ parameters :
         ui-name : |
             List RefSeq genomes
         short-hint : |
-            List genomes available in RefSeq
+            List RefSeq genomes available in NCBI
         long-hint  : |
-            List genomes available in RefSeq
+            List RefSeq genomes available in NCBI
 
     phytozome :
         ui-name : |
@@ -72,4 +72,4 @@ parameters :
             Only list updated genomes
 
 description : |
-    <p>Lists genomes from NCBI database</p>
+    <p>Lists RefSeq genomes from NCBI database</p>

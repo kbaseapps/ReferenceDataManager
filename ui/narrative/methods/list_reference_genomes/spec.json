@@ -1,6 +1,6 @@
 {
   "ver" : "1.0.0",
-  "name" : "List genomes in reference databases",
+  "name" : "List RefSeq genomes in NCBI databases",
   "authors" : [ "chenry", "qzhang" ],
   "contact" : "help@kbase.us",
   "visble" : true,

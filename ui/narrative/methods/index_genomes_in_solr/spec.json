@@ -22,7 +22,7 @@
   }, {
     "id" : "start_offset",
     "optional":false,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":["0"],
     "field_type" : "text",
@@ -32,7 +32,7 @@
   }, {
     "id": "genome_ver",
     "optional":false,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":["1"],
     "field_type" : "text",
