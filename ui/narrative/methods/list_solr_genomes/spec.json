@@ -12,7 +12,7 @@
   "parameters" : [ {
     "id" : "row_start",
     "optional":false,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":["0"],
     "field_type" : "text",
@@ -22,7 +22,7 @@
   }, {
     "id" : "row_count",
     "optional":false,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":["10"],
     "field_type" : "text",
@@ -34,34 +34,49 @@
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
-    "default_values":["GenomeFeatures_ci"],
+    "default_values":["Genomes_ci"],
     "field_type" : "dropdown",
     "dropdown_options":{
       "options": [
         {
-          "value": "GenomeFeatures_ci",
-          "display": "GenomeFeatures_ci",
-          "id": "ci",
-          "ui_name": "GenomeFeatures_ci"
+          "value": "Genomes_ci",
+          "display": "Genomes_ci",
+          "id": "ci_genomes",
+          "ui_name": "Genomes_ci"
         },
         {
-          "value": "GenomeFeatures_appdev",
-          "display": "GenomeFeatures_appdev",
-          "id": "appdev",
-          "ui_name": "GenomeFeatures_appdev"
-        },
-        {
-          "value": "GenomeFeatures_prod",
-          "display": "GenomeFeatures_prod",
-          "id": "prod",
-          "ui_name": "GenomeFeatures_prod"
+          "value": "Genomes_prod",
+          "display": "Genomes_prod",
+          "id": "prod_genomes",
+          "ui_name": "Genomes_prod"
         }
       ]
     }
   }, {
     "id" : "group_option",
     "optional":true,
-    "advanced":false,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "text",
+    "text_options" : {
+        "validate_as": "text"
+    } 
+  }, {
+    "id" : "complete",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value":"" 
+    }
+  }, {
+    "id" : "domain",
+    "optional":true,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":[""],
     "field_type" : "text",
@@ -91,6 +106,14 @@
         {
           "input_parameter": "group_option",
           "target_property": "group_option"
+        },
+        {
+          "input_parameter": "complete",
+          "target_property": "complete"
+        },
+        {
+          "input_parameter": "domain",
+          "target_property": "domain"
         },
         {
           "constant_value" : "1",

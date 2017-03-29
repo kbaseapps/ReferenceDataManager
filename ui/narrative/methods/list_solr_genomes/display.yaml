@@ -63,5 +63,21 @@ parameters :
         long-hint  : |
             Field to group the results by
 
+    complete :
+        ui-name : |
+            Genome is complete
+        short-hint : |
+            Indicate genome is complete
+        long-hint  : |
+            Indicate genome is complete 
+
+    domain :
+        ui-name : |
+            NCBI division
+        short-hint : |
+            Genome division by NCBI
+        long-hint  : |
+             Genome division by NCBI 
+
 description : |
     <p>Lists genomes loaded into KBase and indexed in Solr of a given core</p>

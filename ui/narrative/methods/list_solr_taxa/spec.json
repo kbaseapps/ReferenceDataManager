@@ -12,7 +12,7 @@
   "parameters" : [ {
     "id" : "row_start",
     "optional":false,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":["0"],
     "field_type" : "text",
@@ -22,7 +22,7 @@
   }, {
     "id" : "row_count",
     "optional":false,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":["10"],
     "field_type" : "text",
@@ -61,7 +61,7 @@
   }, {
     "id" : "group_option",
     "optional":true,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":[""],
     "field_type" : "text",
