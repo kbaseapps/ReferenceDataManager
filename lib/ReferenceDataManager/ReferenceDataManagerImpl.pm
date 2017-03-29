@@ -185,7 +185,7 @@ sub _listGenomesInSolr {
     };
     my $query = { q => "*" };
         
-    if( defined( $cmplt ) {
+    if( defined( $cmplt )) {
         if( defined( $dmn )) {
             $query = { domain=>$dmn, complete=>$cmplt };
         }
@@ -2199,6 +2199,7 @@ sub list_solr_genomes
     my $msg = "Found ";
     my $solrout;
     my $fields = "genome_id, ws_ref, scientific_name";
+    my $grpOpt = $params->{group_option};
 
     eval {
         $solrout = $self->_listGenomesInSolr($params->{solr_core}, $fields, $params->{row_start}, $params->{row_count}, $params->{group_option}, $params->{domain}, $params->{complete});
