@@ -170,10 +170,11 @@ sub util_create_report {
 #Internal Method: to list the genomes already in SOLR and return an array of those genomes
 #
 sub _listGenomesInSolr {
-    my ($self, $solrCore, $fields, $rowStart, $rowCount, $grp) = @_;
+    my ($self, $solrCore, $fields, $rowStart, $rowCount, $grp, $cmplt) = @_;
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 10;
     $fields = ($fields) ? $fields : "*";
+    $cmplt = 1 unless $cmplt;
 
     my $params = {
         fl => $fields,
@@ -183,7 +184,13 @@ sub _listGenomesInSolr {
         hl => "false",
         start => $start
     };
-    my $query = { q => "*" };
+    my $query;
+    if( !defined( $cmplt ) ) {
+        $query = { q => "*" };
+    }
+    else {
+        $query = { domain=>"Bacteria", object_type=>"KBaseGenomes.Genome-8.2",complete=>$cmplt };
+    }
     
     return $self->_searchSolr($solrCore, $params, $query, "json", $grp);    
 }
@@ -1227,12 +1234,12 @@ sub _indexGenomeFeatureData
 
                 #fetch individual data item to assemble the genome_feature info for $solr_gnftData
                 for (my $i=0; $i < @{$ws_gnout}; $i++) {
-                    $ws_gn_data = $ws_gnout -> [$i] -> {data};#an UnspecifiedObject
-                    $ws_gn_info = $ws_gnout -> [$i] -> {info};#is a reference to a list containing 11 items
+                    $ws_gn_data = $ws_gnout->[$i]->{data};#an UnspecifiedObject
+                    $ws_gn_info = $ws_gnout->[$i]->{info};#is a reference to a list containing 11 items
                     $ws_gn_features = $ws_gn_data->{features};
                     $ws_gn_tax = $ws_gn_data->{taxonomy};
                     $ws_gn_tax =~s/ *; */;;/g;
-                    $ws_gn_save_date = $ws_gn_info -> [3];
+                    $ws_gn_save_date = $ws_gn_info->[3];
                     $ws_gn_asmlevel = ($ws_gn_info->[10]->{assembly_level}=~/Complete Genome/i);
                             
                     $numCDs  = 0;
@@ -1306,28 +1313,28 @@ sub _getTaxon
 {
     my ($self, $taxonData, $wsref) = @_;
 
-    my $t_aliases = defined($taxonData -> {aliases}) ? join(";", @{$taxonData -> {aliases}}) : "";
+    my $t_aliases = defined($taxonData->{aliases}) ? join(";", @{$taxonData->{aliases}}) : "";
     my $current_taxon = {
-        taxonomy_id => $taxonData -> {taxonomy_id},
-        scientific_name => $taxonData -> {scientific_name},
-        scientific_lineage => $taxonData -> {scientific_lineage},
-        rank => $taxonData -> {rank},
-        kingdom => $taxonData -> {kingdom},
-        domain => $taxonData -> {domain},
+        taxonomy_id => $taxonData->{taxonomy_id},
+        scientific_name => $taxonData->{scientific_name},
+        scientific_lineage => $taxonData->{scientific_lineage},
+        rank => $taxonData->{rank},
+        kingdom => $taxonData->{kingdom},
+        domain => $taxonData->{domain},
         ws_ref => $wsref,
         aliases => $t_aliases,
-        genetic_code => ($taxonData -> {genetic_code}) ? ($taxonData -> {genetic_code}) : "0",
-        parent_taxon_ref => $taxonData -> {parent_taxon_ref},
-        embl_code => $taxonData -> {embl_code},
-        inherited_div_flag => ($taxonData -> {inherited_div_flag}) ? $taxonData -> {inherited_div_flag} : "0",
-        inherited_GC_flag => ($taxonData -> {inherited_GC_flag}) ? $taxonData -> {inherited_GC_flag} : "0",
-        division_id => ($taxonData -> {division_id}) ? $taxonData -> {division_id} : "0",
-        mitochondrial_genetic_code => ($taxonData -> {mitochondrial_genetic_code}) ? $taxonData -> {mitochondrial_genetic_code} : "0",
-        inherited_MGC_flag => ($taxonData -> {inherited_MGC_flag}) ? ($taxonData -> {inherited_MGC_flag}) : "0",
-        GenBank_hidden_flag => ($taxonData -> {GenBank_hidden_flag}) ? ($taxonData -> {GenBank_hidden_flag}) : "0",
-        hidden_subtree_flag => ($taxonData -> {hidden_subtree_flag}) ? ($taxonData -> {hidden_subtree_flag}) : "0",
-        deleted => ($taxonData -> {deleted}) ? ($taxonData -> {deleted}) : "0",
-        comments => $taxonData -> {comments}
+        genetic_code => ($taxonData->{genetic_code}) ? ($taxonData->{genetic_code}) : "0",
+        parent_taxon_ref => $taxonData->{parent_taxon_ref},
+        embl_code => $taxonData->{embl_code},
+        inherited_div_flag => ($taxonData->{inherited_div_flag}) ? $taxonData->{inherited_div_flag} : "0",
+        inherited_GC_flag => ($taxonData->{inherited_GC_flag}) ? $taxonData->{inherited_GC_flag} : "0",
+        division_id => ($taxonData->{division_id}) ? $taxonData->{division_id} : "0",
+        mitochondrial_genetic_code => ($taxonData->{mitochondrial_genetic_code}) ? $taxonData->{mitochondrial_genetic_code} : "0",
+        inherited_MGC_flag => ($taxonData->{inherited_MGC_flag}) ? ($taxonData->{inherited_MGC_flag}) : "0",
+        GenBank_hidden_flag => ($taxonData->{GenBank_hidden_flag}) ? ($taxonData->{GenBank_hidden_flag}) : "0",
+        hidden_subtree_flag => ($taxonData->{hidden_subtree_flag}) ? ($taxonData->{hidden_subtree_flag}) : "0",
+        deleted => ($taxonData->{deleted}) ? ($taxonData->{deleted}) : "0",
+        comments => $taxonData->{comments}
     };
     return $current_taxon;
 }
@@ -1339,7 +1346,7 @@ sub _indexInSolr
 {
     my ($self, $solrCore, $docData) = @_;
     if( @{$docData} >= 1) {
-       if( $self -> _addXML2Solr($solrCore, $docData) == 1 ) {
+       if( $self->_addXML2Solr($solrCore, $docData) == 1 ) {
            #commit the additions
            if (!$self->_commit($solrCore)) {
                die $self->_error->{response};
@@ -1349,6 +1356,16 @@ sub _indexInSolr
           die $self->{error};
        }
     }
+}
+
+#
+#internal method, for creating a message string and return it. 
+#
+sub _genomeInfoString
+{
+    my ($self, $gn_info) = @_;
+    my $retStr = "". $gn_info->{accession}.";".$gn_info->{workspace_name}.";".$gn_info->{domain}.";".$gn_info->{source}.";".$gn_info->{save_date}.";".$gn_info->{contig_count}." contigs;".$gn_info->{feature_count}." features; KBase id:".$gn_info->{ref}."\n";
+    return $retStr;
 }
 
 #################### End subs for accessing SOLR #######################
@@ -1952,9 +1969,9 @@ sub list_loaded_genomes
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info; 
                             
-                            if (@{$output} < 10  && @{$output} > 0) {
-                                $msg .= $curr_gn_info->{accession}.";".$curr_gn_info->{workspace_name}.";".$curr_gn_info->{domain}.";".$curr_gn_info->{source}.";".$curr_gn_info->{save_date}.";".$curr_gn_info->{contig_count}." contigs;".$curr_gn_info->{feature_count}." features; KBase id:".$curr_gn_info->{ref}."\n";
-                            }
+                                    if (@{$output} < 10  && @{$output} > 0) {
+                                        $msg .= $self->_genomeInfoString($curr_gn_info);
+                                    }
                                 }
                             }
                             elsif( $obj_src && $i == 1 ) {#refseq genomes (exclude 'plant')
@@ -1962,19 +1979,9 @@ sub list_loaded_genomes
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info;
                             
-                            if (@{$output} < 10  && @{$output} > 0) {
-                                $msg .= $curr_gn_info->{accession}.";".$curr_gn_info->{workspace_name}.";".$curr_gn_info->{domain}.";".$curr_gn_info->{source}.";".$curr_gn_info->{save_date}.";".$curr_gn_info->{contig_count}." contigs;".$curr_gn_info->{feature_count}." features; KBase id:".$curr_gn_info->{ref}."\n";
-                            }
-=begin
-##NOTE:The following line is needed only for the case if you want to index a large number (>100k) genome_features, 
-#because of the reality that there will be interruption of all sorts.
-                                    my $gn_solrCore = "GenomeFeatures_prod";
-                                    if($self->_exists($gn_solrCore, {genome_id=>$curr_gn_info->{name}})==0) {
-                                        print "Not in " . $gn_solrCore . ": " . $curr_gn_info->{id} . "--" . $curr_gn_info->{name} . "\n";
-                                        #indexing in SOLR for every $batchCount of genomes
-                                        $self->index_genomes_in_solr({solr_core => $gn_solrCore, genomes => [$curr_gn_info]});
+                                    if (@{$output} < 10  && @{$output} > 0) {
+                                        $msg .= $self->_genomeInfoString($curr_gn_info);
                                     }
-=cut 
                                 }
                             }
                             elsif( $obj_src && $i == 2 ) {#ensembl genomes #TODO
@@ -1983,9 +1990,9 @@ sub list_loaded_genomes
                                         $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                         push @{$output}, $curr_gn_info; 
                             
-                            if (@{$output} < 10  && @{$output} > 0) {
-                                $msg .= $curr_gn_info->{accession}.";".$curr_gn_info->{workspace_name}.";".$curr_gn_info->{domain}.";".$curr_gn_info->{source}.";".$curr_gn_info->{save_date}.";".$curr_gn_info->{contig_count}." contigs;".$curr_gn_info->{feature_count}." features; KBase id:".$curr_gn_info->{ref}."\n";
-                            }
+                                        if (@{$output} < 10  && @{$output} > 0) {
+                                           $msg .= $self->_genomeInfoString($curr_gn_info);
+                                        }
                                     }       
                                 }
                             }
@@ -2171,21 +2178,22 @@ sub list_solr_genomes
     }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        solr_core => "genomes",
+        solr_core => "Genomes_prod",
         row_start => 0,
-        row_count => 100,
+        row_count => 10,
         group_option => "",
-        create_report => 0
+        create_report => 0,
+        workspace_name => undef
     });
 
     $output = [];
     my $msg = "Found ";
     my $solrout;
-    my $solrCore = $params -> {solr_core};
+    my $solrCore = $params->{solr_core};
     my $fields = "*";
-    my $startRow = $params -> {row_start};
-    my $topRows = $params -> {row_count};
-    my $grpOpt = $params -> {group_option}; #"genome_id";
+    my $startRow = $params->{row_start};
+    my $topRows = $params->{row_count};
+    my $grpOpt = $params->{group_option};
 
     eval {
         $solrout = $self->_listGenomesInSolr($solrCore, $fields, $startRow, $topRows, $grpOpt);
@@ -2663,8 +2671,8 @@ sub list_loaded_taxa
 
         my $solr_taxa = [];
         for (my $i=0; $i < @{$taxonout}; $i++) {
-            my $taxonData = $taxonout -> [$i] -> {data}; #an UnspecifiedObject
-	    my $curr_taxon = {taxon => $taxonData, ws_ref => $wstaxonrefs -> [$i] -> {ref}};
+            my $taxonData = $taxonout->[$i]->{data}; #an UnspecifiedObject
+	    my $curr_taxon = {taxon => $taxonData, ws_ref => $wstaxonrefs->[$i]->{ref}};
 
             push(@{$output}, $curr_taxon);
 	    push(@{$solr_taxa}, $curr_taxon);
@@ -2811,8 +2819,9 @@ sub list_solr_taxa
     $params = $self->util_args($params,[],{
         solr_core => "taxonomy_prod",
         row_start => 0,
-        row_count => 100,
+        row_count => 10,
         group_option => "",
+        workspace_name => undef,
         create_report => 0
     });
 
@@ -3277,7 +3286,7 @@ sub index_taxa_in_solr
     }
     if(@{$solrBatch} > 0) {
             eval {
-                $self -> _indexInSolr($solrCore, $solrBatch );
+                $self->_indexInSolr($solrCore, $solrBatch );
             };
             if($@) {
                 print "Failed to index the taxa!\n";
