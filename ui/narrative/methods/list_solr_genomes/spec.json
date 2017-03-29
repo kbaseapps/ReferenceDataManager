@@ -100,11 +100,8 @@
           "id": "P",
           "ui_name": "P (Plant)"
         }
-
-"field_type" : "text",
-    "text_options" : {
-        "validate_as": "text"
-    } 
+      ]
+    }
   }],
   "job_id_output_field": "docker",
   "behavior" : {

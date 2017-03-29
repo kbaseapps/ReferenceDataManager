@@ -138,6 +138,8 @@ module ReferenceDataManager {
         int row_count;
         string group_option;
 	bool create_report;
+        string domain;
+        bool complete;
         string workspace_name;
     } ListSolrDocsParams;
 
