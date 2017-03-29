@@ -79,7 +79,29 @@
     "advanced":true,
     "allow_multiple":false,
     "default_values":[""],
-    "field_type" : "text",
+    "field_type" : "dropdown",
+     "dropdown_options":{
+      "options": [
+        {
+          "value": "Bacteria",
+          "display": "B (Bacteria)",
+          "id": "B",
+          "ui_name": "B (Bacteria)"
+        },
+        {
+          "value": "Archaea",
+          "display": "A (Archaea)",
+          "id": "fast",
+          "ui_name": "A (Archaea)"
+        },
+        {
+          "value": "Eukaryota",
+          "display": "P (Plant)",
+          "id": "P",
+          "ui_name": "P (Plant)"
+        }
+
+"field_type" : "text",
     "text_options" : {
         "validate_as": "text"
     } 

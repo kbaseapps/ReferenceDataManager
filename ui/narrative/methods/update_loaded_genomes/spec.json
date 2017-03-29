@@ -70,19 +70,19 @@
         {
           "value": "archaea",
           "display": "A (Archaea)",
-          "id": "fast",
+          "id": "A",
           "ui_name": "A (Archaea)"
         },
         {
           "value": "fungi",
           "display": "F (Fungi)",
-          "id": "fast",
+          "id": "F",
           "ui_name": "F (Fungi)"
         },
         {
           "value": "plant",
           "display": "P (Plant)",
-          "id": "fast",
+          "id": "P",
           "ui_name": "P (Plant)"
         }
       ]

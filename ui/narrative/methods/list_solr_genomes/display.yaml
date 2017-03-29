@@ -73,7 +73,7 @@ parameters :
 
     domain :
         ui-name : |
-            NCBI division
+            Division of genomes
         short-hint : |
             Genome division by NCBI
         long-hint  : |
