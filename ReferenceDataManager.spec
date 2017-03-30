@@ -84,6 +84,12 @@ module ReferenceDataManager {
     */
     funcdef list_loaded_genomes(ListLoadedGenomesParams params) returns (list<LoadedReferenceGenomeData> output);
 
+
+    /* Solr response data for search requests.                                       
+        Arbitrary key-value pairs returned by the solr.
+    */  
+    typedef mapping<string, string> solrresponse;
+
     /*
         Struct containing data for a single genome element output by the list_solr_genomes and index_genomes_in_solr functions 
     */
@@ -146,8 +152,7 @@ module ReferenceDataManager {
     /* 
         Lists genomes indexed in SOLR
     */
-    funcdef list_solr_genomes(ListSolrDocsParams params) returns (list<SolrGenomeFeatureData> output) authentication required;
-
+    funcdef list_solr_genomes(ListSolrDocsParams params) returns (list<solrresponse> output) authentication required;
 
     /*  
         Structure of a single KBase genome in the list returned by the load_genomes, rast_genomes and update_loaded_genomes functions
@@ -163,7 +168,6 @@ module ReferenceDataManager {
         string source;
         string domain;
     } KBaseReferenceGenomeData;
-
 
     /*
         Arguments for the index_genomes_in_solr function
@@ -290,7 +294,7 @@ module ReferenceDataManager {
     } IndexTaxaInSolrParams;
     
     /*
-        Index specified genomes in SOLR from KBase workspace
+        Index specified taxa in SOLR from KBase workspace
     */
     funcdef index_taxa_in_solr(IndexTaxaInSolrParams params) returns (list<SolrTaxonData> output) authentication required;
     
@@ -333,14 +337,14 @@ module ReferenceDataManager {
     */
     typedef structure {
         string data;
-        list<ReferenceGenomeData> genomes;
+        list<KBaseReferenceGenomeData> genomes;
         bool index_in_solr;
         string workspace_name;
         bool create_report;
     } RASTGenomesParams;
     
     /*
-        Loads specified genomes into KBase workspace and indexes in SOLR on demand
+        RASTs specified genomes into KBase workspace and indexes in SOLR on demand
     */
     funcdef rast_genomes(RASTGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
 
