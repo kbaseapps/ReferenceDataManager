@@ -21,6 +21,7 @@ A KBase module: ReferenceDataManager
 use Bio::KBase::AuthToken;
 use Workspace::WorkspaceClient;
 use GenomeFileUtil::GenomeFileUtilClient;
+use RAST_SDK::RAST_SDKClient;
 
 use Config::IniFiles;
 use Config::Simple;
@@ -381,7 +382,7 @@ sub _searchSolr {
     my $queryString = $self->_buildQueryString($searchQuery, $searchParams, $groupOption, $skipEscape);
     my $solrCore = "/$searchCore"; 
     my $solrQuery = $self->{_SOLR_URL}.$solrCore."/select?".$queryString;
-    #print "Search string:\n$solrQuery\n";
+    print "Search string:\n$solrQuery\n";
     
     my $solr_response = $self->_sendRequest("$solrQuery", "GET");
     #print "\nRaw response: \n" . $solr_response->{response} . "\n";
@@ -2138,7 +2139,7 @@ sub list_solr_genomes
     $output = [];
     my $msg = "Found ";
     my $solrout;
-    my $fields = "genome_id, ws_ref, scientific_name, genetic_code";
+    my $fields = "genome_id, workspace_name, scientific_name, genetic_code, domain";
     my $grpOpt = $params->{group_option};
     eval {
         $solrout = $self->_listGenomesInSolr($params->{solr_core}, $fields, $params->{row_start}, $params->{row_count}, $params->{group_option}, $params->{domain}, $params->{complete});
@@ -3771,8 +3772,7 @@ sub rast_genomes
     } else {
         $srcgenomes = $params->{genomes};
     }
-    
-    my $rdm_rast_ws = "ReferenceGenomes_RAST"; #$wsname . "_RAST";
+    my $rdm_rast_ws = $params->{workspace_name};#"ReferenceGenomes_RAST"; #$wsname . "_RAST";
     eval {
         $self->util_ws_client()->create_workspace({workspace=>$rdm_rast_ws,globalread=>"r",description=>"ws for RAST-ed Refseq Genomes"});
     };
@@ -3785,40 +3785,18 @@ sub rast_genomes
     }
     else
     {
-    #foreach my $ncbigenome (@{$ncbigenomes}) {
-    for (my $i=0; $i < @{$srcgenomes}; $i++) {
-        my $srcgenome = $srcgenomes->[$i];
-        print "\n******************Genome#: $i ********************";
-        my $wsname = "";
-        if(defined( $srcgenome->{workspace_name}))
-        {
-            $wsname = $srcgenome->{workspace_name};
-        }
-        elsif(defined($srcgenome->{source}))
-        {
-            $wsname = $self->util_workspace_names($srcgenome->{source});
-        }
-        else
-        {
-            $wsname = "ReferenceDataManager";    
-        }
-        print "\nNow rasting ".$srcgenome->{genome_id}." with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
-        my $rastgenome;
+        print "\nNow rasting genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
+	my $rastgenomes;
         my $rast_ret;
-        my $genome_obj_name = $srcgenome->{genome_id};
-        my $genome_ref = $rdm_rast_ws . "/" . $genome_obj_name;
         my $rast_params={
-             input_genomes=>$genome_obj_name,
-             #src_workspace=>$wsname,
-             output_genome=>$genome_obj_name,
+             genomes=>$srcgenomes,
              workspace=>$rdm_rast_ws
         };
         eval {
-          $rast_ret = $raster->annotate_genome($rast_params);
-          #$rastgenome = $self->util_ws_client()->get_objects([{ref=>$genome_ref}])->[0]->{data};
+          $rast_ret = $raster->annotate_genomes($rast_params);
         };
         if ($@) {
-            print "**********Received an exception from calling genbank_to_genome to load $srcgenome->{id}:\n";
+            print "**********Received an exception from calling genbank_to_genome to load $srcgenomes\n";
             print "Exception message: " . $@->{"message"} . "\n";
             print "JSONRPC code: " . $@->{"code"} . "\n";
             print "Method: " . $@->{"method_name"} . "\n";
@@ -3829,9 +3807,9 @@ sub rast_genomes
         }
         else
         {
-            $rastgenome = {
-                  "ref" => $genome_ref,
-                  id => $rast_ret->{id},
+            $rastgenomes = {
+		  report_ref => $rast_ret->{report_ref},
+                  report => $rast_ret->{report_name},
                   workspace_name => $rast_ret->{workspace}
             };
             
@@ -3839,17 +3817,12 @@ sub rast_genomes
                 my $gn_solrCore = "GenomeFeatures_RASTed";
                 $self->index_genomes_in_solr({
                         solr_core => $gn_solrCore,             
-                        genomes => [$rastgenome]
+                        genomes => $rastgenomes
                 });
             }
-            push(@{$output},$rastgenome);
-            if (@{$output} < 10  && @{$output} > 0) {
-                   $msg .= "RASTed genome: ".$rastgenome->{id}." into workspace ".$rdm_rast_ws.";\n";
-            }
-            print "!!!!!!!!!!!!!--rasting of $srcgenome->{id} succeeded--!!\n";
+            $output = $rastgenomes;
          }
          print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
-    }
     }
     $msg .= "\nRASTed a total of ". scalar @{$output}. " genomes!\n";
     print $msg . "\n";
