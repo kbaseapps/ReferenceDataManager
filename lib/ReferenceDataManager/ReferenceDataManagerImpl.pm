@@ -21,7 +21,7 @@ A KBase module: ReferenceDataManager
 use Bio::KBase::AuthToken;
 use Workspace::WorkspaceClient;
 use GenomeFileUtil::GenomeFileUtilClient;
-use RAST_SDK::RAST_SDKClient;
+#use RAST_SDK::RAST_SDKClient;
 
 use Config::IniFiles;
 use Config::Simple;
@@ -180,15 +180,15 @@ sub _listGenomesInSolr {
         
     if( defined( $cmplt )) {
         if( defined( $dmn )) {
-            $query = { domain=>$dmn, complete=>$cmplt };
+            $query = { domain=>$dmn, complete=>$cmplt, object_type=>"KBaseGenomes.Genome-8.2" };
         }
         else {
-            $query = { complete=>$cmplt };
+            $query = { complete=>$cmplt, object_type=>"KBaseGenomes.Genome-8.2" };
         }
     }
     else {
         if( defined( $dmn )) {
-            $query = { domain=>$dmn};
+            $query = { domain=>$dmn, object_type=>"KBaseGenomes.Genome-8.2"};
         }
     }
     if($count == 0) {
@@ -382,7 +382,7 @@ sub _searchSolr {
     my $queryString = $self->_buildQueryString($searchQuery, $searchParams, $groupOption, $skipEscape);
     my $solrCore = "/$searchCore"; 
     my $solrQuery = $self->{_SOLR_URL}.$solrCore."/select?".$queryString;
-    print "Search string:\n$solrQuery\n";
+    #print "Search string:\n$solrQuery\n";
     
     my $solr_response = $self->_sendRequest("$solrQuery", "GET");
     #print "\nRaw response: \n" . $solr_response->{response} . "\n";
