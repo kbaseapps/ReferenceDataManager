@@ -21,7 +21,8 @@ A KBase module: ReferenceDataManager
 use Bio::KBase::AuthToken;
 use Workspace::WorkspaceClient;
 use GenomeFileUtil::GenomeFileUtilClient;
-#use RAST_SDK::RAST_SDKClient;
+use KBSolrUtil::KBSolrUtilClient;
+use RAST_SDK::RAST_SDKClient;
 
 use Config::IniFiles;
 use Config::Simple;
@@ -168,32 +169,45 @@ sub util_create_report {
 
 #################### methods for accessing SOLR using its web interface#######################
 #
-#Internal Method: to list the genomes already in SOLR and return an array of those genomes
+#
+# Internal Method: to list the genomes already in SOLR and return an array of those genomes
+# Input parameters:
+# $solrCore: string, the name of the solr core
+# $fields: comma delimited string of field names, default to all fields ('*')
+# $rowStart: an integer that offsets the rows before displaying the results, default to 0
+# $rowCount: an integer for how many rows of results to display, default to 0 meaning to display all result rows
+# $gnm_type: a string indicating the type of genomes to be returned
+# $dmn: a string indicating the domain of the genomes to be returned
+# $cmplt: an integer (1 for complete genomes only, or 0 for all genomes)
 #
 sub _listGenomesInSolr {
-    my ($self, $solrCore, $fields, $rowStart, $rowCount, $grp, $dmn, $cmplt) = @_;
+    my ($self, $solrCore, $fields, $rowStart, $rowCount, $gnm_type, $dmn, $cmplt) = @_;
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 0;
-    $fields = ($fields) ? $fields : "*";
+    $fields = "*" unless $fields;
+    $gnm_type = "KBaseGenomes.Genome-8.2" unless $gnm_type;
     
-    my $query = { q => "*" };
+    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    
+    my $query = {"object_type"=>$gnm_type};#{ q => "*" };
         
     if( defined( $cmplt )) {
         if( defined( $dmn )) {
-            $query = { domain=>$dmn, complete=>$cmplt, object_type=>"KBaseGenomes.Genome-8.2" };
+            $query = { domain=>$dmn, complete=>$cmplt, object_type=>$gnm_type };
         }
         else {
-            $query = { complete=>$cmplt, object_type=>"KBaseGenomes.Genome-8.2" };
+            $query = { complete=>$cmplt, object_type=>$gnm_type };
         }
     }
     else {
         if( defined( $dmn )) {
-            $query = { domain=>$dmn, object_type=>"KBaseGenomes.Genome-8.2"};
+            $query = { domain=>$dmn, object_type=>$gnm_type};
         }
     }
-    if($count == 0) {
-        my $solrout = $self->_searchSolr($solrCore, {fl=>$fields,wt=>"json",rows=>0}, $query, "json", "");
-        $count = $solrout->{response}->{response}->{numFound};
+    my $solrgnms;
+    if($count == 0) {#get the real total count
+        $count = $solrer->get_total_count({search_core=>$solrCore, search_query=>$query});
     }
 
     my $params = {
@@ -205,7 +219,23 @@ sub _listGenomesInSolr {
         start => $start
     };
     
-    return $self->_searchSolr($solrCore, $params, $query, "json", $grp);    
+    eval {
+        $solrgnms = $solrer->search_solr({
+          solr_core => $solrCore,
+          search_param => $params,
+          search_query => $query,
+          result_format => "json",
+          group_option => "",
+          skip_escape => {}
+        });  
+    };   
+    if ($@) {
+         print "ERROR:".$@;
+         return undef;
+    } else {
+        #print "Search results:" . Dumper($solrgnms->{response}) . "\n";
+        return $solrgnms;
+    }
 }
 
 #
@@ -215,9 +245,17 @@ sub _listTaxaInSolr {
     my ($self, $solrCore, $fields, $rowStart, $rowCount, $grp) = @_;
     $solrCore = ($solrCore) ? $solrCore : "taxonomy_prod";
     my $start = ($rowStart) ? $rowStart : 0;
-    my $count = ($rowCount) ? $rowCount : 10;
+    my $count = ($rowCount) ? $rowCount : 0;
     $fields = ($fields) ? $fields : "*";
+    
+    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
+    my $query = { q => "*" };
+    my $solrout;
+    if($count == 0) {#get the real total count
+        $count = $solrer->get_total_count({search_core=>$solrCore, search_query=>$query});
+    }
     my $params = {
         fl => $fields,
         wt => "json",
@@ -226,11 +264,88 @@ sub _listTaxaInSolr {
         hl => "false",
         start => $start
     };
-    my $query = { q => "*" };
     
-    return $self->_searchSolr($solrCore, $params, $query, "json", $grp);    
+    eval {
+        $solrout = $solrer->search_solr({
+          solr_core => $solrCore,
+          search_param => $params,
+          search_query => $query,
+          result_format => "json",
+          group_option => $grp,
+          skip_escape => {}
+        });  
+    };   
+    if ($@) {
+         print "ERROR:".$@;
+         return undef;
+    } else {
+        #print "Search results:" . Dumper($solrout->{response}) . "\n";
+        return $solrout;
+    }
 }
 
+#
+# method name: _updateGenomesCore
+# Internal method: to update the Genomes_* core with the corresponding GenomeFeatures_* core.
+# parameters:   
+#     $src_core: This parameter specifies the source Solr core name.
+#     $dest_core: This parameter specifies the target Solr core name.
+#     $start: This parameter specifies the start row count, default to 0.
+#     $row_count: This parameter specifies the total row count, default to 10.
+#     $gnm_type: This parameter specifies the type of genomes to be updated, default to "KBaseGenomes.Genome-8.2".
+# return
+#    1 for success
+#    0 for any failure
+#
+#
+sub _updateGenomesCore
+{
+    my ($self, $src_core, $dest_core, $gnm_type) = @_;
+    my $solrgnms;
+    my $ret_gnms;
+    $src_core = "GenomeFeatures_ci" unless $src_core;
+    $dest_core = "Genome_ci" unless $dest_core;
+    $gnm_type = "KBaseGenomes.Genome-8.2" unless $gnm_type;
+
+    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+
+    eval {
+        $solrgnms = $solrer->search_solr({
+          solr_core => $src_core,
+          search_param => {
+                rows => 100000,
+                wt => 'json'
+          },
+          search_query => {"object_type"=>$gnm_type},
+          result_format => "json",
+          group_option => "",
+          skip_escape => {}
+        });
+    };
+    if ($@) {
+         print "ERROR from search_solr:".$@;
+         return 0;
+    } else {
+         #print "Search results:" . Dumper($solrgnms->{response}->{response}) . "\n";
+         $ret_gnms = $solrgnms->{response}->{response}->{docs};
+         my $num = $solrgnms->{response}->{response}->{numFound};
+         foreach my $gnm (@{$ret_gnms}) {
+            delete $gnm->{_version_};
+         }
+         #then insert the $gnm
+         eval {
+                $solrer->add_json_2solr({solr_core=>$dest_core, json_docs=>$ret_gnms});
+         };
+         if ($@) {
+                print "ERROR:".$@;
+                return 0;
+         } else {
+                print "Done updating " . $dest_core . " with ". $src_core. "!";
+                return 1;
+         }
+    }
+}
 
 #
 # method name: _buildQueryString
@@ -341,151 +456,6 @@ sub _buildQueryString_wildcard {
     my $retStr = $paramFields . $qStr . $solrGroup;
     #print "Query string:\n$retStr\n";
     return $retStr;
-}
-
-#
-# method name: _searchSolr
-# Internal Method: to execute a search in SOLR according to the passed parameters
-# parameters:
-# $searchQuery is a hash which specifies how the documents will be searched, see the example below:
-# $searchQuery={
-#   parent_taxon_ref => '1779/116411/1',
-#   rank => 'species',
-#   scientific_lineage => 'cellular organisms; Bacteria; Proteobacteria; Alphaproteobacteria; Rhizobiales; Bradyrhizobiaceae; Bradyrhizobium',
-#   scientific_name => 'Bradyrhizobium sp. rp3',
-#   domain => 'Bacteria'
-#}
-# OR, simply:
-# $searchQuery= { q => "*" };
-#
-# $searchParams is a hash, see the example below:
-# $searchParams={
-#   fl => 'object_id,gene_name,genome_source',
-#   wt => 'json',
-#   rows => $count,
-#   sort => 'object_id asc',
-#   hl => 'false',
-#   start => $start,
-#   count => $count
-#}
-#
-sub _searchSolr {
-    my ($self, $searchCore, $searchParams, $searchQuery, $resultFormat, $groupOption, $skipEscape) = @_;
-    $skipEscape = {} unless $skipEscape;
-
-    if (!$self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
-    
-    # If output format is not passed set it to XML
-    $resultFormat = "xml" unless $resultFormat;
-    my $queryString = $self->_buildQueryString($searchQuery, $searchParams, $groupOption, $skipEscape);
-    my $solrCore = "/$searchCore"; 
-    my $solrQuery = $self->{_SOLR_URL}.$solrCore."/select?".$queryString;
-    #print "Search string:\n$solrQuery\n";
-    
-    my $solr_response = $self->_sendRequest("$solrQuery", "GET");
-    #print "\nRaw response: \n" . $solr_response->{response} . "\n";
-    
-    my $responseCode = $self->_parseResponse($solr_response, $resultFormat);
-        if ($responseCode) {
-            if ($resultFormat eq "json") {
-                my $out = JSON::from_json($solr_response->{response});
-                $solr_response->{response}= $out;
-            }
-    }
-    if($groupOption){
-        my @solr_records = @{$solr_response->{response}->{grouped}->{$groupOption}->{groups}};
-        #print "\nFound unique $groupOption groups of:" . scalar @solr_records . "\n";
-        #print @solr_records[0]->{doclist}->{numFound} ."\n";
-    }
-    
-    return $solr_response;
-}
-#
-# method name: _searchSolr_wildcard---This is a modified version of the above function, all because the stupid SOLR 4.*
-# handles the wildcard search string in a weird way:when the '*' is at either end of the search string, it returns 0 docs
-# if the search string is within double quotes. On the other hand, when a search string has whitespace(s), it has to be inside
-# double quotes otherwise SOLR will treat it as new field(s).
-# So this method will call the method that builds the search string WITHOUT the double quotes ONLY for the use case when '*' will be 
-# at the ends of the string.
-# The rest is the same as the above method.
-#
-sub _searchSolr_wildcard {
-    my ($self, $searchCore, $searchParams, $searchQuery, $resultFormat, $groupOption, $skipEscape) = @_;
-    $skipEscape = {} unless $skipEscape;
-
-    if (!$self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
-    
-    # If output format is not passed set it to XML
-    $resultFormat = "xml" unless $resultFormat;
-    my $queryString = $self->_buildQueryString_wildcard($searchQuery, $searchParams, $groupOption, $skipEscape);
-    my $solrCore = "/$searchCore"; 
-    my $solrQuery = $self->{_SOLR_URL}.$solrCore."/select?".$queryString;
-    #print "Search string:\n$solrQuery\n";
-    
-    my $solr_response = $self->_sendRequest("$solrQuery", "GET");
-    #print "\nRaw response: \n" . $solr_response->{response} . "\n";
-    
-    my $responseCode = $self->_parseResponse($solr_response, $resultFormat);
-        if ($responseCode) {
-            if ($resultFormat eq "json") {
-                my $out = JSON::from_json($solr_response->{response});
-                $solr_response->{response}= $out;
-            }
-    }
-    if($groupOption){
-        my @solr_records = @{$solr_response->{response}->{grouped}->{$groupOption}->{groups}};
-        if( scalar @solr_records > 0 ) {
-            #print "\nFound unique $groupOption groups of:" . scalar @solr_records . "with recourds of: ";
-            #print @solr_records[0]->{doclist}->{numFound} ."\n";
-        }
-    }
-    
-    return $solr_response;
-}
-
-#
-# method name: _deleteRecords
-# Internal Method: to delete record(s) in SOLR that matches the given id(s) in the query
-# parameters:
-# $criteria is a hash that holds the conditions for field(s) to be deleted, see the example below:
-# $criteria {
-#   'object_id' => 'kb|ws.2869.obj.72243',
-#   'workspace_name' => 'KBasePublicRichGenomesV5'
-#}
-#
-
-sub _deleteRecords
-{
-    my ($self, $searchCore, $criteria) = @_;
-    my $solrCore = "/$searchCore";
-
-    if (!$self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
-
-    # Build the <query/> string that concatenates all the criteria into query tags
-    my $queryCriteria = "<delete>";
-    if (! $criteria) {
-        $self->{is_error} = 1;
-        $self->{errmsg} = "No deletion criteria specified";
-        return undef;
-    }
-    foreach my $key (keys %$criteria) {
-        $queryCriteria .= "<query>$key:". URI::Escape::uri_escape($criteria->{$key}) . "</query>";
-    }
-
-    $queryCriteria .= "</delete>&commit=false";
-    #print "The deletion query string is: \n" . "$queryCriteria \n";
-
-    my $solrQuery = $self->{_SOLR_URL}.$solrCore."/update?stream.body=".$queryCriteria;
-    #print "The final deletion query string is: \n" . "$solrQuery \n";
-
-    my $solr_response = $self->_sendRequest("$solrQuery", "GET");
-    return $solr_response;
 }
 
 #
@@ -828,51 +798,6 @@ sub _rollback
     return 0;
 }
 
-#
-# method name: _exists
-# Checking if the document with the specified search string exists
-# params :
-# $searchCriteria is a hash which specifies how the documents will be searched, see the example below:
-# $searchCriteria={
-#   parent_taxon_ref => '1779/116411/1',
-#   rank => 'species',
-#   scientific_lineage => 'cellular organisms; Bacteria; Proteobacteria; Alphaproteobacteria; Rhizobiales; Bradyrhizobiaceae; Bradyrhizobium',
-#   scientific_name => 'Bradyrhizobium sp. rp3',
-#   domain => 'Bacteria'
-#}
-# returns :
-#    1 for yes (document match found) 
-#    0 for any failure
-#
-#
-sub _exists
-{
-    my ($self, $solrCore, $searchCriteria) = @_;
-
-    if (!$self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
-    my $queryString = $self->_buildQueryString($searchCriteria);
-    my $url = $self->{_SOLR_URL}."/$solrCore/select?";
-    $url = $url. $queryString;
-    my $response = $self->_sendRequest($url, 'GET');
-
-    my $status = $self->_parseResponse($response);
-    if ($status == 1) {
-        my $xs = new XML::Simple();
-        my $xmlRef;
-        eval {
-            $xmlRef = $xs->XMLin($response->{response});
-        };
-        #print "\n$url result:\n" . Dumper($xmlRef->{result}) . "\n";
-        if ($xmlRef->{lst}->{'int'}->{status}->{content} eq 0){
-            if ($xmlRef->{result}->{numFound} gt 0) {
-            return 1;
-        }
-     }   
-    }
-    return 0;
-}
 
 # method name: _ping
 #    This methods is check Apache solr server is reachable or not
@@ -932,33 +857,18 @@ sub _checkTaxonStatus
 {
     my ($self, $current_genome, $solr_core) = @_;
     #print "\nChecking taxon status for genome:\n " . Dumper($current_genome) . "\n";
-
+    
+    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    
     my $status = "";
-    my $params = {
-        fl => "taxonomy_id,domain",
-        wt => "json"
-    };
     my $query = { taxonomy_id => $current_genome->{tax_id} };
-    my $solr_response = $self->_searchSolr($solr_core, $params, $query, "json");
-    if( $solr_response->{response}->{response}->{numFound} == 0 ) {
-        $status = "Taxon not found";
-    }
+    
+    if($solrer->exists_in_solr({solr_core=>$solr_core,{taxonomy_id=>$current_genome->{tax_id}}})==1) {
+        $status = "Taxon in KBase";
+    }    
     else {
-        my $solr_records = $solr_response->{response}->{response}->{docs};
-        #print "\n\nFound " . scalar @{$solr_records} . " taxon/taxa\n";
-        for (my $i = 0; $i < @{$solr_records}; $i++ ) {
-            my $record = $solr_records->[$i];
-            #print $solr_response->{response}->{response}->{numFound} ."\n";
-
-            if ($record->{taxonomy_id} eq $current_genome->{tax_id} && lc $record->{domain} ne "unknown"){
-                $status = "Taxon with domain " . $record->{domain} . " in KBase";
-                last;
-            }
-            else{
-                $status = "Taxon with domain \"Unknown\" in KBase";
-                last;
-            }
-        }
+        $status = "Taxon not found";
     }
     #print "\nStatus:$status\n";
     return $status;
@@ -978,23 +888,49 @@ sub _checkGenomeStatus
 {
     my ($self, $current_genome, $solr_core) = @_;
     #print "\nChecking status for genome:\n " . Dumper($current_genome) . "\n";
+    
+    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     my $status = "";
-    my $groupOption = "genome_id";
-    my $params = {
-        fl => $groupOption,
-        wt => "json"
+    my $query = { 
+        genome_id => $current_genome->{id} . "*", 
+        object_type => "KBaseGenomes.Genome-8.2"
     };
-    my $query = { genome_id => $current_genome->{id} . "*" };
-    my $solr_response = $self->_searchSolr_wildcard($solr_core, $params, $query, "json", $groupOption);
-    if( $solr_response->{response}->{grouped}->{$groupOption}->{matches} == 0 ) {
+    my $params = {
+        fl => "genome_id",
+        wt => "json",
+        start => 0
+    };
+    
+    my $solrgnm;
+    my $gnms;
+    my $gcnt;
+    eval {
+        $solrgnm = $solrer->search_solr({
+          solr_core => $solr_core,
+          search_param => $params,
+          search_query => $query,
+          result_format => "json",
+          group_option => "",
+          skip_escape => {}
+        });  
+    };   
+    if ($@) {
+         print "ERROR:".$@;
+         $status = "";
+    } else {
+        #print "Search results:" . Dumper($solrgnm->{response}) . "\n";
+        $gnms = $solrgnm->{response}->{response}->{docs};
+        $gcnt = $solrgnm->{response}->{response}->{numFound};
+    }
+    if( $gcnt == 0 ) {
         $status = "New genome";
     }
     else {
-        my $solr_records = $solr_response->{response}->{grouped}->{$groupOption}->{groups};
-        for (my $i = 0; $i < @{$solr_records}; $i++ ) {
-            my $record = $solr_records->[$i];
-            my $gm_id = uc $record->{groupValue};
+        for (my $i = 0; $i < @{$gnms}; $i++ ) {
+            my $record = $gnms->[$i];
+            my $gm_id = uc $record->{genome_id};
 
             if ($gm_id eq uc $current_genome->{accession}){
                 $status = "Existing genome: current";
@@ -1006,12 +942,13 @@ sub _checkGenomeStatus
                 last;
             }
         }
-        
-        if( $status eq "" )
-        {
-            $status = "New genome";#or "Existing genome: status unknown";
-        }
     }
+        
+    if( $status eq "" )
+    {
+        $status = "New genome";#or "Existing genome: status unknown";
+    }
+    
     #print "\nStatus:$status\n";
     return $status;
 }
@@ -1212,9 +1149,8 @@ sub _indexGenomeFeatureData
     my $gn_solr_core = "GenomeFeatures_prod";
     my $count = 0;
 
-    if (! $self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
+    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     foreach my $ws_gn (@{$ws_gnData}) { 
         #for( my $gf_i = 0; $gf_i < @{$ws_gnData}; $gf_i++ ) {
@@ -1223,9 +1159,9 @@ sub _indexGenomeFeatureData
         my $gn_id = $ws_gn->{name};
         #check if the genome is already present in the database by querying SOLR
         #print "Checking SOLR for existence of genome--";
-        if($self->_exists($gn_solr_core, {genome_id=>$gn_id})==1) {
-             print $gn_id . ": has already been indexed in Solr " . $gn_solr_core . ".\n";
-        }    
+        if($solrer->exists_in_solr({solr_core=>$gn_solr_core,{genome_id=>$gn_id}})==1) {
+                print $gn_id . ": has already been indexed in Solr " . $gn_solr_core . ".\n";
+        }
         else {
             print $gn_id . ": is not found in Solr " . $gn_solr_core . ".\n";         
             print "\nStart to fetch the object(s) for " . $gn_id .  " on " . scalar localtime . "\n";
@@ -1288,7 +1224,7 @@ sub _indexGenomeFeatureData
                         
                         if(@{$gnft_batch} >= $batchCount) {
                             eval {
-                                $self->_indexInSolr($solrCore, $gnft_batch);
+                                $solrer->index_in_solr($solrCore, $gnft_batch);
                             };
                             if($@) {
                                 print "Failed to index the genome_feature(s)!\n";
@@ -1306,7 +1242,7 @@ sub _indexGenomeFeatureData
                     #after looping through all features, index the leftover set of genomeFeature objects
                     if(@{$gnft_batch} > 0) {
                         eval {
-                            $self->_indexInSolr($solrCore, $gnft_batch);
+                            $solrer->index_in_solr($solrCore, $gnft_batch);
                         };
                         if($@) {
                             print "Failed to index the genome_feature(s)!\n";
@@ -1359,24 +1295,6 @@ sub _getTaxon
     return $current_taxon;
 }
 
-#
-#internal method, for sending doc data to SOLR 
-#
-sub _indexInSolr 
-{
-    my ($self, $solrCore, $docData) = @_;
-    if( @{$docData} >= 1) {
-       if( $self->_addXML2Solr($solrCore, $docData) == 1 ) {
-           #commit the additions
-           if (!$self->_commit($solrCore)) {
-               die $self->_error->{response};
-           }
-       }
-       else {
-          die $self->{error};
-       }
-    }
-}
 
 #
 #internal method, for creating a message string and return it. 
@@ -2162,8 +2080,6 @@ sub list_solr_genomes
             $msg .= $grp->{matches}." genome_feature(s) in " . $grp->{ngroups}." ". $grpOpt . " groups";
         }
         $msg .= " in SOLR.\n";
-        my $curr = @{$output}-1;
-        print Dumper($output->[$curr])."\n";
     }
     $msg = ($msg ne "") ? $msg : "Nothing found!";
     print $msg . "\n";     
@@ -2625,9 +2541,6 @@ sub list_loaded_taxa
                 $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
             }
 	}
-
-	#indexing in SOLR for every $batchCount of taxa
-        #$self->index_taxa_in_solr({taxa=>$solr_taxa, solr_core => "taxonomy"});
 
         if(exists($params->{batch}) && scalar(@$output) >= $params->{batch}){
             last;
@@ -3180,6 +3093,9 @@ sub index_taxa_in_solr
         start_offset => 0,
         solr_core => "taxonomy_prod" 
     });
+    
+    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     my $taxa;
     if (!defined($params->{taxa})) {
@@ -3207,7 +3123,7 @@ sub index_taxa_in_solr
         push(@{$solrBatch}, $current_taxon);
         if(@{$solrBatch} >= $solrBatchCount) {
             eval {
-                $self->_indexInSolr($solrCore, $solrBatch );
+                $solrer->index_in_solr($solrCore, $solrBatch);
             };
             if($@) {
                 print "Failed to index the taxa!\n";
@@ -3233,7 +3149,7 @@ sub index_taxa_in_solr
     }
     if(@{$solrBatch} > 0) {
             eval {
-                $self->_indexInSolr($solrCore, $solrBatch );
+                $solrer->index_in_solr($solrCore, $solrBatch);
             };
             if($@) {
                 print "Failed to index the taxa!\n";

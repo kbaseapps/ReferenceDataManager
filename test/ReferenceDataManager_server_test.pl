@@ -73,7 +73,8 @@ eval {
     my $sgret;
     eval {
         $sgret = $impl->list_solr_genomes({
-            solr_core => "genomes"
+            solr_core => "Genomes_prod",
+            complete => 1
         });
     };
     ok(!$@,"list_solr_genomes command successful");
@@ -82,7 +83,7 @@ eval {
     } else {
         print "Number of records:".@{$sgret}."\n";
         print "First record:\n";
-        print Data::Dumper->Dump([$sgret->[0]])."\n";
+        print Dumper($sgret->[0])."\n";
     }
     ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
 =cut
@@ -92,7 +93,7 @@ eval {
     my $stret;
     eval {
         $stret = $impl->list_solr_taxa({
-            solr_core => "taxonomy_test",#"taxonomy_ci",
+            solr_core => "taxonomy_ci",
             group_option => "taxonomy_id"
         });
     };
@@ -145,6 +146,7 @@ eval {
      }
      ok(defined($gnstatusret), "_checkGenomeStatus command returneds a value");
 =cut
+
 =begin testing _checkTaxonStatus    
     #Testing _checkTaxonStatus function
     my $txstatusret;
@@ -160,6 +162,21 @@ eval {
      }
      ok(defined($txstatusret), "_checkTaxonStatus command returneds a value");
 =cut
+
+#=begin testing _updateGenomesCore    
+    #Testing _updateGenomesCore function
+    my $updret;
+    eval {
+        $updret = $impl->_updateGenomesCore("GenomeFeatures_ci", "Genomes_ci","KBaseGenomes.Genome-12.3");
+    };
+    ok(!$@, "_updateGenomesCore command successful");
+    if ($@) { 
+         print "ERROR:".$@;
+    } else {
+         print "Result status: " .$updret."\n";
+    }
+    ok(defined($updret), "_updateGenomesCore command returneds a value:" . $updret);
+#=cut
 
 =begin test load_genomes
     #Testing load_genomes function
@@ -187,7 +204,7 @@ eval {
 #=end of "list and load NCBI genomes
 =cut
 
-#=begin test load_refgenomes
+=begin test load_refgenomes
     #Testing load_refgenomes function
     my $rret;
     eval {
@@ -210,7 +227,7 @@ eval {
         print Data::Dumper->Dump([$rret->[@{$rret}-1]])."\n";
     }
     ok(defined($rret->[0]),"load_refgenomes command returned at least one genome");
-=cut
+#=cut
 
 =begin test delete solr documents
     #Delete docs or wipe out the whole $delcore's content----USE CAUTION!
@@ -231,6 +248,7 @@ eval {
         $wsret = $impl->list_loaded_genomes({
             refseq => 1,
 	    phytozome => 0,
+            genome_ver => 2,
 	    ensembl => 0	
 	});
     };
@@ -252,8 +270,10 @@ eval {
     my $ret;
     eval {
         $ret = $impl->index_genomes_in_solr({
-                #genomes => $wsret,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
-             solr_core => $slrcore
+             #genomes => $wsret,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
+             solr_core => $slrcore,
+             genome_ver => 1,
+             start_offset => 60000
         });
     };
     ok(!$@,"index_genomes_in_solr command successful");
