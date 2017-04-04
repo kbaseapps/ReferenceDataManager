@@ -85,10 +85,10 @@ module ReferenceDataManager {
     funcdef list_loaded_genomes(ListLoadedGenomesParams params) returns (list<LoadedReferenceGenomeData> output);
 
 
-    /* Solr response data for search requests.                                       
+    /* Solr doc data for search requests.                                       
         Arbitrary key-value pairs returned by the solr.
     */  
-    typedef mapping<string, string> solrresponse;
+    typedef mapping<string, string> solrdoc;
 
     /*
         Struct containing data for a single genome element output by the list_solr_genomes and index_genomes_in_solr functions 
@@ -152,7 +152,7 @@ module ReferenceDataManager {
     /* 
         Lists genomes indexed in SOLR
     */
-    funcdef list_solr_genomes(ListSolrDocsParams params) returns (list<solrresponse> output) authentication required;
+    funcdef list_solr_genomes(ListSolrDocsParams params) returns (list<solrdoc> output) authentication required;
 
     /*  
         Structure of a single KBase genome in the list returned by the load_genomes, rast_genomes and update_loaded_genomes functions

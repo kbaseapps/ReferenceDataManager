@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '8c34df1fc1d894a590c2ca6832ed4726bb9041e5';
+our $GIT_COMMIT_HASH = '602fe91fe053fb0b438dd333d15db406589469d4';
 
 =head1 NAME
 
@@ -172,13 +172,14 @@ sub util_create_report {
 #
 # Internal Method: to list the genomes already in SOLR and return an array of those genomes
 # Input parameters:
-# $solrCore: string, the name of the solr core
-# $fields: comma delimited string of field names, default to all fields ('*')
-# $rowStart: an integer that offsets the rows before displaying the results, default to 0
-# $rowCount: an integer for how many rows of results to display, default to 0 meaning to display all result rows
-# $gnm_type: a string indicating the type of genomes to be returned
-# $dmn: a string indicating the domain of the genomes to be returned
-# $cmplt: an integer (1 for complete genomes only, or 0 for all genomes)
+#       $solrCore: string, the name of the solr core
+#       $fields: comma delimited string of field names, default to all fields ('*')
+#       $rowStart: an integer that offsets the rows before displaying the results, default to 0
+#       $rowCount: an integer for how many rows of results to display, default to 0 meaning to display all result rows
+#       $gnm_type: a string indicating the type of genomes to be returned
+#       $dmn: a string indicating the domain of the genomes to be returned
+#       $cmplt: an integer (1 for complete genomes only, or 0 for all genomes)
+# Output: a list of KBSolrUtil.solrdoc
 #
 sub _listGenomesInSolr {
     my ($self, $solrCore, $fields, $rowStart, $rowCount, $gnm_type, $dmn, $cmplt) = @_;
@@ -239,7 +240,7 @@ sub _listGenomesInSolr {
 }
 
 #
-#Internal Method: to list the taxa already in SOLR and return an array of those taxa
+#Internal Method: to list the taxa already in SOLR and returns those taxa as a list of KBSolrUtil.solrdoc
 #
 sub _listTaxaInSolr {
     my ($self, $solrCore, $fields, $rowStart, $rowCount, $grp) = @_;
@@ -287,7 +288,7 @@ sub _listTaxaInSolr {
 #
 # method name: _updateGenomesCore
 # Internal method: to update the Genomes_* core with the corresponding GenomeFeatures_* core.
-# parameters:   
+# Input parameters:   
 #     $src_core: This parameter specifies the source Solr core name.
 #     $dest_core: This parameter specifies the target Solr core name.
 #     $start: This parameter specifies the start row count, default to 0.
@@ -348,510 +349,13 @@ sub _updateGenomesCore
 }
 
 #
-# method name: _buildQueryString
-# Internal Method: to build the query string for SOLR according to the passed parameters
-# parameters:
-# $searchQuery is a hash which specifies how the documents will be searched, see the example below:
-# $searchQuery={
-#   parent_taxon_ref => '1779/116411/1',
-#   rank => 'species',
-#   scientific_lineage => 'cellular organisms; Bacteria; Proteobacteria; Alphaproteobacteria; Rhizobiales; Bradyrhizobiaceae; Bradyrhizobium',
-#   scientific_name => 'Bradyrhizobium sp. rp3',
-#   domain => 'Bacteria'
-#}
-# OR, simply:
-# $searchQuery= { q => "*" };
-#
-# $searchParams is a hash which specifies how the query results will be displayed, see the example below:
-# $searchParams={                                                                                                                                     
-#   fl => 'object_id,gene_name,genome_source',
-#   wt => 'json',
-#   rows => $count,
-#   sort => 'object_id asc',
-#   hl => 'false',
-#   start => $start,
-#   count => $count
-#}
-#
-sub _buildQueryString {
-    my ($self, $searchQuery, $searchParams, $groupOption, $skipEscape) = @_;
-    $skipEscape = {} unless $skipEscape;
-    
-    my $DEFAULT_FIELD_CONNECTOR = "AND";
-
-    if (! $searchQuery) {
-        $self->{is_error} = 1;
-        $self->{errmsg} = "Query parameters not specified";
-        return undef;
-    }
-    
-    # Build the display parameter part 
-    my $paramFields = "";
-    foreach my $key (keys %$searchParams) {
-        $paramFields .= "$key=". URI::Escape::uri_escape($searchParams->{$key}) . "&";
-    }
-    
-    # Build the solr query part
-    my $qStr = "q=";
-    if (defined $searchQuery->{q}) {
-        $qStr .= URI::Escape::uri_escape($searchQuery->{q});
-    } else {
-        foreach my $key (keys %$searchQuery) {
-            if (defined $skipEscape->{$key}) {
-                $qStr .= "+$key:\"" . $searchQuery->{$key} ."\" $DEFAULT_FIELD_CONNECTOR ";
-            } else {
-                $qStr .= "+$key:\"" . URI::Escape::uri_escape($searchQuery->{$key}) . "\" $DEFAULT_FIELD_CONNECTOR ";  
-            }
-        }
-        # Remove last occurance of ' AND '
-        $qStr =~ s/ AND $//g;
-    }
-    my $solrGroup = $groupOption ? "&group=true&group.ngroups=true&group.field=$groupOption" : "";
-    my $retStr = $paramFields . $qStr . $solrGroup;
-    #print "Query string:\n$retStr\n";
-    return $retStr;
-}
-#
-# method name: _buildQueryString_wildcard---This is a modified version of the above function, all because the stupid SOLR 4.*
-# handles the wildcard search string in a weird way:when the '*' is at either end of the search string, it returns 0 docs
-# if the search string is within double quotes. On the other hand, when a search string has whitespace(s), it has to be inside
-# double quotes otherwise SOLR will treat it as new field(s).
-# So this method builds the search string WITHOUT the double quotes ONLY for the use case when '*' will be at the ends of the string.
-# The rest is the same as the above method.
-#
-sub _buildQueryString_wildcard {
-    my ($self, $searchQuery, $searchParams, $groupOption, $skipEscape) = @_;
-    $skipEscape = {} unless $skipEscape;
-    
-    my $DEFAULT_FIELD_CONNECTOR = "AND";
-
-    if (!$searchQuery) {
-        $self->{is_error} = 1;
-        $self->{errmsg} = "Query parameters not specified";
-        return undef;
-    }
-    
-    # Build the display parameter part                                             
-    my $paramFields = "";                                                                                                                                                                                            
-    foreach my $key (keys %$searchParams) {
-        $paramFields .= "$key=". URI::Escape::uri_escape($searchParams->{$key}) . "&";
-    }
-    
-    # Build the solr query part
-    my $qStr = "q=";
-    if (defined $searchQuery->{q}) {
-        $qStr .= URI::Escape::uri_escape($searchQuery->{q});
-    } else {
-        foreach my $key (keys %$searchQuery) {
-            if (defined $skipEscape->{$key}) {
-                $qStr .= "+$key:" . $searchQuery->{$key} ." $DEFAULT_FIELD_CONNECTOR ";
-            } else {
-                $qStr .= "+$key:" . URI::Escape::uri_escape($searchQuery->{$key}) . " $DEFAULT_FIELD_CONNECTOR ";  
-            }
-        }
-        # Remove last occurance of ' AND '
-        $qStr =~ s/ AND $//g;
-    }
-    my $solrGroup = $groupOption ? "&group=true&group.field=$groupOption" : "";
-    my $retStr = $paramFields . $qStr . $solrGroup;
-    #print "Query string:\n$retStr\n";
-    return $retStr;
-}
-
-#
-# method name: _sendRequest
-# Internal Method used for sending HTTP
-# url : Requested url
-# method : HTTP method
-# dataType : Type of data posting (binary or text)
-# headers : headers as key => value pair
-# data : if binary it will as sequence of character
-#          if text it will be key => value pair
-sub _sendRequest
-{
-    my ($self, $url, $method, $dataType, $headers, $data) = @_;
-
-    # Intialize the request params if not specified
-    $dataType = ($dataType) ? $dataType : 'text';
-    $method = ($method) ? $method : 'POST';
-    $url = ($url) ? $url : $self->{_SOLR_URL};
-    $headers = ($headers) ?  $headers : {};
-    $data = ($data) ? $data: '';
-
-    my $out = {};
-
-    # create a HTTP request
-    my $ua = LWP::UserAgent->new;
-    my $request = HTTP::Request->new;
-    $request->method($method);
-    $request->uri($url);
-
-
-    # set headers
-    foreach my $header (keys %$headers) {
-        $request->header($header =>  $headers->{$header});
-    }
-
-    # set data for posting
-    $request->content($data);
-    #print "The HTTP request: \n" . Dumper($request) . "\n";
-    
-    # Send request and receive the response
-    my $response = $ua->request($request);
-    $out->{responsecode} = $response->code();
-    $out->{response} = $response->content;
-    $out->{url} = $url;
-    return $out;
-}
-
-#
-# Internal Method: to parse solr server response
-# Responses from Solr take the form shown here:
-#<response>
-#  <lst name="responseHeader">
-#    <int name="status">0</int>
-#    <int name="QTime">127</int>
-#  </lst>
-#  <result name="response" numFound="5536" start="0">
-#    <doc>
-#       <str name="scientific_name">Myxococcus xanthus DK 1622</str>
-#       <str name="genome_id">GCF_000012685.1</str>
-#       <str name="ws_ref">19217/16447/2</str>
-#    </doc>
-#    ......
-#  </result>
-#</response>
-#
-sub _parseResponse
-{
-    my ($self, $response, $responseType) = @_;
-
-    # Clear the error fields
-    $self->{is_error} = 0;
-    $self->{error} = undef;
-
-    $responseType = "xml" unless $responseType;
-
-    # Check for successfull request/response
-    if ($response->{responsecode} eq "200") {
-           if ($responseType eq "json") {
-                my $resRef = JSON::from_json($response->{response});
-                if ($resRef->{responseHeader}->{status} eq 0) {
-                        return 1;
-                }
-           } else {
-                my $xs = new XML::Simple();
-                my $xmlRef;
-                eval {
-                        $xmlRef = $xs->XMLin($response->{response});
-                };
-                if ($xmlRef->{lst}->{'int'}->{status}->{content} eq 0){
-                        return 1;
-                }
-           }
-    }
-    $self->{is_error} = 1;
-    $self->{error} = $response;
-    $self->{error}->{errmsg} = $@;
-    return 0;
-}
-
-#
-# method name: _addXML2Solr
-# Internal method: to add XML documents to solr for indexing.
-# It sends a xml http request.  First it will convert the raw datastructure to required ds then it will convert
-# this ds to xml. This xml will be posted to Apache solr for indexing.
-# Depending on the flag AUTOCOMMIT the documents will be indexed immediatly or on commit is issued.
-# parameters:   
-#     $params: This parameter specifies set of list of document fields and values.
-# return
-#    1 for successful posting of the xml document
-#    0 for any failure
-#
-#
-sub _addXML2Solr
-{
-    my ($self, $solrCore, $params) = @_;
-    
-    if (!$self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
-    
-    my $ds = $self->_rawDsToSolrDs($params);
-    my $doc = $self->_toXML($ds, 'add');
-    #print Dumper($doc);
-    my $commit = $self->{_AUTOCOMMIT} ? 'true' : 'false';
-    my $url = "$self->{_SOLR_URL}/$solrCore/update?commit=" . $commit;
-    my $response = $self->_sendRequest($url, 'POST', undef, $self->{_CT_XML}, $doc);
-    return 1 if ($self->_parseResponse($response));
-    $self->{error} = $response;
-    $self->{error}->{errmsg} = $@;
-    #print "\nSolr indexing error:\n" . $self->_error->{response}; #Dumper($response);
-    return 0;
-}
-
-#
-# method name: _toXML
-# Internal Method
-# This function will convert the datastructe to XML document
-# For XML Formatted Index Updates
-#
-# The XML schema recognized by the update handler for adding documents is very straightforward:
-# The <add> element introduces one or more documents to be added.
-# The <doc> element introduces the fields making up a document.
-# The <field> element presents the content for a specific field.
-# For example:
-# <add>
-#  <doc>
-#    <field name="authors">Patrick Eagar</field>
-#    <field name="subject">Sports</field>
-#    <field name="dd">796.35</field>
-#    <field name="numpages">128</field>
-#    <field name="desc"></field>
-#    <field name="price">12.40</field>
-#    <field name="title" boost="2.0">Summer of the all-rounder: Test and championship cricket in England 1982</field>
-#    <field name="isbn">0002166313</field>
-#    <field name="yearpub">1982</field>
-#    <field name="publisher">Collins</field>
-#  </doc>
-#  <doc boost="2.5">
-#  ...
-#  </doc>
-#</add>
-# Index update commands can be sent as XML message to the update handler using Content-type: application/xml or Content-type: text/xml.
-# For adding Documents
-#
-sub _toXML
-{
-    my ($self, $params, $rootnode) = @_;
-    my $xs = new XML::Simple();
-    my $xml;
-    if (! $rootnode) {
-    $xml = $xs->XMLout($params);
-    } else {
-    $xml = $xs->XMLout($params, rootname => $rootnode);
-    }
-    #print "\n$xml\n";                                               
-        return $xml;
-}
-
-#
-# method name: _rawDs2SolrDs
-#
-# Convert raw DS to sorl requird DS.
-# Input format :
-#    [
-#    {
-#        attr1 => [value1, value2],
-#        attr2 => [value3, value4]
-#    },
-#    ...
-#    ]
-# Output format:
-#    [
-#    { field => [ { name => attr1, content => value1 },
-#             { name => attr1, content => value2 },
-#             { name => attr2, content => value3 },
-#             { name => attr2, content => value4 }
-#            ],
-#    },
-#    ...
-#    ]
-#
-sub _rawDsToSolrDs
-{
-    my ($self, $docs) = @_;
-    #print "\nInput data:\n". Dumper($docs);
-    my $ds = [];
-    if( ref($docs) eq 'ARRAY' && scalar (@$docs) ) {
-        for my $doc (@$docs) {
-            my $d = [];
-            for my $field (keys %$doc) {
-                my $values = $doc->{$field};
-                if (ref($values) eq 'ARRAY' && scalar (@$values) ){
-                    for my $val (@$values) {
-                        my @fval_data = split(/;;/, $val);
-                        foreach my $fval (@fval_data) {
-                            push @$d, {name => $field, content => $fval} unless $field eq '_version_';
-                        }
-                    }
-                } else {#only a single member in the list
-                    my @fval_data = split(/;;/, $values);
-                    foreach my $fval (@fval_data) {
-                        push @$d, { name => $field, content => $fval} unless $field eq '_version_';
-                    }
-                }
-            }
-            push @$ds, {field => $d};
-        }
-    }
-    else {#only a single member in the list
-        my $d = [];
-        for my $field (keys %$docs) {
-            my $values = $docs->{$field};
-            #print "$field => " . Dumper($values);
-            if (ref($values) eq 'ARRAY' && scalar (@$values) ){
-                for my $val (@$values) {
-                    my @fval_data = split(/;;/, $val);
-                    foreach my $fval (@fval_data) {
-                        push @$d, {name => $field, content => $fval} unless $field eq '_version_';
-                    }
-                }
-            } else {#only a single member in the list
-                my @fval_data = split(/;;/, $values);
-                foreach my $fval (@fval_data) {
-                    push @$d, { name => $field, content => $fval} unless $field eq '_version_'; 
-                }
-            }
-        }
-        push @$ds, {field => $d};
-    }
-    
-    $ds = { doc => $ds };
-    #print "\noutput data:\n" .Dumper($ds);
-    return $ds;
-}
-#
-# method name: _error
-#     returns the errors details that has occured during last transaction action.
-# params : -
-# returns : response details includes the following details
-#    {
-#       url => 'url which is being accessed',
-#       response => 'response from server',
-#       code => 'response code',
-#       errmsg => 'for any internal error error msg'
-#     }
-#
-#
-sub _error
-{
-    my ($self) = @_;
-    return $self->{error};
-}
-
-#
-# method name: _autocommit
-#    This method is used for setting the autocommit on or off.
-# params:
-#     flag: 1 or 0, 1 for setting autocommit on and 0 for off.
-# return
-#    always returns true
-#
-sub _autocommit
-{
-    my ($self, $flag) = @_;
-    $self->{_AUTOCOMMIT} = $flag | 1;
-    return 1;
-}
-
-#
-# method name: _commit
-#    This method is used for commiting the transaction that was initiated.
-#     Request XML format:
-#         true
-# params : -
-# returns :
-#    1 for success
-#    0 for any failure
-#
-#
-sub _commit
-{
-    my ($self, $solrCore) = @_;
-    
-    if (!$self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
-    
-    my $url = $self->{_SOLR_POST_URL} . "/$solrCore/update";
-    my $cmd = $self->_toXML('true', 'commit');
-    my $response = $self->_sendRequest($url, 'POST', undef, $self->{_CT_XML}, $cmd);
-
-    return 1 if ($self->_parseResponse($response));
-    return 0;
-}
-#
-# method name: _rollback
-#    This method is used for issuing rollback on transaction that
-# was initiated. Request XML format:
-#     <rollback>
-# params : -
-# returns :
-#    1 for success
-#    0 for any failure
-#
-#
-sub _rollback
-{
-    my ($self, $solrCore) = @_;
-
-    if (!$self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
-
-    my $url = $self->{_SOLR_POST_URL} . "/$solrCore/update";
-    my $cmd = $self->_toXML('', 'rollback');
-    my $response = $self->_sendRequest($url, 'POST', undef, $self->{_CT_XML}, $cmd);
-
-    return 1 if ($self->_parseResponse($response));
-    return 0;
-}
-
-
-# method name: _ping
-#    This methods is check Apache solr server is reachable or not
-# params : -
-# returns :
-#     1 for success
-#     0 for failure
-# Check error method for for getting the error details for last command
-#
-sub _ping
-{
-    my ($self, $errors) = @_;
-    #print "Pinging server: $self->{_SOLR_PING_URL}\n";
-    my $response = $self->_sendRequest($self->{_SOLR_PING_URL}, 'GET');
-    #print "Ping's response:\n" . Dumper($response) . "\n";
-    
-    return 1 if ($self->_parseResponse($response));
-    return 0;
-}
-
-sub _clear_error
-{
-    my ($self) = @_;
-    $self->{is_error} = 0;
-    $self->{error} = undef;
-}
-
-#
-# method name: _error
-# returns the errors details that was occured during last transaction action.
-# params : -
-# returns : response details includes the following details
-#    {
-#       url => 'url which is being accessed',
-#       response => 'response from server',
-#       code => 'response code',
-#       errmsg => 'for any internal error error msg'
-#     }
-#
-# Check error method for for getting the error details for last command
-#
-sub _error
-{
-    my ($self) = @_;
-    return $self->{error};
-}
-#
 # Internal Method: to check if a given genome has been indexed by KBase in SOLR.  Returns a string stating the status
 #
-# params :
+# Input parameters :
 # $current_genome is a genome object whose KBase status is to be checked.
 # $solr_core is the name of the SOLR core
 #
-# returns : a string
+# returns : a string stating the status
 #    
 sub _checkTaxonStatus
 {
@@ -873,16 +377,17 @@ sub _checkTaxonStatus
     #print "\nStatus:$status\n";
     return $status;
 }
+
 #
 # Internal Method 
 # Name: _checkGenomeStatus
-# Purpose: to check if a given genome status against genomes in SOLR.  Returns a string stating the status
+# Purpose: to check if a given genome status against genomes in SOLR.  
 #
-# params :
+# Input parameters :
 #       $current_genome is a genome object whose KBase status is to be checked.
 #       $solr_core is the name of the SOLR core
 #
-# returns : a string
+# returns : a string stating the status
 #    
 sub _checkGenomeStatus 
 {
@@ -957,7 +462,7 @@ sub _checkGenomeStatus
 # Internal method
 # Name: _getGenomeInfo
 # Purpose: to fetch the information about a genome records from a given genome reference
-# Input: a reference to a Workspace.object_info (which is a reference to a list containing 11 items)
+# Input parameter: a reference to a Workspace.object_info (which is a reference to a list containing 11 items)
 # Output: a reference to a hash of the type of ReferenceDataManager.LoadedReferenceGenomeData
 #
 sub _getGenomeInfo 
@@ -989,6 +494,15 @@ sub _getGenomeInfo
 #
 # Internal method 
 # Build the genome solr object for the sake of the search UI/search service
+# Input parameters: 
+#       $ws_ref: a string of three parts connected with forward slash in the form of 'ws_id/obj_id/obj_ver'
+#       $ws_gn_data: an UnspecifiedObject containing data about the genome object
+#       $ws_gn_info: a reference to a list containing 11 items
+#       $ws_gn_asmlevel: a string indicating the level of the assembly
+#       $ws_gn_tax: the genome's taxonomy id
+#       $numCDs: the number of genes in the genome
+#       $ws_gn_save_date: as it states
+# Output: a reference to a hash of the type of ReferenceDataManager.SolrGenomeFeatureData
 #
 sub _buildSolrGenome
 {
@@ -1023,6 +537,17 @@ sub _buildSolrGenome
 #
 # Internal method 
 # Build the genome_feature solr object
+# Input parameters: 
+#       $ws_gn_feature: the reference pointing to the feature data
+#       $ws_ref: a string of three parts connected with forward slash in the form of 'ws_id/obj_id/obj_ver'
+#       $ws_gn_data: an UnspecifiedObject containing data about the genome object
+#       $ws_gn_info: a reference to a list containing 11 items
+#       $ws_gn_asmlevel: a string indicating the level of the assembly
+#       $ws_gn_tax: the genome's taxonomy id
+#       $numCDs: the number of genes in the genome
+#       $ws_gn_save_date: as it states
+#
+# Output: a reference to a hash of the type of ReferenceDataManager.SolrGenomeFeatureData
 #
 sub _buildSolrGenomeFeature
 {
@@ -1132,11 +657,12 @@ sub _buildSolrGenomeFeature
 
 #
 #Internal method, to fetch genome records for a given set of ws_ref's and index the genome_feature combo in SOLR.
+#
 #First call get_objects2() to get the genome object one at a time.
-#Then plow through the genome object data to assemble the data items for a Solr genome_feature object.
+#Then plow through the genome object data to assemble the data items for a Solr genomie_feature object.
 #Finally send the data document to Solr for indexing.
-#Input: a list of KBaseReferenceGenomeData
-#Output: a list of SolrGenomeFeatureData (the first 10) and the total count of genome_features indexed
+#Input: a list of ReferenceDataManager.KBaseReferenceGenomeData
+#Output: a list of SolrGenomeFeatureData and the total count of genome_features indexed
 #
 sub _indexGenomeFeatureData 
 {
@@ -1262,6 +788,7 @@ sub _indexGenomeFeatureData
     }
     return {"genome_features"=>$solr_gnftData,"count"=>$count};
 }
+
 #
 #internal method, for fetching one taxon record to be indexed in solr
 #
@@ -1308,7 +835,7 @@ sub _genomeInfoString
 
 #################### End subs for accessing SOLR #######################
 
-#################### Start subs for accessing NCBI ########################
+#################### Start subs for accessing NCBI refseq genomes#######################
 
 #
 # Internal method: _list_ncbi_refgenomes
@@ -1380,7 +907,7 @@ sub _list_ncbi_refgenomes
     return({summary => $summary, ref_genomes => $output});
 }
 
-#################### End subs for accessing NCBI ########################
+#################### End subs for accessing NCBI refseq genomes########################
 
 sub _extract_ncbi_taxa {
     my $self=shift;
@@ -1977,7 +1504,7 @@ sub list_loaded_genomes
 
 <pre>
 $params is a ReferenceDataManager.ListSolrDocsParams
-$output is a reference to a list where each element is a ReferenceDataManager.solrresponse
+$output is a reference to a list where each element is a ReferenceDataManager.solrdoc
 ListSolrDocsParams is a reference to a hash where the following keys are defined:
 	solr_core has a value which is a string
 	row_start has a value which is an int
@@ -1988,7 +1515,7 @@ ListSolrDocsParams is a reference to a hash where the following keys are defined
 	complete has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 bool is an int
-solrresponse is a reference to a hash where the key is a string and the value is a string
+solrdoc is a reference to a hash where the key is a string and the value is a string
 
 </pre>
 
@@ -1997,7 +1524,7 @@ solrresponse is a reference to a hash where the key is a string and the value is
 =begin text
 
 $params is a ReferenceDataManager.ListSolrDocsParams
-$output is a reference to a list where each element is a ReferenceDataManager.solrresponse
+$output is a reference to a list where each element is a ReferenceDataManager.solrdoc
 ListSolrDocsParams is a reference to a hash where the following keys are defined:
 	solr_core has a value which is a string
 	row_start has a value which is an int
@@ -2008,7 +1535,7 @@ ListSolrDocsParams is a reference to a hash where the following keys are defined
 	complete has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 bool is an int
-solrresponse is a reference to a hash where the key is a string and the value is a string
+solrdoc is a reference to a hash where the key is a string and the value is a string
 
 
 =end text
@@ -2039,9 +1566,6 @@ sub list_solr_genomes
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
     my($output);
     #BEGIN list_solr_genomes
-    if (! $self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         solr_core => "Genomes_prod",
@@ -2102,6 +1626,8 @@ sub list_solr_genomes
     }
     return($output);
 }
+
+
 
 
 =head2 index_genomes_in_solr
@@ -2270,9 +1796,6 @@ sub index_genomes_in_solr
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
     my($output);
     #BEGIN index_genomes_in_solr
-    if (! $self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         genomes => undef,
@@ -2672,9 +2195,6 @@ sub list_solr_taxa
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
     my($output);
     #BEGIN list_solr_taxa
-    if (! $self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         solr_core => "taxonomy_prod",
@@ -3082,9 +2602,6 @@ sub index_taxa_in_solr
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
     my($output);
     #BEGIN index_taxa_in_solr
-    if (! $self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         taxa => undef,
@@ -3873,10 +3390,6 @@ sub update_loaded_genomes
     my $gn_solr_core = "GenomeFeatures_prod";
     my $tx_solr_core = "taxonomy_prod";
 
-    if (! $self->_ping()) {
-        die "\nError--Solr server not responding:\n" . $self->_error->{response};
-    }
-    
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},domain=>$params->{domain},update_only=>$params->{update_only}});
 
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
@@ -4215,7 +3728,7 @@ gc has a value which is a float
 
 
 
-=head2 solrresponse
+=head2 solrdoc
 
 =over 4
 
@@ -4223,7 +3736,7 @@ gc has a value which is a float
 
 =item Description
 
-Solr response data for search requests.                                       
+Solr doc data for search requests.                                       
 Arbitrary key-value pairs returned by the solr.
 
 
