@@ -17,6 +17,9 @@ my $cfg = Config::IniFiles->new(-file=>$config_file);
 my $wsInstance = $cfg->val('ReferenceDataManager','workspace-url');
 die "no workspace-url defined" unless $wsInstance;
 
+my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1, auth_svc=>$cfg->{'auth_service_url'});
+print("ws url:".$cfg->{'workspace-url'} . "\n");
+print("auth url:".$cfg->{'auth-service-url'} . "\n");   
 
 #my $config = new Config::Simple($config_file)->get_block('ReferenceDataManager');
 #my $ws_url = $config->{"workspace-url"};
@@ -54,21 +57,22 @@ eval {
 =cut
     
 =begin passed tests
-
+    #Testing _listGenomesInSolr
     my $solrret;
     eval {
-        $solrret = $impl->_listGenomesInSolr("QZtest", "*");
+        $solrret = $impl->_listGenomesInSolr("Genomes_ci", "*");
     };
-    ok(!$@, "list genomes in Solr command successful");
+    ok(!$@, "_listGenomesInSolr command successful");
     if ($@) { 
          print "ERROR:".$@;
      } else {
          print "First record:\n";
+         print Dumper($solrret->[0])."\n";
      }
      ok(defined($solrret),"_listGenomesInSolr command returned at least one genome");
 =cut    
 
-=begin
+#=begin
      #Testing list_solr_genomes function
     my $sgret;
     eval {
@@ -114,7 +118,7 @@ eval {
     eval {
         $refret = $impl->list_reference_genomes({
             refseq => 1,
-            gn_domain => "bacteria",#"bacteria,archaea,plant,fungi",
+            domain => "bacteria,archaea,plant,fungi",
             update_only => 0 
         });
     };
@@ -163,7 +167,7 @@ eval {
      ok(defined($txstatusret), "_checkTaxonStatus command returneds a value");
 =cut
 
-#=begin testing _updateGenomesCore    
+=begin testing _updateGenomesCore    
     #Testing _updateGenomesCore function
     my $updret;
     eval {
@@ -176,7 +180,7 @@ eval {
          print "Result status: " .$updret."\n";
     }
     ok(defined($updret), "_updateGenomesCore command returneds a value:" . $updret);
-#=cut
+=cut
 
 =begin test load_genomes
     #Testing load_genomes function
