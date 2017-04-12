@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '602fe91fe053fb0b438dd333d15db406589469d4';
+our $GIT_COMMIT_HASH = '77348aab993d0502c32cc11962b14f1441f08917';
 
 =head1 NAME
 
@@ -291,8 +291,6 @@ sub _listTaxaInSolr {
 # Input parameters:   
 #     $src_core: This parameter specifies the source Solr core name.
 #     $dest_core: This parameter specifies the target Solr core name.
-#     $start: This parameter specifies the start row count, default to 0.
-#     $row_count: This parameter specifies the total row count, default to 10.
 #     $gnm_type: This parameter specifies the type of genomes to be updated, default to "KBaseGenomes.Genome-8.2".
 # return
 #    1 for success
@@ -334,7 +332,6 @@ sub _updateGenomesCore
          foreach my $gnm (@{$ret_gnms}) {
             delete $gnm->{_version_};
          }
-         #then insert the $gnm
          eval {
                 $solrer->add_json_2solr({solr_core=>$dest_core, json_docs=>$ret_gnms});
          };
