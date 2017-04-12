@@ -526,7 +526,8 @@ sub _buildSolrGenome
         workspace_name => $ws_gn_info->[7],
         num_cds => $numCDs,
         #gnmd5checksum => $ws_gn_info->[8],
-        save_date => $ws_gn_save_date            
+        save_date => $ws_gn_save_date,
+        genome_category => $ws_gn_data->{type}        
    };
    return $ws_gnobj;
 }
@@ -629,6 +630,7 @@ sub _buildSolrGenomeFeature
                 workspace_name => $ws_gn_info->[7],
                 num_cds => $numCDs,
                 save_date => $ws_gn_save_date,
+                genome_category => $ws_gn_data->{type},        
             #feature data
                 genome_feature_id => $ws_gn_data->{id} . "|feature:" . $ws_gn_feature->{id},
                 object_id => "kb|ws_ref:". $ws_ref->{ref}. "|feature:" . $ws_gn_feature->{id},
