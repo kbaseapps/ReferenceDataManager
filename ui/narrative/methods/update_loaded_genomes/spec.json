@@ -122,12 +122,6 @@
       ],
       "output_mapping" : [
         {
-          "target_property" : "report_ref",
-          "service_method_output_path" : [
-                                0,
-                                0
-                ]
-        }
       ]
     }
   }

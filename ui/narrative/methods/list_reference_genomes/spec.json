@@ -6,8 +6,8 @@
   "visble" : true,
   "categories" : ["active"],
   "widgets" : {
-    "input" : null,
-    "output" : "kbaseReportView"
+    "input" : "kbaseNarrativeMethodInput",,
+    "output" : "no-display"
   },
   "parameters" : [ {
     "id" : "refseq",
@@ -126,13 +126,6 @@
         }
       ],
       "output_mapping" : [
-        {
-          "target_property" : "report_ref",
-    	  "service_method_output_path" : [
-				0,
-				0
-        	]
-        }
       ]
     }
   }
