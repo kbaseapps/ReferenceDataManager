@@ -9,16 +9,23 @@ use ReferenceDataManager::ReferenceDataManagerImpl;
 
 use Config::IniFiles;
 
+
 local $| = 1;
 my $token = $ENV{'KB_AUTH_TOKEN'};
-my $config_file = $ENV{'KB_DEPLOYMENT_CONFIG'};
-my $config = new Config::Simple($config_file)->get_block('ReferenceDataManager');
-my $ws_url = $config->{"workspace-url"};
-my $ws_name = undef;
-my $ws_client = new Workspace::WorkspaceClient($ws_url,token => $token);
-my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1, auth_svc=>$config->{'auth-service-url'});
-print("ws url:".$config->{'workspace-url'} . "\n");
-print("auth url:".$config->{'auth-service-url'} . "\n");
+my $config_file = $ENV{ KB_DEPLOYMENT_CONFIG };
+my $cfg = Config::IniFiles->new(-file=>$config_file);
+my $wsInstance = $cfg->val('ReferenceDataManager','workspace-url');
+die "no workspace-url defined" unless $wsInstance;
+
+my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1, auth_svc=>$cfg->{'auth_service_url'});
+print("ws url:".$cfg->{'workspace-url'} . "\n");
+print("auth url:".$cfg->{'auth-service-url'} . "\n");   
+
+#my $config = new Config::Simple($config_file)->get_block('ReferenceDataManager');
+#my $ws_url = $config->{"workspace-url"};
+#my $ws_name = undef;
+#my $ws_client = new Bio::KBase::workspace::Client($ws_url,token => $token);
+my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
 my $ctx = LocalCallContext->new($token, $auth_token->user_id);
 $ReferenceDataManager::ReferenceDataManagerServer::CallContext = $ctx;
 my $impl = new ReferenceDataManager::ReferenceDataManagerImpl();
