@@ -689,7 +689,7 @@ sub _indexGenomeFeatureData
         }
         else {
             print $gn_id . ": is not found in Solr " . $gn_solr_core . ".\n";         
-            print "\nStart to fetch the object(s) for " . $gn_id .  " on " . scalar localtime . "\n";
+            #print "\nStart to fetch the object(s) for " . $gn_id .  " on " . scalar localtime . "\n";
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
                         objects => [$ws_ref]
@@ -703,7 +703,7 @@ sub _indexGenomeFeatureData
                 }
             }
             else {
-                print "Done getting genome object info for " . $gn_id . " on " . scalar localtime . "\n";
+                #print "Done getting genome object info for " . $gn_id . " on " . scalar localtime . "\n";
                 $ws_gnout = $ws_gnout->{data};#a reference to a list where each element is a Workspace.ObjectData
                 my $ws_gn_data;#to hold a value which is a Workspace.objectData
                 my $ws_gn_info;#to hold a value which is a Workspace.object_info
