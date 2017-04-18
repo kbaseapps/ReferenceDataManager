@@ -186,7 +186,7 @@ sub _listGenomesInSolr {
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 0;
     $fields = "*" unless $fields;
-    $gnm_type = "KBaseGenomes.Genome-8.2" unless $gnm_type;
+    $gnm_type = "KBaseGenomes.Genome-*" unless $gnm_type;
     
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
@@ -339,7 +339,7 @@ sub _updateGenomesCore
                 print "ERROR:".$@;
                 return 0;
          } else {
-                print "Done updating " . $dest_core . " with ". $src_core. "!";
+                #print "Done updating " . $dest_core . " with ". $src_core. "!";
                 return 1;
          }
     }
@@ -678,12 +678,9 @@ sub _indexGenomeFeatureData
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     foreach my $ws_gn (@{$ws_gnData}) { 
-        #for( my $gf_i = 0; $gf_i < @{$ws_gnData}; $gf_i++ ) {
-        #my $ws_gn = $ws_gnData->[$gf_i]; 
         my $ws_ref = {"ref" => $ws_gn->{ref}};
         my $gn_id = $ws_gn->{name};
         #check if the genome is already present in the database by querying SOLR
-        #print "Checking SOLR for existence of genome--";
         if($solrer->exists_in_solr({solr_core=>$gn_solr_core,{genome_id=>$gn_id}})==1) {
             #print $gn_id . ": has already been indexed in Solr " . $gn_solr_core . ".\n";
         }
@@ -1817,7 +1814,7 @@ sub index_genomes_in_solr
 
     my $solrCore = $params->{solr_core};
     @{$genomes} = @{$genomes}[$params->{start_offset}..@{$genomes} - 1];
-    print "\nTotal genomes to be indexed: ". @{$genomes} . "\n";
+    #print "\nTotal genomes to be indexed: ". @{$genomes} . "\n";
     $output = $self->_indexGenomeFeatureData($solrCore, $genomes);
     my $gnft_count = $output->{count};
     $output = $output->{genome_features};
@@ -2629,7 +2626,7 @@ sub index_taxa_in_solr
     $output = [];
     my $solrBatch = [];
     my $solrBatchCount = 10000;
-    print "\nTotal taxa to be indexed: ". @{$taxa} . " to $solrCore.\n";
+    #print "\nTotal taxa to be indexed: ". @{$taxa} . " to $solrCore.\n";
 
     for (my $i = 0; $i < @{$taxa}; $i++) {
         my $taxonData = $taxa->[$i]->{taxon};#an UnspecifiedObject
@@ -2678,7 +2675,7 @@ sub index_taxa_in_solr
             }
             else {
                 push(@{$output}, @{$solrBatch});
-                print "\nIndexed ". @{$solrBatch} . " taxa.\n";
+                #print "\nIndexed ". @{$solrBatch} . " taxa.\n";
             }
     }
     $msg .= "Indexed ". scalar @{$output}. " taxa!\n";
@@ -2847,7 +2844,7 @@ sub load_genomes
 
     for (my $i=0; $i < @{$ncbigenomes}; $i++) {
         my $ncbigenome = $ncbigenomes->[$i];
-        print "\n******************Genome#: $i ********************";
+        #print "\n******************Genome#: $i ********************";
         my $wsname = "";
         if(defined( $ncbigenome->{workspace_name}))
         {
@@ -2870,7 +2867,7 @@ sub load_genomes
            $gn_type = "Representative";
         }
         
-        print "\nNow loading ".$ncbigenome->{id}." with loader url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
+        #print "\nNow loading ".$ncbigenome->{id}." with loader url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         if ($ncbigenome->{source} eq "refseq" || $ncbigenome->{source} eq "") {
             my $genomeout;
             my $genutilout;
@@ -2933,9 +2930,8 @@ sub load_genomes
                 if (@{$output} < 10  && @{$output} > 0) {
                    $msg .= "Loaded genome: ".$genomeout->{id}." into workspace ".$genomeout->{workspace_name}.";\n";
                 }
-                print "!!!!!!!!!!!!!--Loading of $ncbigenome->{id} succeeded--!!\n";
             }
-            print "**********************Genome loading process ends on " . scalar localtime . "************************\n";
+            #print "**********************Genome loading process ends on " . scalar localtime . "************************\n";
         } elsif ($ncbigenome->{source} eq "phytozome") {
             #NEED SAM TO PUT CODE FOR HIS LOADER HERE
             my $genomeout = {
@@ -3393,7 +3389,7 @@ sub update_loaded_genomes
 
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
     for (my $i=0; $i < @{$ref_genomes}; $i++) {
-        print "\n***************Ref genome #". $i. "****************\n";
+        #print "\n***************Ref genome #". $i. "****************\n";
         my $gnm = $ref_genomes->[$i];
     
         #check if the genome is already present in the database by querying SOLR
@@ -3403,7 +3399,7 @@ sub update_loaded_genomes
                 #check if the taxon of the genome (named in KBase as $gnm->{tax_id} . "_taxon") is loaded in a KBase workspace
                 if( ($self->_checkTaxonStatus($gnm, $tx_solr_core))=~/in KBase/i ){
                     $count ++;
-                    print "A '" . $gn_status . "' genome with taxon in KBase found, update_total=" . $count;
+                    #print "A '" . $gn_status . "' genome with taxon in KBase found, update_total=" . $count;
                     $self->load_genomes( {genomes => [$gnm], index_in_solr => 1} ); 
                     push(@{$output},{genome_id=>$gnm->{id}});
                     if ($count < 10) {
@@ -3411,7 +3407,7 @@ sub update_loaded_genomes
                     }
                 }
         }else{
-                print "Current version already in KBase"; #check for annotation update
+            #print "Current version already in KBase"; #check for annotation update
         }
     }
     $msg .= "Updated ".@{$output}." genomes!";
