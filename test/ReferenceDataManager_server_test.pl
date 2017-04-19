@@ -23,6 +23,69 @@ my $ctx = LocalCallContext->new($token, $auth_token->user_id);
 $ReferenceDataManager::ReferenceDataManagerServer::CallContext = $ctx;
 my $impl = new ReferenceDataManager::ReferenceDataManagerImpl();
 
+sub get_ws_name {
+    if (!defined($ws_name)) {
+        my $suffix = int(time * 1000);
+        $ws_name = 'test_RAST_SDK_' . $suffix;
+        $ws_client->create_workspace({workspace => $ws_name});
+    }
+    return $ws_name;
+}
+
+
+sub make_impl_call {
+    my ($method, $params) = @_;
+    # Prepare json file input
+    my $input = {
+        method => $method,
+        params => $params,
+        version => "1.1",
+        id => "1"
+    };
+    open my $fh, ">", "/kb/module/work/input.json";
+    print $fh encode_json($input);
+    close $fh;
+    my $output_path = "/kb/module/work/output.json";
+    if (-e $output_path) {
+        unlink($output_path);
+    }
+    # Run run_async.sh
+    system("sh", "/kb/module/scripts/run_async.sh");
+    # Load json file with output
+    open my $fh2, "<", $output_path;
+    my $output_json = <$fh2>;
+    close $fh2;
+    my $json = JSON->new;
+    my $output = $json->decode($output_json);
+    if (defined($output->{error})) {
+        die encode_json($output->{error});
+    }
+    my $ret_obj = $output->{result}->[0];
+    return $ret_obj;
+}
+
+sub check_genome_obj {
+    my($genome_obj) = @_;
+    ok(defined($genome_obj->{features}), "Features array is present");
+    ok(scalar @{ $genome_obj->{features} } eq 1, "Number of features");
+    ok(defined($genome_obj->{cdss}), "CDSs array is present");
+    ok(scalar @{ $genome_obj->{cdss} } eq 1, "Number of CDSs");
+    ok(defined($genome_obj->{mrnas}), "mRNAs array is present");
+    ok(scalar @{ $genome_obj->{mrnas} } eq 1, "Number of mRNAs");
+}
+
+sub test_rast_genomes {
+    my($genomes) = @_;
+    my $params={
+             #"genomes"=>$genomes,
+             "workspace_name"=>get_ws_name()
+           };
+    my $ret = make_impl_call("ReferenceDataManager.rast_genomes, $params);
+    my $genome_ref = get_ws_name() . "/" . $ret->[0]->{genome_id};
+    my $genome_obj = $ws_client->get_objects([{ref=>$genome_ref}])->[0]->{data};
+    check_genome_obj($genome_obj);
+}
+
 eval {
     #Altering workspace map
     $impl->{_workspace_map}->{refseq} = "ReferenceDataManager";
@@ -86,7 +149,7 @@ eval {
     ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
 =cut
 
-#=begin
+=begin
      #Testing rast_genomes function
     my $rgret;
     eval {
@@ -101,7 +164,7 @@ eval {
         print Dumper($rgret->[0])."\n";
     }
     ok(defined($rgret->[0]),"rast_genomes command returned at least one genome");
-#=cut
+=cut
 
 =begin 
     #Testing list_solr_taxa function
