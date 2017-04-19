@@ -80,56 +80,14 @@ sub test_rast_genomes {
              #"genomes"=>$genomes,
              "workspace_name"=>get_ws_name()
            };
-    my $ret = make_impl_call("ReferenceDataManager.rast_genomes, $params);
+    my $ret = make_impl_call("ReferenceDataManager.rast_genomes", $params);
     my $genome_ref = get_ws_name() . "/" . $ret->[0]->{genome_id};
     my $genome_obj = $ws_client->get_objects([{ref=>$genome_ref}])->[0]->{data};
     check_genome_obj($genome_obj);
 }
 
 eval {
-    #Altering workspace map
-    $impl->{_workspace_map}->{refseq} = "ReferenceDataManager";
-    #$impl->{_workspace_map}->{refseq} = "Phytozome_Genomes";
-    #$impl->{_workspace_map}->{refseq} = "RefSeq_Genomes";
-    #$impl->{_workspace_map}->{refseq} = "KBasePublicRichGenomesV5";
-
-=begin
-    #Testing update_loaded_genomes function
-    my $wsgnmret;
-    eval {
-        $wsgnmret = $impl->update_loaded_genomes({
-           refseq => 1
-        });
-    };
-    ok(!$@,"update_loaded_genomes command successful");
-    if ($@) {
-        print "ERROR:".$@;
-    } else {
-        print "Number of records:".@{$wsgnmret}."\n";
-        print "First record:\n";
-        print Data::Dumper->Dump([$wsgnmret->[0]])."\n";
-    }
-    ok(defined($wsgnmret->[0]),"update_loaded_genomes command returned at least one record");
-=cut
-    
-=begin passed tests
-    #Testing _listGenomesInSolr
-    my $solrret;
-    eval {i
-        #$solrret = $impl->_listGenomesInSolr("Genomes_ci", "*",0,0,"KBaseGenomes.Genome-12.3");
-        $solrret = $impl->_listGenomesInSolr("Genomes_prod", "*",0,0,"KBaseGenomes.Genome-8.2");
-    };
-    ok(!$@, "_listGenomesInSolr command successful");
-    if ($@) { 
-         print "ERROR:".$@;
-     } else {
-         print "List Genomes in Solr results:";
-         print $solrret->{response}->{response}->{numFound}."\n";
-     }
-     ok(defined($solrret),"_listGenomesInSolr command returned at least one genome");
-=cut    
-
-=begin
+#=begin
      #Testing list_solr_genomes function
     my $sgret;
     eval {
@@ -147,9 +105,53 @@ eval {
         print Dumper($sgret->[0])."\n";
     }
     ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
-=cut
+#=cut
 
-=begin
+    test_rast_genomes({genomes=>$sgret, workspace_name=>get_ws_name()});    
+    print("test_rast_genomes.\n");
+    done_testing(3);
+};
+
+=begin old testings
+eval {
+    #Altering workspace map
+    $impl->{_workspace_map}->{refseq} = "ReferenceDataManager";
+    #$impl->{_workspace_map}->{refseq} = "Phytozome_Genomes";
+    #$impl->{_workspace_map}->{refseq} = "RefSeq_Genomes";
+    #$impl->{_workspace_map}->{refseq} = "KBasePublicRichGenomesV5";
+
+    #Testing update_loaded_genomes function
+    my $wsgnmret;
+    eval {
+        $wsgnmret = $impl->update_loaded_genomes({
+           refseq => 1
+        });
+    };
+    ok(!$@,"update_loaded_genomes command successful");
+    if ($@) {
+        print "ERROR:".$@;
+    } else {
+        print "Number of records:".@{$wsgnmret}."\n";
+        print "First record:\n";
+        print Data::Dumper->Dump([$wsgnmret->[0]])."\n";
+    }
+    ok(defined($wsgnmret->[0]),"update_loaded_genomes command returned at least one record");
+    
+    #Testing _listGenomesInSolr
+    my $solrret;
+    eval {i
+        #$solrret = $impl->_listGenomesInSolr("Genomes_ci", "*",0,0,"KBaseGenomes.Genome-12.3");
+        $solrret = $impl->_listGenomesInSolr("Genomes_prod", "*",0,0,"KBaseGenomes.Genome-8.2");
+    };
+    ok(!$@, "_listGenomesInSolr command successful");
+    if ($@) { 
+         print "ERROR:".$@;
+     } else {
+         print "List Genomes in Solr results:";
+         print $solrret->{response}->{response}->{numFound}."\n";
+     }
+     ok(defined($solrret),"_listGenomesInSolr command returned at least one genome");
+
      #Testing rast_genomes function
     my $rgret;
     eval {
@@ -164,9 +166,7 @@ eval {
         print Dumper($rgret->[0])."\n";
     }
     ok(defined($rgret->[0]),"rast_genomes command returned at least one genome");
-=cut
 
-=begin 
     #Testing list_solr_taxa function
     my $stret;
     eval {
@@ -184,9 +184,7 @@ eval {
         print Data::Dumper->Dump([$stret->[0]])."\n";
     }
     ok(defined($stret->[0]),"list_solr_taxa command returned at least one genome");
-=cut
 
-=begin list and load NCBI genomes
     #Testing the list_reference_genomes function
     my $refret;
     eval {
@@ -207,9 +205,7 @@ eval {
         #print Data::Dumper->Dump([$refret->[@{$refret} - 1]])."\n";
     }
     ok(defined($refret->[0]),"list_reference_Genomes command returned at least one genome");
-=cut
 
-=begin testing _checkGenomeStatus    
     #Testing _checkGenomeStatus function
     my $gnstatusret;
     eval {
@@ -223,9 +219,7 @@ eval {
          print "Result status: " .$gnstatusret."\n";
      }
      ok(defined($gnstatusret), "_checkGenomeStatus command returneds a value");
-=cut
 
-=begin testing _checkTaxonStatus    
     #Testing _checkTaxonStatus function
     my $txstatusret;
     eval {
@@ -239,9 +233,7 @@ eval {
          print "Result status: " .$txstatusret."\n";
      }
      ok(defined($txstatusret), "_checkTaxonStatus command returneds a value");
-=cut
 
-=begin testing _updateGenomesCore    
     #Testing _updateGenomesCore function
     my $updret;
     eval {
@@ -254,9 +246,7 @@ eval {
          print "Result status: " .$updret."\n";
     }
     ok(defined($updret), "_updateGenomesCore command returneds a value:" . $updret);
-=cut
 
-=begin test load_genomes
     #Testing load_genomes function
     my $ret;
     eval {
@@ -279,10 +269,6 @@ eval {
     }
     ok(defined($ret->[0]),"load_genomes command returned at least one genome");
 
-#=end of "list and load NCBI genomes
-=cut
-
-=begin test load_refgenomes
     #Testing load_refgenomes function
     my $rret;
     eval {
@@ -305,9 +291,7 @@ eval {
         print Data::Dumper->Dump([$rret->[@{$rret}-1]])."\n";
     }
     ok(defined($rret->[0]),"load_refgenomes command returned at least one genome");
-#=cut
 
-=begin test delete solr documents
     #Delete docs or wipe out the whole $delcore's content----USE CAUTION!
     my $delcore = "QZtest";
     my $ds = {
@@ -316,9 +300,7 @@ eval {
          #'genome_id' => 'kb|g.0' 
     };
     #$impl->_deleteRecords($delcore, $ds);
-=cut
 
-=begin indexing genome features
 
     #Testing list_loaded_genomes
     my $wsret;
@@ -340,9 +322,7 @@ eval {
         #print Data::Dumper->Dump([$wsret->[0]])."\n";
     }
     ok(defined($wsret->[0]),"list_loaded_genomes command returned at least one genome");
-=cut
 
-=begin testing index_genomes_in_solr
     #Testing index_genomes_in_solr
     my $slrcore = "GenomeFeatures_ci";
     my $ret;
@@ -368,10 +348,7 @@ eval {
         print Data::Dumper->Dump([$ret->[0]])."\n";
    }
     ok(defined($ret->[0]),"\nindex_genomes_in_solr command returned at least one genome");
-=end of test indexing genome features    
-=cut
 
-=begin index taxa
     #Testing list_loaded_taxa
     my $taxon_ret;
     eval {
@@ -393,9 +370,7 @@ eval {
         print Data::Dumper->Dump([$taxon_ret->[0]])."\n";
     }
     ok(defined($taxon_ret->[0]),"list_loaded_taxa command returned at least one taxon");
-=cut
 
-=begin
     #Testing index_taxa_in_solr
     my $solr_ret;
     eval {
@@ -418,9 +393,7 @@ eval {
         print Data::Dumper->Dump([$solr_ret->[0]])."\n";
     }
     ok(defined($solr_ret->[0]),"index_taxa_in_solr command returned at least one taxon");
-=cut
     
-=begin   
     #Test _exists() function
     my $exist_ret;
     #my $crit = 'parent_taxon_ref:"1779/116411/1",rank:"species",scientific_lineage:"cellular organisms; Bacteria; Proteobacteria; Alphaproteobacteria; Rhizobiales; Bradyrhizobiaceae; Bradyrhizobium",scientific_name:"Bradyrhizobium sp. rp3", domain:"Bacteria"';
@@ -442,15 +415,20 @@ eval {
     }
     ok(defined($exist_ret),"_exists command returned a value"); 
 
-=end passed tests
-=cut
     done_testing(2);
 };
+=cut old testings.
 
 my $err = undef;
 if ($@) {
     $err = $@;
 }
+eval {
+    if (defined($ws_name)) {
+        $ws_client->delete_workspace({workspace => $ws_name});
+        print("Test workspace was deleted\n");
+    }
+};
 if (defined($err)) {
     if(ref($err) eq "Bio::KBase::Exceptions::KBaseException") {
         die("Error while running tests: " . $err->trace->as_string);
@@ -459,42 +437,3 @@ if (defined($err)) {
     }
 }
 
-{
-    package LocalCallContext;
-    use strict;
-    sub new {
-        my($class,$token,$user) = @_;
-        my $self = {
-            token => $token,
-            user_id => $user
-        };
-        return bless $self, $class;
-    }
-    sub user_id {
-        my($self) = @_;
-        return $self->{user_id};
-    }
-    sub token {
-        my($self) = @_;
-        return $self->{token};
-    }
-    sub provenance {
-        my($self) = @_;
-        return [{'service' => 'ReferenceDataManager', 'method' => 'please_never_use_it_in_production', 'method_params' => []}];
-    }
-    sub authenticated {
-        return 1;
-    }
-    sub log_debug {
-        my($self,$msg) = @_;
-        print STDERR $msg."\n";
-    }
-    sub log_info {
-        my($self,$msg) = @_;
-        print STDERR $msg."\n";
-    }
-    sub method {
-        my($self) = @_;
-        return "TEST_METHOD";
-    }
-}

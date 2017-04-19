@@ -3207,8 +3207,8 @@ sub rast_genomes
             complete => 1
         });
     }
-#=begin
-    my $rdm_rast_ws;
+    my $rdm_rast_ws=$params->{workspace_name};
+=begin
     if (defined($params->{workspace_name})) {
         $rdm_rast_ws = $params->{workspace_name};
     } else {
@@ -3225,27 +3225,30 @@ sub rast_genomes
 	}
     }
     else
-#=cut
+=cut
     {
         print "\nNow rasting genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
 	my $rastgenomes;
         my $rast_ret;
         my $rast_params={
              genomes=>$srcgenomes,
-             workspace_name=>$rdm_rast_ws
+             workspace=>$rdm_rast_ws
         };
         eval {
           $rast_ret = $raster->annotate_genomes($rast_params);
         };
         if ($@) {
             print "**********Received an exception from calling genbank_to_genome to load $srcgenomes\n";
-            print "Exception message: " . $@->{"message"} . "\n";
-            print "JSONRPC code: " . $@->{"code"} . "\n";
-            print "Method: " . $@->{"method_name"} . "\n";
-            print "Client-side exception:\n";
-            print $@;
-            print "\nServer-side exception:\n";
-            print $@->{"data"};
+            if (ref($args) eq "HASH") { 
+                print "Exception message: " . $@->{"message"} . "\n";
+                print "JSONRPC code: " . $@->{"code"} . "\n";
+                print "Method: " . $@->{"method_name"} . "\n";
+                print "\nServer-side exception:\n";
+                print $@->{"data"};
+            } else {
+                print "Client-side exception:\n";
+                print $@;
+            }
         }
         else
         {
