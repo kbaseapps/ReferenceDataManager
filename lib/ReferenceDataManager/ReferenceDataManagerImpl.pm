@@ -746,7 +746,7 @@ sub _indexGenomeFeatureData
                         
                         if(@{$gnft_batch} >= $batchCount) {
                             eval {
-                                $solrer->index_in_solr($solrCore, $gnft_batch);
+                                $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
                             };
                             if($@) {
                                 print "Failed to index the genome_feature(s)!\n";
@@ -764,7 +764,7 @@ sub _indexGenomeFeatureData
                     #after looping through all features, index the leftover set of genomeFeature objects
                     if(@{$gnft_batch} > 0) {
                         eval {
-                            $solrer->index_in_solr($solrCore, $gnft_batch);
+                            $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
                         };
                         if($@) {
                             print "Failed to index the genome_feature(s)!\n";
@@ -2636,7 +2636,7 @@ sub index_taxa_in_solr
         push(@{$solrBatch}, $current_taxon);
         if(@{$solrBatch} >= $solrBatchCount) {
             eval {
-                $solrer->index_in_solr($solrCore, $solrBatch);
+                $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$solrBatch});
             };
             if($@) {
                 print "Failed to index the taxa!\n";
@@ -2662,7 +2662,7 @@ sub index_taxa_in_solr
     }
     if(@{$solrBatch} > 0) {
             eval {
-                $solrer->index_in_solr($solrCore, $solrBatch);
+                $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$solrBatch});
             };
             if($@) {
                 print "Failed to index the taxa!\n";

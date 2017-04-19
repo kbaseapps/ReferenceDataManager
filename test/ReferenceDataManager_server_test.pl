@@ -66,7 +66,7 @@ eval {
      ok(defined($solrret),"_listGenomesInSolr command returned at least one genome");
 =cut    
 
-#=begin
+=begin
      #Testing list_solr_genomes function
     my $sgret;
     eval {
@@ -84,7 +84,7 @@ eval {
         print Dumper($sgret->[0])."\n";
     }
     ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
-#=cut
+=cut
 
 =begin 
     #Testing list_solr_taxa function
@@ -262,9 +262,9 @@ eval {
     ok(defined($wsret->[0]),"list_loaded_genomes command returned at least one genome");
 =cut
 
-=begin testing index_genomes_in_solr
+#=begin testing index_genomes_in_solr
     #Testing index_genomes_in_solr
-    my $slrcore = "GenomeFeatures_prod";
+    my $slrcore = "GenomeFeatures_ci";
     my $ret;
     eval {
         $ret = $impl->index_genomes_in_solr({
@@ -288,7 +288,7 @@ eval {
         print Data::Dumper->Dump([$ret->[0]])."\n";
    }
     ok(defined($ret->[0]),"\nindex_genomes_in_solr command returned at least one genome");
-#=end of test indexing genome features    
+=end of test indexing genome features    
 =cut
 
 =begin index taxa
