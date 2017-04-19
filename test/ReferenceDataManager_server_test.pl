@@ -86,6 +86,23 @@ eval {
     ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
 =cut
 
+#=begin
+     #Testing rast_genomes function
+    my $rgret;
+    eval {
+        $rgret = $impl->rast_genomes({});
+    };
+    ok(!$@,"rast_genomes command successful");
+    if ($@) {
+        print "ERROR:".$@;
+    } else {
+        print "Number of records:".@{$rgret}."\n";
+        print "First record:\n";
+        print Dumper($rgret->[0])."\n";
+    }
+    ok(defined($rgret->[0]),"rast_genomes command returned at least one genome");
+#=cut
+
 =begin 
     #Testing list_solr_taxa function
     my $stret;
@@ -262,7 +279,7 @@ eval {
     ok(defined($wsret->[0]),"list_loaded_genomes command returned at least one genome");
 =cut
 
-#=begin testing index_genomes_in_solr
+=begin testing index_genomes_in_solr
     #Testing index_genomes_in_solr
     my $slrcore = "GenomeFeatures_ci";
     my $ret;

@@ -3180,12 +3180,13 @@ sub rast_genomes
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         data => undef,
-        genomes => [],
+        genomes => undef, 
         index_in_solr => 0,
         create_report => 0,
         workspace_name => undef
     });
-    my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
+    my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev','async_version'=>'dev'));
+    #my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
     my $srcgenomes;
     $output = [];
     my $msg = "";
@@ -3198,10 +3199,21 @@ sub rast_genomes
             domain => $array->[2],
             genetic_code => $array->[3]
         }];
-    } else {
+    } elsif (defined($params->{genomes})) {
         $srcgenomes = $params->{genomes};
+    } else {
+        $srcgenomes = $self->list_solr_genomes({
+            solr_core => "Genomes_prod",
+            complete => 1
+        });
     }
-    my $rdm_rast_ws = $params->{workspace_name};#"ReferenceGenomes_RAST"; #$wsname . "_RAST";
+#=begin
+    my $rdm_rast_ws;
+    if (defined($params->{workspace_name})) {
+        $rdm_rast_ws = $params->{workspace_name};
+    } else {
+        my $rdm_rast_ws = "ReferenceGenomes_RAST"; #$wsname . "_RAST";
+    }
     eval {
         $self->util_ws_client()->create_workspace({workspace=>$rdm_rast_ws,globalread=>"r",description=>"ws for RAST-ed Refseq Genomes"});
     };
@@ -3213,13 +3225,14 @@ sub rast_genomes
 	}
     }
     else
+#=cut
     {
         print "\nNow rasting genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
 	my $rastgenomes;
         my $rast_ret;
         my $rast_params={
              genomes=>$srcgenomes,
-             workspace=>$rdm_rast_ws
+             workspace_name=>$rdm_rast_ws
         };
         eval {
           $rast_ret = $raster->annotate_genomes($rast_params);
