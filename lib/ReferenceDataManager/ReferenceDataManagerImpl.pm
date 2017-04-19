@@ -388,16 +388,17 @@ sub _checkTaxonStatus
 #    
 sub _checkGenomeStatus 
 {
-    my ($self, $current_genome, $solr_core) = @_;
+    my ($self, $current_genome, $solr_core, $gn_type) = @_;
     #print "\nChecking status for genome:\n " . Dumper($current_genome) . "\n";
-    
+    $gn_type = "KBaseGenomes.Genome-8.2" unless $gn_type;
+
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     my $status = "";
     my $query = { 
         genome_id => $current_genome->{id} . "*", 
-        object_type => "KBaseGenomes.Genome-8.2"
+        object_type => $gn_type
     };
     my $params = {
         fl => "genome_id",
