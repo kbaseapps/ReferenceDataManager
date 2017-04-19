@@ -365,7 +365,7 @@ sub _checkTaxonStatus
     my $status = "";
     my $query = { taxonomy_id => $current_genome->{tax_id} };
     
-    if($solrer->exists_in_solr({solr_core=>$solr_core,{taxonomy_id=>$current_genome->{tax_id}}})==1) {
+    if($solrer->exists_in_solr({search_core=>$solr_core,search_query=>{taxonomy_id=>$current_genome->{tax_id}}})==1) {
         $status = "Taxon in KBase";
     }    
     else {
@@ -682,7 +682,7 @@ sub _indexGenomeFeatureData
         my $ws_ref = {"ref" => $ws_gn->{ref}};
         my $gn_id = $ws_gn->{name};
         #check if the genome is already present in the database by querying SOLR
-        if($solrer->exists_in_solr({solr_core=>$gn_solr_core,{genome_id=>$gn_id}})==1) {
+        if(($solrer->exists_in_solr({search_core=>$gn_solr_core,search_query=>{genome_id=>$gn_id}}))==1) {
             print $gn_id . ": has already been indexed in Solr " . $gn_solr_core . ".\n";
         }
         else {
@@ -1815,7 +1815,7 @@ sub index_genomes_in_solr
 
     my $solrCore = $params->{solr_core};
     @{$genomes} = @{$genomes}[$params->{start_offset}..@{$genomes} - 1];
-    print "\nTotal genomes to be indexed: ". @{$genomes} . "to SOLR ". $solrCore ."\n";
+    print "\nTotal genomes to be indexed: ". @{$genomes} . " to SOLR ". $solrCore ."\n";
     $output = $self->_indexGenomeFeatureData($solrCore, $genomes);
     my $gnft_count = $output->{count};
     $output = $output->{genome_features};
