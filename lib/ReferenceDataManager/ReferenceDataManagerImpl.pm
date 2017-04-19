@@ -186,7 +186,7 @@ sub _listGenomesInSolr {
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 0;
     $fields = "*" unless $fields;
-    $gnm_type = "KBaseGenomes.Genome-*" unless $gnm_type;
+    $gnm_type = "KBaseGenomes.Genome-8.2" unless $gnm_type;
     
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
