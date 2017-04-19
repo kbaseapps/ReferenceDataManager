@@ -672,7 +672,7 @@ sub _indexGenomeFeatureData
     my $solr_gnftData = [];
     my $gnft_batch = [];
     my $batchCount = 10000;
-    my $gn_solr_core = "GenomeFeatures_prod";
+    my $gn_solr_core = $solrCore;
     my $count = 0;
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
@@ -1815,7 +1815,7 @@ sub index_genomes_in_solr
 
     my $solrCore = $params->{solr_core};
     @{$genomes} = @{$genomes}[$params->{start_offset}..@{$genomes} - 1];
-    print "\nTotal genomes to be indexed: ". @{$genomes} . "\n";
+    print "\nTotal genomes to be indexed: ". @{$genomes} . "to SOLR ". $solrCore ."\n";
     $output = $self->_indexGenomeFeatureData($solrCore, $genomes);
     my $gnft_count = $output->{count};
     $output = $output->{genome_features};
