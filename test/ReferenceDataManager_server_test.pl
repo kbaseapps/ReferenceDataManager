@@ -52,15 +52,16 @@ eval {
 =begin passed tests
     #Testing _listGenomesInSolr
     my $solrret;
-    eval {
-        $solrret = $impl->_listGenomesInSolr("Genomes_ci", "*");
+    eval {i
+        #$solrret = $impl->_listGenomesInSolr("Genomes_ci", "*",0,0,"KBaseGenomes.Genome-12.3");
+        $solrret = $impl->_listGenomesInSolr("Genomes_prod", "*",0,0,"KBaseGenomes.Genome-8.2");
     };
     ok(!$@, "_listGenomesInSolr command successful");
     if ($@) { 
          print "ERROR:".$@;
      } else {
-         print "First record:\n";
-         print Dumper($solrret->[0])."\n";
+         print "List Genomes in Solr results:";
+         print $solrret->{response}->{response}->{numFound}."\n";
      }
      ok(defined($solrret),"_listGenomesInSolr command returned at least one genome");
 =cut    
@@ -270,7 +271,7 @@ eval {
              #genomes => $wsret,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
              solr_core => $slrcore,
              genome_ver => 1,
-             start_offset => 60000
+             start_offset => 0
         });
     };
     ok(!$@,"index_genomes_in_solr command successful");
