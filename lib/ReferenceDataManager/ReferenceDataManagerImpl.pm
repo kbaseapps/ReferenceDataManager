@@ -1385,12 +1385,13 @@ sub list_loaded_genomes
     my $obj_type = "KBaseGenomes.Genome-";
     my $sources = ["phytozome","refseq","ensembl"];
     my $wsname;
+    
     for (my $i=0; $i < @{$sources}; $i++) {
         if ($params->{$sources->[$i]} == 1) {
             my $wsinfo;
             my $wsoutput;
-            $wsname = $self->util_workspace_names($sources->[$i]);
             
+            $wsname = $self->util_workspace_names($sources->[$i]);
             if(defined($self->util_ws_client())){
                 $wsinfo = $self->util_ws_client()->get_workspace_info({
                     workspace => $wsname
@@ -3180,7 +3181,7 @@ sub rast_genomes
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         data => undef,
-        genomes => undef, 
+        genomes => [], 
         index_in_solr => 0,
         create_report => 0,
         workspace_name => undef
@@ -3188,6 +3189,7 @@ sub rast_genomes
     my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev','async_version'=>'dev'));
     #my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
     my $srcgenomes;
+    my $rastgenomes;
     $output = [];
     my $msg = "";
 
@@ -3228,10 +3230,9 @@ sub rast_genomes
 =cut
     {
         print "\nNow rasting genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
-	my $rastgenomes;
         my $rast_ret;
         my $rast_params={
-             genomes=>$srcgenomes,
+             genomes=>@{$srcgenomes},
              workspace=>$rdm_rast_ws
         };
         eval {
@@ -3239,7 +3240,7 @@ sub rast_genomes
         };
         if ($@) {
             print "**********Received an exception from calling genbank_to_genome to load $srcgenomes\n";
-            if (ref($args) eq "HASH") { 
+            if (ref($@) eq "HASH") { 
                 print "Exception message: " . $@->{"message"} . "\n";
                 print "JSONRPC code: " . $@->{"code"} . "\n";
                 print "Method: " . $@->{"method_name"} . "\n";
@@ -3262,10 +3263,10 @@ sub rast_genomes
                 my $gn_solrCore = "GenomeFeatures_RASTed";
                 $self->index_genomes_in_solr({
                         solr_core => $gn_solrCore,             
-                        genomes => $rastgenomes
+                        genomes => $srcgenomes
                 });
             }
-            $output = $rastgenomes;
+            $output = $srcgenomes;
          }
          print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
     }

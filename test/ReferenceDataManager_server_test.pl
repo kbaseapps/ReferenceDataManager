@@ -4,7 +4,7 @@ use Test::More;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
-use Bio::KBase::workspace::Client;
+use Workspace::WorkspaceClient;
 use ReferenceDataManager::ReferenceDataManagerImpl;
 
 use Config::IniFiles;
@@ -32,38 +32,6 @@ sub get_ws_name {
     return $ws_name;
 }
 
-
-sub make_impl_call {
-    my ($method, $params) = @_;
-    # Prepare json file input
-    my $input = {
-        method => $method,
-        params => $params,
-        version => "1.1",
-        id => "1"
-    };
-    open my $fh, ">", "/kb/module/work/input.json";
-    print $fh encode_json($input);
-    close $fh;
-    my $output_path = "/kb/module/work/output.json";
-    if (-e $output_path) {
-        unlink($output_path);
-    }
-    # Run run_async.sh
-    system("sh", "/kb/module/scripts/run_async.sh");
-    # Load json file with output
-    open my $fh2, "<", $output_path;
-    my $output_json = <$fh2>;
-    close $fh2;
-    my $json = JSON->new;
-    my $output = $json->decode($output_json);
-    if (defined($output->{error})) {
-        die encode_json($output->{error});
-    }
-    my $ret_obj = $output->{result}->[0];
-    return $ret_obj;
-}
-
 sub check_genome_obj {
     my($genome_obj) = @_;
     ok(defined($genome_obj->{features}), "Features array is present");
@@ -77,13 +45,10 @@ sub check_genome_obj {
 sub test_rast_genomes {
     my($genomes) = @_;
     my $params={
-             #"genomes"=>$genomes,
-             "workspace_name"=>get_ws_name()
+             genomes=>$genomes,
+             workspace_name=>get_ws_name()
            };
-    my $ret = make_impl_call("ReferenceDataManager.rast_genomes", $params);
-    my $genome_ref = get_ws_name() . "/" . $ret->[0]->{genome_id};
-    my $genome_obj = $ws_client->get_objects([{ref=>$genome_ref}])->[0]->{data};
-    check_genome_obj($genome_obj);
+    my $ret = $impl->rast_genomes($params);
 }
 
 eval {
@@ -106,9 +71,18 @@ eval {
     }
     ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
 #=cut
-
-    test_rast_genomes({genomes=>$sgret, workspace_name=>get_ws_name()});    
-    print("test_rast_genomes.\n");
+    eval {
+        test_rast_genomes($sgret);
+    };  
+    ok(!$@, "test_rast_genomes ran successfully.");
+    if( $@) {
+        print "ERROR:".$@;
+    } else {
+        print "Number of records:".@{$sgret}."\n";
+        print "First record:\n";
+        print Dumper($sgret->[0])."\n";
+    }
+  
     done_testing(3);
 };
 
@@ -153,19 +127,19 @@ eval {
      ok(defined($solrret),"_listGenomesInSolr command returned at least one genome");
 
      #Testing rast_genomes function
-    my $rgret;
-    eval {
+     my $rgret;
+     eval {
         $rgret = $impl->rast_genomes({});
-    };
-    ok(!$@,"rast_genomes command successful");
-    if ($@) {
+     };
+     ok(!$@,"rast_genomes command successful");
+     if ($@) {
         print "ERROR:".$@;
-    } else {
+     } else {
         print "Number of records:".@{$rgret}."\n";
         print "First record:\n";
         print Dumper($rgret->[0])."\n";
-    }
-    ok(defined($rgret->[0]),"rast_genomes command returned at least one genome");
+     }
+     ok(defined($rgret->[0]),"rast_genomes command returned at least one genome");
 
     #Testing list_solr_taxa function
     my $stret;
@@ -425,6 +399,25 @@ if ($@) {
 }
 eval {
     if (defined($ws_name)) {
+        #$ws_client->delete_workspace({workspace => $ws_name});
+        #print("Test workspace was deleted\n");
+        print("Test workspace was named ". $ws_name . "\n");
+        my $wsinfo = $ws_client->get_workspace_info({
+                    workspace => $ws_name
+                });
+            my $maxid = $wsinfo->[4];
+            print "\nMax genome object id=$maxid\n";
+            eval {                                                                                             
+                  my $wsoutput = $ws_client->list_objects({
+                          workspaces => [$ws_name],
+                          minObjectID => 0,
+                          type => "KBaseGenomes.Genome-",
+                          maxObjectID => $maxid,
+                          includeMetadata => 1
+                      });
+		      print "Genome object count=" . @{$wsoutput}. "\n";
+            };
+
         $ws_client->delete_workspace({workspace => $ws_name});
         print("Test workspace was deleted\n");
     }
@@ -437,3 +430,42 @@ if (defined($err)) {
     }
 }
 
+{		
+     package LocalCallContext;		
+     use strict;		
+     sub new {		
+         my($class,$token,$user) = @_;		
+         my $self = {		
+             token => $token,		
+             user_id => $user		
+         };		
+         return bless $self, $class;		
+     }		
+     sub user_id {		
+         my($self) = @_;		
+         return $self->{user_id};		
+     }		
+     sub token {		
+         my($self) = @_;		
+         return $self->{token};		
+     }		
+     sub provenance {		
+         my($self) = @_;		
+         return [{'service' => 'ReferenceDataManager', 'method' => 'please_never_use_it_in_production', 'method_params' => []}];		
+     }		
+     sub authenticated {		
+         return 1;		
+     }		
+     sub log_debug {		
+         my($self,$msg) = @_;		
+         print STDERR $msg."\n";		
+     }		
+     sub log_info {		
+         my($self,$msg) = @_;		
+         print STDERR $msg."\n";		
+     }		
+     sub method {		
+         my($self) = @_;		
+         return "TEST_METHOD";		
+     }		
+ }

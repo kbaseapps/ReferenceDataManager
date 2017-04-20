@@ -92,12 +92,19 @@ sub new
     # We create an auth token, passing through the arguments that we were (hopefully) given.
 
     {
-	my $token = Bio::KBase::AuthToken->new(@args);
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
+	}
 	
-	if (!$token->error_message)
+	if (exists $self->{token})
 	{
-	    $self->{token} = $token->token;
-	    $self->{client}->{token} = $token->token;
+	    $self->{client}->{token} = $self->{token};
 	}
     }
 
@@ -1694,7 +1701,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -1704,6 +1711,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	description has a value which is a string
 timestamp is a string
 epoch is an int
+ref_string is a string
 obj_ref is a string
 ExternalDataUnit is a reference to a hash where the following keys are defined:
 	resource_name has a value which is a string
@@ -1772,7 +1780,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -1782,6 +1790,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	description has a value which is a string
 timestamp is a string
 epoch is an int
+ref_string is a string
 obj_ref is a string
 ExternalDataUnit is a reference to a hash where the following keys are defined:
 	resource_name has a value which is a string
@@ -2081,7 +2090,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -2090,6 +2099,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	custom has a value which is a reference to a hash where the key is a string and the value is a string
 	description has a value which is a string
 epoch is an int
+ref_string is a string
 ExternalDataUnit is a reference to a hash where the following keys are defined:
 	resource_name has a value which is a string
 	resource_url has a value which is a string
@@ -2170,7 +2180,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -2179,6 +2189,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	custom has a value which is a reference to a hash where the key is a string and the value is a string
 	description has a value which is a string
 epoch is an int
+ref_string is a string
 ExternalDataUnit is a reference to a hash where the following keys are defined:
 	resource_name has a value which is a string
 	resource_url has a value which is a string
@@ -2289,6 +2300,7 @@ obj_ref is a string
 ObjectData is a reference to a hash where the following keys are defined:
 	data has a value which is an UnspecifiedObject, which can hold any non-null object
 	info has a value which is a Workspace.object_info
+	path has a value which is a reference to a list where each element is a Workspace.obj_ref
 	provenance has a value which is a reference to a list where each element is a Workspace.ProvenanceAction
 	creator has a value which is a Workspace.username
 	orig_wsid has a value which is a Workspace.ws_id
@@ -2327,7 +2339,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -2336,6 +2348,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	custom has a value which is a reference to a hash where the key is a string and the value is a string
 	description has a value which is a string
 epoch is an int
+ref_string is a string
 ExternalDataUnit is a reference to a hash where the following keys are defined:
 	resource_name has a value which is a string
 	resource_url has a value which is a string
@@ -2379,6 +2392,7 @@ obj_ref is a string
 ObjectData is a reference to a hash where the following keys are defined:
 	data has a value which is an UnspecifiedObject, which can hold any non-null object
 	info has a value which is a Workspace.object_info
+	path has a value which is a reference to a list where each element is a Workspace.obj_ref
 	provenance has a value which is a reference to a list where each element is a Workspace.ProvenanceAction
 	creator has a value which is a Workspace.username
 	orig_wsid has a value which is a Workspace.ws_id
@@ -2417,7 +2431,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -2426,6 +2440,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	custom has a value which is a reference to a hash where the key is a string and the value is a string
 	description has a value which is a string
 epoch is an int
+ref_string is a string
 ExternalDataUnit is a reference to a hash where the following keys are defined:
 	resource_name has a value which is a string
 	resource_url has a value which is a string
@@ -2529,9 +2544,12 @@ ObjectSpecification is a reference to a hash where the following keys are define
 	name has a value which is a Workspace.obj_name
 	objid has a value which is a Workspace.obj_id
 	ver has a value which is a Workspace.obj_ver
-	ref has a value which is a Workspace.obj_ref
+	ref has a value which is a Workspace.ref_string
 	obj_path has a value which is a Workspace.ref_chain
 	obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	to_obj_path has a value which is a Workspace.ref_chain
+	to_obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	find_reference_path has a value which is a Workspace.boolean
 	included has a value which is a reference to a list where each element is a Workspace.object_path
 	strict_maps has a value which is a Workspace.boolean
 	strict_arrays has a value which is a Workspace.boolean
@@ -2540,7 +2558,7 @@ ws_id is an int
 obj_name is a string
 obj_id is an int
 obj_ver is an int
-obj_ref is a string
+ref_string is a string
 ref_chain is a reference to a list where each element is a Workspace.ObjectIdentity
 ObjectIdentity is a reference to a hash where the following keys are defined:
 	workspace has a value which is a Workspace.ws_name
@@ -2549,13 +2567,15 @@ ObjectIdentity is a reference to a hash where the following keys are defined:
 	objid has a value which is a Workspace.obj_id
 	ver has a value which is a Workspace.obj_ver
 	ref has a value which is a Workspace.obj_ref
-object_path is a string
+obj_ref is a string
 boolean is an int
+object_path is a string
 GetObjects2Results is a reference to a hash where the following keys are defined:
 	data has a value which is a reference to a list where each element is a Workspace.ObjectData
 ObjectData is a reference to a hash where the following keys are defined:
 	data has a value which is an UnspecifiedObject, which can hold any non-null object
 	info has a value which is a Workspace.object_info
+	path has a value which is a reference to a list where each element is a Workspace.obj_ref
 	provenance has a value which is a reference to a list where each element is a Workspace.ProvenanceAction
 	creator has a value which is a Workspace.username
 	orig_wsid has a value which is a Workspace.ws_id
@@ -2594,7 +2614,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -2639,9 +2659,12 @@ ObjectSpecification is a reference to a hash where the following keys are define
 	name has a value which is a Workspace.obj_name
 	objid has a value which is a Workspace.obj_id
 	ver has a value which is a Workspace.obj_ver
-	ref has a value which is a Workspace.obj_ref
+	ref has a value which is a Workspace.ref_string
 	obj_path has a value which is a Workspace.ref_chain
 	obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	to_obj_path has a value which is a Workspace.ref_chain
+	to_obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	find_reference_path has a value which is a Workspace.boolean
 	included has a value which is a reference to a list where each element is a Workspace.object_path
 	strict_maps has a value which is a Workspace.boolean
 	strict_arrays has a value which is a Workspace.boolean
@@ -2650,7 +2673,7 @@ ws_id is an int
 obj_name is a string
 obj_id is an int
 obj_ver is an int
-obj_ref is a string
+ref_string is a string
 ref_chain is a reference to a list where each element is a Workspace.ObjectIdentity
 ObjectIdentity is a reference to a hash where the following keys are defined:
 	workspace has a value which is a Workspace.ws_name
@@ -2659,13 +2682,15 @@ ObjectIdentity is a reference to a hash where the following keys are defined:
 	objid has a value which is a Workspace.obj_id
 	ver has a value which is a Workspace.obj_ver
 	ref has a value which is a Workspace.obj_ref
-object_path is a string
+obj_ref is a string
 boolean is an int
+object_path is a string
 GetObjects2Results is a reference to a hash where the following keys are defined:
 	data has a value which is a reference to a list where each element is a Workspace.ObjectData
 ObjectData is a reference to a hash where the following keys are defined:
 	data has a value which is an UnspecifiedObject, which can hold any non-null object
 	info has a value which is a Workspace.object_info
+	path has a value which is a reference to a list where each element is a Workspace.obj_ref
 	provenance has a value which is a reference to a list where each element is a Workspace.ProvenanceAction
 	creator has a value which is a Workspace.username
 	orig_wsid has a value which is a Workspace.ws_id
@@ -2704,7 +2729,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -2824,6 +2849,7 @@ boolean is an int
 ObjectData is a reference to a hash where the following keys are defined:
 	data has a value which is an UnspecifiedObject, which can hold any non-null object
 	info has a value which is a Workspace.object_info
+	path has a value which is a reference to a list where each element is a Workspace.obj_ref
 	provenance has a value which is a reference to a list where each element is a Workspace.ProvenanceAction
 	creator has a value which is a Workspace.username
 	orig_wsid has a value which is a Workspace.ws_id
@@ -2862,7 +2888,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -2871,6 +2897,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	custom has a value which is a reference to a hash where the key is a string and the value is a string
 	description has a value which is a string
 epoch is an int
+ref_string is a string
 ExternalDataUnit is a reference to a hash where the following keys are defined:
 	resource_name has a value which is a string
 	resource_url has a value which is a string
@@ -2918,6 +2945,7 @@ boolean is an int
 ObjectData is a reference to a hash where the following keys are defined:
 	data has a value which is an UnspecifiedObject, which can hold any non-null object
 	info has a value which is a Workspace.object_info
+	path has a value which is a reference to a list where each element is a Workspace.obj_ref
 	provenance has a value which is a reference to a list where each element is a Workspace.ProvenanceAction
 	creator has a value which is a Workspace.username
 	orig_wsid has a value which is a Workspace.ws_id
@@ -2956,7 +2984,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -2965,6 +2993,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	custom has a value which is a reference to a hash where the key is a string and the value is a string
 	description has a value which is a string
 epoch is an int
+ref_string is a string
 ExternalDataUnit is a reference to a hash where the following keys are defined:
 	resource_name has a value which is a string
 	resource_url has a value which is a string
@@ -3484,6 +3513,7 @@ obj_ref is a string
 ObjectData is a reference to a hash where the following keys are defined:
 	data has a value which is an UnspecifiedObject, which can hold any non-null object
 	info has a value which is a Workspace.object_info
+	path has a value which is a reference to a list where each element is a Workspace.obj_ref
 	provenance has a value which is a reference to a list where each element is a Workspace.ProvenanceAction
 	creator has a value which is a Workspace.username
 	orig_wsid has a value which is a Workspace.ws_id
@@ -3522,7 +3552,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -3531,6 +3561,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	custom has a value which is a reference to a hash where the key is a string and the value is a string
 	description has a value which is a string
 epoch is an int
+ref_string is a string
 ExternalDataUnit is a reference to a hash where the following keys are defined:
 	resource_name has a value which is a string
 	resource_url has a value which is a string
@@ -3575,6 +3606,7 @@ obj_ref is a string
 ObjectData is a reference to a hash where the following keys are defined:
 	data has a value which is an UnspecifiedObject, which can hold any non-null object
 	info has a value which is a Workspace.object_info
+	path has a value which is a reference to a list where each element is a Workspace.obj_ref
 	provenance has a value which is a reference to a list where each element is a Workspace.ProvenanceAction
 	creator has a value which is a Workspace.username
 	orig_wsid has a value which is a Workspace.ws_id
@@ -3613,7 +3645,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	script has a value which is a string
 	script_ver has a value which is a string
 	script_command_line has a value which is a string
-	input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+	input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 	resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 	intermediate_incoming has a value which is a reference to a list where each element is a string
 	intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -3622,6 +3654,7 @@ ProvenanceAction is a reference to a hash where the following keys are defined:
 	custom has a value which is a reference to a hash where the key is a string and the value is a string
 	description has a value which is a string
 epoch is an int
+ref_string is a string
 ExternalDataUnit is a reference to a hash where the following keys are defined:
 	resource_name has a value which is a string
 	resource_url has a value which is a string
@@ -4366,7 +4399,7 @@ Retrieves the metadata for a specified object from the specified
 workspace. Provides access to metadata for all versions of the object
 via the instance parameter. Provided for backwards compatibility.
 
-@deprecated Workspace.get_object_info
+@deprecated Workspace.get_object_info3
 
 =back
 
@@ -4518,7 +4551,7 @@ Otherwise the metadata in the object_info will be null.
 This method will be replaced by the behavior of get_object_info_new
 in the future.
 
-@deprecated Workspace.get_object_info_new
+@deprecated Workspace.get_object_info3
 
 =back
 
@@ -4596,9 +4629,12 @@ ObjectSpecification is a reference to a hash where the following keys are define
 	name has a value which is a Workspace.obj_name
 	objid has a value which is a Workspace.obj_id
 	ver has a value which is a Workspace.obj_ver
-	ref has a value which is a Workspace.obj_ref
+	ref has a value which is a Workspace.ref_string
 	obj_path has a value which is a Workspace.ref_chain
 	obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	to_obj_path has a value which is a Workspace.ref_chain
+	to_obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	find_reference_path has a value which is a Workspace.boolean
 	included has a value which is a reference to a list where each element is a Workspace.object_path
 	strict_maps has a value which is a Workspace.boolean
 	strict_arrays has a value which is a Workspace.boolean
@@ -4607,7 +4643,7 @@ ws_id is an int
 obj_name is a string
 obj_id is an int
 obj_ver is an int
-obj_ref is a string
+ref_string is a string
 ref_chain is a reference to a list where each element is a Workspace.ObjectIdentity
 ObjectIdentity is a reference to a hash where the following keys are defined:
 	workspace has a value which is a Workspace.ws_name
@@ -4616,8 +4652,9 @@ ObjectIdentity is a reference to a hash where the following keys are defined:
 	objid has a value which is a Workspace.obj_id
 	ver has a value which is a Workspace.obj_ver
 	ref has a value which is a Workspace.obj_ref
-object_path is a string
+obj_ref is a string
 boolean is an int
+object_path is a string
 object_info is a reference to a list containing 11 items:
 	0: (objid) a Workspace.obj_id
 	1: (name) a Workspace.obj_name
@@ -4653,9 +4690,12 @@ ObjectSpecification is a reference to a hash where the following keys are define
 	name has a value which is a Workspace.obj_name
 	objid has a value which is a Workspace.obj_id
 	ver has a value which is a Workspace.obj_ver
-	ref has a value which is a Workspace.obj_ref
+	ref has a value which is a Workspace.ref_string
 	obj_path has a value which is a Workspace.ref_chain
 	obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	to_obj_path has a value which is a Workspace.ref_chain
+	to_obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	find_reference_path has a value which is a Workspace.boolean
 	included has a value which is a reference to a list where each element is a Workspace.object_path
 	strict_maps has a value which is a Workspace.boolean
 	strict_arrays has a value which is a Workspace.boolean
@@ -4664,7 +4704,7 @@ ws_id is an int
 obj_name is a string
 obj_id is an int
 obj_ver is an int
-obj_ref is a string
+ref_string is a string
 ref_chain is a reference to a list where each element is a Workspace.ObjectIdentity
 ObjectIdentity is a reference to a hash where the following keys are defined:
 	workspace has a value which is a Workspace.ws_name
@@ -4673,8 +4713,9 @@ ObjectIdentity is a reference to a hash where the following keys are defined:
 	objid has a value which is a Workspace.obj_id
 	ver has a value which is a Workspace.obj_ver
 	ref has a value which is a Workspace.obj_ref
-object_path is a string
+obj_ref is a string
 boolean is an int
+object_path is a string
 object_info is a reference to a list containing 11 items:
 	0: (objid) a Workspace.obj_id
 	1: (name) a Workspace.obj_name
@@ -4698,6 +4739,8 @@ usermeta is a reference to a hash where the key is a string and the value is a s
 =item Description
 
 Get information about objects from the workspace.
+
+@deprecated Workspace.get_object_info3
 
 =back
 
@@ -4745,6 +4788,198 @@ Get information about objects from the workspace.
         Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_object_info_new",
 					    status_line => $self->{client}->status_line,
 					    method_name => 'get_object_info_new',
+				       );
+    }
+}
+ 
+
+
+=head2 get_object_info3
+
+  $results = $obj->get_object_info3($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a Workspace.GetObjectInfo3Params
+$results is a Workspace.GetObjectInfo3Results
+GetObjectInfo3Params is a reference to a hash where the following keys are defined:
+	objects has a value which is a reference to a list where each element is a Workspace.ObjectSpecification
+	includeMetadata has a value which is a Workspace.boolean
+	ignoreErrors has a value which is a Workspace.boolean
+ObjectSpecification is a reference to a hash where the following keys are defined:
+	workspace has a value which is a Workspace.ws_name
+	wsid has a value which is a Workspace.ws_id
+	name has a value which is a Workspace.obj_name
+	objid has a value which is a Workspace.obj_id
+	ver has a value which is a Workspace.obj_ver
+	ref has a value which is a Workspace.ref_string
+	obj_path has a value which is a Workspace.ref_chain
+	obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	to_obj_path has a value which is a Workspace.ref_chain
+	to_obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	find_reference_path has a value which is a Workspace.boolean
+	included has a value which is a reference to a list where each element is a Workspace.object_path
+	strict_maps has a value which is a Workspace.boolean
+	strict_arrays has a value which is a Workspace.boolean
+ws_name is a string
+ws_id is an int
+obj_name is a string
+obj_id is an int
+obj_ver is an int
+ref_string is a string
+ref_chain is a reference to a list where each element is a Workspace.ObjectIdentity
+ObjectIdentity is a reference to a hash where the following keys are defined:
+	workspace has a value which is a Workspace.ws_name
+	wsid has a value which is a Workspace.ws_id
+	name has a value which is a Workspace.obj_name
+	objid has a value which is a Workspace.obj_id
+	ver has a value which is a Workspace.obj_ver
+	ref has a value which is a Workspace.obj_ref
+obj_ref is a string
+boolean is an int
+object_path is a string
+GetObjectInfo3Results is a reference to a hash where the following keys are defined:
+	infos has a value which is a reference to a list where each element is a Workspace.object_info
+	paths has a value which is a reference to a list where each element is a reference to a list where each element is a Workspace.obj_ref
+object_info is a reference to a list containing 11 items:
+	0: (objid) a Workspace.obj_id
+	1: (name) a Workspace.obj_name
+	2: (type) a Workspace.type_string
+	3: (save_date) a Workspace.timestamp
+	4: (version) an int
+	5: (saved_by) a Workspace.username
+	6: (wsid) a Workspace.ws_id
+	7: (workspace) a Workspace.ws_name
+	8: (chsum) a string
+	9: (size) an int
+	10: (meta) a Workspace.usermeta
+type_string is a string
+timestamp is a string
+username is a string
+usermeta is a reference to a hash where the key is a string and the value is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a Workspace.GetObjectInfo3Params
+$results is a Workspace.GetObjectInfo3Results
+GetObjectInfo3Params is a reference to a hash where the following keys are defined:
+	objects has a value which is a reference to a list where each element is a Workspace.ObjectSpecification
+	includeMetadata has a value which is a Workspace.boolean
+	ignoreErrors has a value which is a Workspace.boolean
+ObjectSpecification is a reference to a hash where the following keys are defined:
+	workspace has a value which is a Workspace.ws_name
+	wsid has a value which is a Workspace.ws_id
+	name has a value which is a Workspace.obj_name
+	objid has a value which is a Workspace.obj_id
+	ver has a value which is a Workspace.obj_ver
+	ref has a value which is a Workspace.ref_string
+	obj_path has a value which is a Workspace.ref_chain
+	obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	to_obj_path has a value which is a Workspace.ref_chain
+	to_obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+	find_reference_path has a value which is a Workspace.boolean
+	included has a value which is a reference to a list where each element is a Workspace.object_path
+	strict_maps has a value which is a Workspace.boolean
+	strict_arrays has a value which is a Workspace.boolean
+ws_name is a string
+ws_id is an int
+obj_name is a string
+obj_id is an int
+obj_ver is an int
+ref_string is a string
+ref_chain is a reference to a list where each element is a Workspace.ObjectIdentity
+ObjectIdentity is a reference to a hash where the following keys are defined:
+	workspace has a value which is a Workspace.ws_name
+	wsid has a value which is a Workspace.ws_id
+	name has a value which is a Workspace.obj_name
+	objid has a value which is a Workspace.obj_id
+	ver has a value which is a Workspace.obj_ver
+	ref has a value which is a Workspace.obj_ref
+obj_ref is a string
+boolean is an int
+object_path is a string
+GetObjectInfo3Results is a reference to a hash where the following keys are defined:
+	infos has a value which is a reference to a list where each element is a Workspace.object_info
+	paths has a value which is a reference to a list where each element is a reference to a list where each element is a Workspace.obj_ref
+object_info is a reference to a list containing 11 items:
+	0: (objid) a Workspace.obj_id
+	1: (name) a Workspace.obj_name
+	2: (type) a Workspace.type_string
+	3: (save_date) a Workspace.timestamp
+	4: (version) an int
+	5: (saved_by) a Workspace.username
+	6: (wsid) a Workspace.ws_id
+	7: (workspace) a Workspace.ws_name
+	8: (chsum) a string
+	9: (size) an int
+	10: (meta) a Workspace.usermeta
+type_string is a string
+timestamp is a string
+username is a string
+usermeta is a reference to a hash where the key is a string and the value is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub get_object_info3
+{
+    my($self, @args) = @_;
+
+# Authentication: optional
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function get_object_info3 (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to get_object_info3:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'get_object_info3');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "Workspace.get_object_info3",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'get_object_info3',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_object_info3",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'get_object_info3',
 				       );
     }
 }
@@ -8320,12 +8555,9 @@ a string
 
 A workspace identifier.
 
-                Select a workspace by one, and only one, of the numerical id or name,
-                        where the name can also be a KBase ID including the numerical id,
-                        e.g. kb|ws.35.
+                Select a workspace by one, and only one, of the numerical id or name.
                 ws_id id - the numerical ID of the workspace.
-                ws_name workspace - name of the workspace or the workspace ID in KBase
-                        format, e.g. kb|ws.78.
+                ws_name workspace - the name of the workspace.
 
 
 =item Definition
@@ -8586,18 +8818,13 @@ an int
 
 A string that uniquely identifies an object in the workspace service.
 
-        There are two ways to uniquely identify an object in one string:
-        "[ws_name or id]/[obj_name or id]/[obj_ver]" - for example,
-                "MyFirstWorkspace/MyFirstObject/3" would identify the third version
-                of an object called MyFirstObject in the workspace called
-                MyFirstWorkspace. 42/Panic/1 would identify the first version of
-                the object name Panic in workspace with id 42. Towel/1/6 would
-                identify the 6th version of the object with id 1 in the Towel
-                workspace. 
-        "kb|ws.[ws_id].obj.[obj_id].ver.[obj_ver]" - for example, 
-                "kb|ws.23.obj.567.ver.2" would identify the second version of an
-                object with id 567 in a workspace with id 23.
-        In all cases, if the version number is omitted, the latest version of
+        The format is [ws_name or id]/[obj_name or id]/[obj_ver].
+        For example, MyFirstWorkspace/MyFirstObject/3 would identify the third version
+        of an object called MyFirstObject in the workspace called
+        MyFirstWorkspace. 42/Panic/1 would identify the first version of
+        the object name Panic in workspace with id 42. Towel/1/6 would
+        identify the 6th version of the object with id 1 in the Towel
+        workspace.If the version number is omitted, the latest version of
         the object is assumed.
 
 
@@ -8632,12 +8859,9 @@ a string
 An object identifier.
 
 Select an object by either:
-        One, and only one, of the numerical id or name of the workspace,
-        where the name can also be a KBase ID including the numerical id,
-        e.g. kb|ws.35.
+        One, and only one, of the numerical id or name of the workspace.
                 ws_id wsid - the numerical ID of the workspace.
-                ws_name workspace - name of the workspace or the workspace ID
-                        in KBase format, e.g. kb|ws.78.
+                ws_name workspace - the name of the workspace.
         AND 
         One, and only one, of the numerical id or name of the object.
                 obj_id objid- the numerical ID of the object.
@@ -8717,6 +8941,48 @@ a reference to a list where each element is a Workspace.ObjectIdentity
 
 
 
+=head2 ref_string
+
+=over 4
+
+
+
+=item Description
+
+A chain of objects with references to one another as a string.
+
+        A single string that is semantically identical to ref_chain above.
+        Represents a path from one workspace object to another through an
+        arbitrarily number of intermediate objects where each object has a
+        dependency or provenance reference to the next object. Each entry is
+        an obj_ref as defined earlier. Entries are separated by semicolons.
+        Whitespace is ignored.
+        
+        Examples:
+        3/5/6; kbaseuser:myworkspace/myobject; 5/myobject/2
+        aworkspace/6
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
 =head2 object_path
 
 =over 4
@@ -8774,12 +9040,9 @@ DEPRECATED
         
         Select a subset of an object by:
         EITHER
-                One, and only one, of the numerical id or name of the workspace,
-                where the name can also be a KBase ID including the numerical id,
-                e.g. kb|ws.35.
+                One, and only one, of the numerical id or name of the workspace.
                         ws_id wsid - the numerical ID of the workspace.
-                        ws_name workspace - name of the workspace or the workspace ID
-                                in KBase format, e.g. kb|ws.78.
+                        ws_name workspace - name of the workspace.
                 AND 
                 One, and only one, of the numerical id or name of the object.
                         obj_id objid- the numerical ID of the object.
@@ -8847,12 +9110,16 @@ strict_arrays has a value which is a Workspace.boolean
 
 =item Description
 
-An Object Specification (OS). Inherits from ObjectIdentity.
+An Object Specification (OS). Inherits from ObjectIdentity (OI).
 Specifies which object, and which parts of that object, to retrieve
 from the Workspace Service.
 
-The fields wsid, workspace, objid, name, ver, and ref are identical to
-the ObjectIdentity fields.
+The fields wsid, workspace, objid, name, and ver are identical to
+the OI fields.
+
+The ref field's behavior is extended from OI. It maintains its
+previous behavior, but now also can act as a reference string. See
+reference following below for more information.
 
 REFERENCE FOLLOWING:
 
@@ -8867,6 +9134,8 @@ SO, but need not have access to any further objects in the reference
 chain, and those objects may be deleted.
 
 Optional reference following fields:
+Note that only one of the following fields may be specified.
+
 ref_chain obj_path - a path to the desired object from the object
         specified in this OS. In other words, the object specified in this
         OS is assumed to be accessible to the user, and the objects in
@@ -8874,8 +9143,33 @@ ref_chain obj_path - a path to the desired object from the object
         object at the end of the object path. If the references are all
         valid, the desired object will be returned.
 - OR -
-list<obj_ref> obj_ref_path - shorthand for the obj_path. Only one of
-        obj_path or obj_ref_path may be specified.
+list<obj_ref> obj_ref_path - shorthand for the obj_path.
+- OR -
+ref_chain to_obj_path - identical to obj_path, except that the path
+        is TO the object specified in this OS, rather than from the object.
+        In other words the object specified by wsid/objid/ref etc. is the
+        end of the path, and to_obj_path is the rest of the path. The user
+        must have access to the first object in the to_obj_path.
+- OR -
+list<obj_ref> to_obj_ref_path - shorthand for the to_obj_path.
+- OR -
+ref_string ref - A string representing a reference path from
+        one object to another. Unlike the previous reference following
+        options, the ref_string represents the ENTIRE path from the source
+        object to the target object. As with the OI object, the ref field
+        may contain a single reference.
+- OR -
+boolean find_refence_path - This is the last, slowest, and most expensive resort
+        for getting a referenced object - do not use this method unless the
+        path to the object is unavailable by any other means. Setting the
+        find_refence_path parameter to true means that the workspace service will
+        search through the object reference graph from the object specified
+        in this OS to find an object that 1) the user can access, and 2)
+        has an unbroken reference path to the target object. If the search
+        succeeds, the object will be returned as normal. Note that the search
+        will automatically fail after a certain (but much larger than necessary
+        for the vast majority of cases) number of objects are traversed.
+        
 
 OBJECT SUBSETS:
 
@@ -8895,7 +9189,7 @@ Optional object subset fields:
 list<object_path> included - the portions of the object to include
                 in the object subset.
 boolean strict_maps - if true, throw an exception if the subset
-        specification traverses a non-existant map key (default false)
+        specification traverses a non-existent map key (default false)
 boolean strict_arrays - if true, throw an exception if the subset
         specification exceeds the size of an array (default true)
 
@@ -8911,9 +9205,12 @@ wsid has a value which is a Workspace.ws_id
 name has a value which is a Workspace.obj_name
 objid has a value which is a Workspace.obj_id
 ver has a value which is a Workspace.obj_ver
-ref has a value which is a Workspace.obj_ref
+ref has a value which is a Workspace.ref_string
 obj_path has a value which is a Workspace.ref_chain
 obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+to_obj_path has a value which is a Workspace.ref_chain
+to_obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+find_reference_path has a value which is a Workspace.boolean
 included has a value which is a reference to a list where each element is a Workspace.object_path
 strict_maps has a value which is a Workspace.boolean
 strict_arrays has a value which is a Workspace.boolean
@@ -8930,9 +9227,12 @@ wsid has a value which is a Workspace.ws_id
 name has a value which is a Workspace.obj_name
 objid has a value which is a Workspace.obj_id
 ver has a value which is a Workspace.obj_ver
-ref has a value which is a Workspace.obj_ref
+ref has a value which is a Workspace.ref_string
 obj_path has a value which is a Workspace.ref_chain
 obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+to_obj_path has a value which is a Workspace.ref_chain
+to_obj_ref_path has a value which is a reference to a list where each element is a Workspace.obj_ref
+find_reference_path has a value which is a Workspace.boolean
 included has a value which is a reference to a list where each element is a Workspace.object_path
 strict_maps has a value which is a Workspace.boolean
 strict_arrays has a value which is a Workspace.boolean
@@ -9260,10 +9560,10 @@ A provenance action.
                 that performed this action. If workspace objects were provided in
                 the command line, also put the object reference in the
                 input_ws_object list.
-        list<obj_ref> input_ws_objects - the workspace objects that
+        list<ref_string> input_ws_objects - the workspace objects that
                 were used as input to this action; typically these will also be
                 present as parts of the method_params or the script_command_line
-                arguments.
+                arguments. A reference path into the object graph may be supplied.
         list<obj_ref> resolved_ws_objects - the workspace objects ids from 
                 input_ws_objects resolved to permanent workspace object references
                 by the workspace service.
@@ -9304,7 +9604,7 @@ method_params has a value which is a reference to a list where each element is a
 script has a value which is a string
 script_ver has a value which is a string
 script_command_line has a value which is a string
-input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 intermediate_incoming has a value which is a reference to a list where each element is a string
 intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -9330,7 +9630,7 @@ method_params has a value which is a reference to a list where each element is a
 script has a value which is a string
 script_ver has a value which is a string
 script_command_line has a value which is a string
-input_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
+input_ws_objects has a value which is a reference to a list where each element is a Workspace.ref_string
 resolved_ws_objects has a value which is a reference to a list where each element is a Workspace.obj_ref
 intermediate_incoming has a value which is a reference to a list where each element is a string
 intermediate_outgoing has a value which is a reference to a list where each element is a string
@@ -9519,20 +9819,21 @@ exclude has a value which is a reference to a list where each element is a Works
 
 =item Description
 
-Input parameters for the "get_workspacemeta" function. Provided for
-backwards compatibility.
-        
-One, and only one of:
-ws_name workspace - name of the workspace or the workspace ID in KBase
-        format, e.g. kb|ws.78.
-ws_id id - the numerical ID of the workspace.
-        
-Optional arguments:
-string auth - the authentication token of the KBase account accessing
-        the workspace. Overrides the client provided authorization
-        credentials if they exist.
+DEPRECATED
 
-@deprecated Workspace.WorkspaceIdentity
+        Input parameters for the "get_workspacemeta" function. Provided for
+        backwards compatibility.
+
+        One, and only one of:
+        ws_name workspace - name of the workspace.
+        ws_id id - the numerical ID of the workspace.
+                
+        Optional arguments:
+        string auth - the authentication token of the KBase account accessing
+                the workspace. Overrides the client provided authorization
+                credentials if they exist.
+        
+        @deprecated Workspace.WorkspaceIdentity
 
 
 =item Definition
@@ -9575,8 +9876,7 @@ Input parameters for the "set_permissions" function.
 
         One, and only one, of the following is required:
         ws_id id - the numerical ID of the workspace.
-        ws_name workspace - name of the workspace or the workspace ID in KBase
-                format, e.g. kb|ws.78.
+        ws_name workspace - the name of the workspace.
         
         Required arguments:
         permission new_permission - the permission to assign to the users.
@@ -9625,8 +9925,7 @@ Input parameters for the "set_global_permission" function.
 
         One, and only one, of the following is required:
         ws_id id - the numerical ID of the workspace.
-        ws_name workspace - name of the workspace or the workspace ID in KBase
-                format, e.g. kb|ws.78.
+        ws_name workspace - the name of the workspace.
         
         Required arguments:
         permission new_permission - the permission to assign to all users,
@@ -9675,8 +9974,7 @@ Input parameters for the "set_workspace_description" function.
 
         One, and only one, of the following is required:
         ws_id id - the numerical ID of the workspace.
-        ws_name workspace - name of the workspace or the workspace ID in KBase
-                format, e.g. kb|ws.78.
+        ws_name workspace - the name of the workspace.
         
         Optional arguments:
         string description - A free-text description of the workspace, 1000
@@ -9931,8 +10229,7 @@ Input parameters for the "save_objects" function.
 
         One, and only one, of the following is required:
         ws_id id - the numerical ID of the workspace.
-        ws_name workspace - name of the workspace or the workspace ID in KBase
-                format, e.g. kb|ws.78.
+        ws_name workspace - the name of the workspace.
         
         Required arguments:
         list<ObjectSaveData> objects - the objects to save.
@@ -10162,9 +10459,10 @@ The data and supplemental info for an object.
 
         UnspecifiedObject data - the object's data or subset data.
         object_info info - information about the object.
+        list<obj_ref> path - the path to the object through the object reference graph. All the
+                references in the path are absolute.
         list<ProvenanceAction> provenance - the object's provenance.
-        username creator - the user that first saved the object to the
-                workspace.
+        username creator - the user that first saved the object to the workspace.
         ws_id orig_wsid - the id of the workspace in which this object was
                         originally saved. Missing for objects saved prior to version
                         0.4.1.
@@ -10172,7 +10470,7 @@ The data and supplemental info for an object.
                 workspace.
         epoch epoch - the date the object was first saved to the
                 workspace.
-        list<obj_ref> - the references contained within the object.
+        list<obj_ref> refs - the references contained within the object.
         obj_ref copied - the reference of the source object if this object is
                 a copy and the copy source exists and is accessible.
                 null otherwise.
@@ -10194,6 +10492,7 @@ The data and supplemental info for an object.
 a reference to a hash where the following keys are defined:
 data has a value which is an UnspecifiedObject, which can hold any non-null object
 info has a value which is a Workspace.object_info
+path has a value which is a reference to a list where each element is a Workspace.obj_ref
 provenance has a value which is a reference to a list where each element is a Workspace.ProvenanceAction
 creator has a value which is a Workspace.username
 orig_wsid has a value which is a Workspace.ws_id
@@ -10215,6 +10514,7 @@ handle_stacktrace has a value which is a string
 a reference to a hash where the following keys are defined:
 data has a value which is an UnspecifiedObject, which can hold any non-null object
 info has a value which is a Workspace.object_info
+path has a value which is a reference to a list where each element is a Workspace.obj_ref
 provenance has a value which is a reference to a list where each element is a Workspace.ProvenanceAction
 creator has a value which is a Workspace.username
 orig_wsid has a value which is a Workspace.ws_id
@@ -10519,8 +10819,7 @@ Parameters for the 'list_objects' function.
                 recommended that the list is restricted to the workspaces of interest,
                 or the results may be very large:
                 list<ws_id> ids - the numerical IDs of the workspaces of interest.
-                list<ws_name> workspaces - names of the workspaces of interest or the
-                        workspace IDs in KBase format, e.g. kb|ws.78.
+                list<ws_name> workspaces - the names of the workspaces of interest.
                 type_string type - type of the objects to be listed.  Here, omitting
                         version information will find any objects that match the provided
                         type - e.g. Foo.Bar-0 will match Foo.Bar-0.X where X is any
@@ -10701,6 +11000,8 @@ Input parameters for the "get_object_info_new" function.
         boolean ignoreErrors - Don't throw an exception if an object cannot
                 be accessed; return null for that object's information instead.
                 Default false.
+                
+        @deprecated Workspace.GetObjectInfo3Params
 
 
 =item Definition
@@ -10723,6 +11024,98 @@ a reference to a hash where the following keys are defined:
 objects has a value which is a reference to a list where each element is a Workspace.ObjectSpecification
 includeMetadata has a value which is a Workspace.boolean
 ignoreErrors has a value which is a Workspace.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 GetObjectInfo3Params
+
+=over 4
+
+
+
+=item Description
+
+Input parameters for the "get_object_info3" function.
+
+        Required arguments:
+        list<ObjectSpecification> objects - the objects for which the
+                information should be fetched. Subsetting related parameters are
+                ignored.
+        
+        Optional arguments:
+        boolean includeMetadata - include the object metadata in the returned
+                information. Default false.
+        boolean ignoreErrors - Don't throw an exception if an object cannot
+                be accessed; return null for that object's information and path instead.
+                Default false.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+objects has a value which is a reference to a list where each element is a Workspace.ObjectSpecification
+includeMetadata has a value which is a Workspace.boolean
+ignoreErrors has a value which is a Workspace.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+objects has a value which is a reference to a list where each element is a Workspace.ObjectSpecification
+includeMetadata has a value which is a Workspace.boolean
+ignoreErrors has a value which is a Workspace.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 GetObjectInfo3Results
+
+=over 4
+
+
+
+=item Description
+
+Output from the get_object_info3 function.
+
+        list<object_info> infos - the object_info data for each object.
+        list<list<obj_ref> paths - the path to the object through the object reference graph for
+                each object. All the references in the path are absolute.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+infos has a value which is a reference to a list where each element is a Workspace.object_info
+paths has a value which is a reference to a list where each element is a reference to a list where each element is a Workspace.obj_ref
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+infos has a value which is a reference to a list where each element is a Workspace.object_info
+paths has a value which is a reference to a list where each element is a reference to a list where each element is a Workspace.obj_ref
 
 
 =end text
