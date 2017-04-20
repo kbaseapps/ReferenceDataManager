@@ -14,10 +14,20 @@
     "advanced" : false,
     "id" : "data",
     "allow_multiple" : false,
-    "optional" : false,
+    "optional" : true,
     "field_type" : "text",
     "text_options" : {
       "valid_as" : "text"
+    }
+  }, {
+    "default_values" : [],
+    "advanced" : false,
+    "id" : "genomes",
+    "allow_multiple" : false,
+    "optional" : true,
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseReferenceGenomeData"]
     }
   }, {
     "id" : "index_in_solr",
@@ -41,6 +51,10 @@
         {
           "input_parameter": "data",
           "target_property": "data"
+        },
+        {
+          "input_parameter": "genomes",
+          "target_property": "genomes"
         },
         {
           "input_parameter": "index_in_solr",
