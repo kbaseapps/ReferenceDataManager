@@ -38,7 +38,23 @@ parameters :
             Genome data in semi-colon separated string
         long-hint  : |
             Genome data in the format of 'genome_id;scientific_name;domain;genetic_code'
-    
+
+    genomes : 
+        ui-name : |
+            Genomes to be RAST-ed
+        short-hint : |
+            Genomes to be RAST-ed
+        long-hint : |
+            Genomes to be RAST-ed in the format of an array of hashes    
+
+    workspace_name :
+        ui-name : |
+            The name of the workspace where the RAST-ed genomes will reside
+        short-hint : |
+            The name of the workspace where the RAST-ed genomes will reside 
+        long-hint : |
+            The name of the workspace where the RAST-ed genomes will reside 
+
     index_in_solr :
          ui-name : |
              Index in Solr
