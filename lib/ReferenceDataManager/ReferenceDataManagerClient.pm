@@ -81,12 +81,19 @@ sub new
     # We create an auth token, passing through the arguments that we were (hopefully) given.
 
     {
-	my $token = Bio::KBase::AuthToken->new(@args);
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
+	}
 	
-	if (!$token->error_message)
+	if (exists $self->{token})
 	{
-	    $self->{token} = $token->token;
-	    $self->{client}->{token} = $token->token;
+	    $self->{client}->{token} = $self->{token};
 	}
     }
 
@@ -245,6 +252,7 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 LoadedReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -278,6 +286,7 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 LoadedReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -369,54 +378,18 @@ Lists genomes loaded into KBase from selected reference sources (ensembl, phytoz
 
 <pre>
 $params is a ReferenceDataManager.ListSolrDocsParams
-$output is a reference to a list where each element is a ReferenceDataManager.SolrGenomeFeatureData
+$output is a reference to a list where each element is a ReferenceDataManager.solrdoc
 ListSolrDocsParams is a reference to a hash where the following keys are defined:
 	solr_core has a value which is a string
 	row_start has a value which is an int
 	row_count has a value which is an int
 	group_option has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
+	domain has a value which is a string
+	complete has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 bool is an int
-SolrGenomeFeatureData is a reference to a hash where the following keys are defined:
-	genome_feature_id has a value which is a string
-	genome_id has a value which is a string
-	feature_id has a value which is a string
-	ws_ref has a value which is a string
-	feature_type has a value which is a string
-	aliases has a value which is a string
-	scientific_name has a value which is a string
-	domain has a value which is a string
-	functions has a value which is a string
-	genome_source has a value which is a string
-	go_ontology_description has a value which is a string
-	go_ontology_domain has a value which is a string
-	gene_name has a value which is a string
-	object_name has a value which is a string
-	location_contig has a value which is a string
-	location_strand has a value which is a string
-	taxonomy has a value which is a string
-	workspace_name has a value which is a string
-	genetic_code has a value which is a string
-	md5 has a value which is a string
-	tax_id has a value which is a string
-	assembly_ref has a value which is a string
-	taxonomy_ref has a value which is a string
-	ontology_namespaces has a value which is a string
-	ontology_ids has a value which is a string
-	ontology_names has a value which is a string
-	ontology_lineages has a value which is a string
-	dna_sequence_length has a value which is an int
-	genome_dna_size has a value which is an int
-	location_begin has a value which is an int
-	location_end has a value which is an int
-	num_cds has a value which is an int
-	num_contigs has a value which is an int
-	protein_translation_length has a value which is an int
-	gc_content has a value which is a float
-	complete has a value which is a ReferenceDataManager.bool
-	refseq_category has a value which is a string
-	save_date has a value which is a string
+solrdoc is a reference to a hash where the key is a string and the value is a string
 
 </pre>
 
@@ -425,54 +398,18 @@ SolrGenomeFeatureData is a reference to a hash where the following keys are defi
 =begin text
 
 $params is a ReferenceDataManager.ListSolrDocsParams
-$output is a reference to a list where each element is a ReferenceDataManager.SolrGenomeFeatureData
+$output is a reference to a list where each element is a ReferenceDataManager.solrdoc
 ListSolrDocsParams is a reference to a hash where the following keys are defined:
 	solr_core has a value which is a string
 	row_start has a value which is an int
 	row_count has a value which is an int
 	group_option has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
+	domain has a value which is a string
+	complete has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 bool is an int
-SolrGenomeFeatureData is a reference to a hash where the following keys are defined:
-	genome_feature_id has a value which is a string
-	genome_id has a value which is a string
-	feature_id has a value which is a string
-	ws_ref has a value which is a string
-	feature_type has a value which is a string
-	aliases has a value which is a string
-	scientific_name has a value which is a string
-	domain has a value which is a string
-	functions has a value which is a string
-	genome_source has a value which is a string
-	go_ontology_description has a value which is a string
-	go_ontology_domain has a value which is a string
-	gene_name has a value which is a string
-	object_name has a value which is a string
-	location_contig has a value which is a string
-	location_strand has a value which is a string
-	taxonomy has a value which is a string
-	workspace_name has a value which is a string
-	genetic_code has a value which is a string
-	md5 has a value which is a string
-	tax_id has a value which is a string
-	assembly_ref has a value which is a string
-	taxonomy_ref has a value which is a string
-	ontology_namespaces has a value which is a string
-	ontology_ids has a value which is a string
-	ontology_names has a value which is a string
-	ontology_lineages has a value which is a string
-	dna_sequence_length has a value which is an int
-	genome_dna_size has a value which is an int
-	location_begin has a value which is an int
-	location_end has a value which is an int
-	num_cds has a value which is an int
-	num_contigs has a value which is an int
-	protein_translation_length has a value which is an int
-	gc_content has a value which is a float
-	complete has a value which is a ReferenceDataManager.bool
-	refseq_category has a value which is a string
-	save_date has a value which is a string
+solrdoc is a reference to a hash where the key is a string and the value is a string
 
 
 =end text
@@ -551,6 +488,7 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	start_offset has a value which is an int
+	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -616,6 +554,7 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	start_offset has a value which is an int
+	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -880,6 +819,8 @@ ListSolrDocsParams is a reference to a hash where the following keys are defined
 	row_count has a value which is an int
 	group_option has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
+	domain has a value which is a string
+	complete has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 bool is an int
 SolrTaxonData is a reference to a hash where the following keys are defined:
@@ -917,6 +858,8 @@ ListSolrDocsParams is a reference to a hash where the following keys are defined
 	row_count has a value which is an int
 	group_option has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
+	domain has a value which is a string
+	complete has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 bool is an int
 SolrTaxonData is a reference to a hash where the following keys are defined:
@@ -1191,6 +1134,7 @@ IndexTaxaInSolrParams is a reference to a hash where the following keys are defi
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
+	start_offset has a value which is an int
 LoadedReferenceTaxonData is a reference to a hash where the following keys are defined:
 	taxon has a value which is a ReferenceDataManager.KBaseReferenceTaxonData
 	ws_ref has a value which is a string
@@ -1248,6 +1192,7 @@ IndexTaxaInSolrParams is a reference to a hash where the following keys are defi
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
+	start_offset has a value which is an int
 LoadedReferenceTaxonData is a reference to a hash where the following keys are defined:
 	taxon has a value which is a ReferenceDataManager.KBaseReferenceTaxonData
 	ws_ref has a value which is a string
@@ -1297,7 +1242,7 @@ SolrTaxonData is a reference to a hash where the following keys are defined:
 
 =item Description
 
-Index specified genomes in SOLR from KBase workspace
+Index specified taxa in SOLR from KBase workspace
 
 =back
 
@@ -1621,27 +1566,12 @@ Loads Reference genomes into KBase workspace without indexing
 
 <pre>
 $params is a ReferenceDataManager.RASTGenomesParams
-$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+$output is a ReferenceDataManager.RASTGenomesResults
 RASTGenomesParams is a reference to a hash where the following keys are defined:
 	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
-	index_in_solr has a value which is a ReferenceDataManager.bool
+	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
-ReferenceGenomeData is a reference to a hash where the following keys are defined:
-	accession has a value which is a string
-	version_status has a value which is a string
-	asm_name has a value which is a string
-	ftp_dir has a value which is a string
-	file has a value which is a string
-	id has a value which is a string
-	version has a value which is a string
-	source has a value which is a string
-	domain has a value which is a string
-	refseq_category has a value which is a string
-	tax_id has a value which is a string
-	assembly_level has a value which is a string
-bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
 	id has a value which is a string
@@ -1652,6 +1582,11 @@ KBaseReferenceGenomeData is a reference to a hash where the following keys are d
 	version has a value which is a string
 	source has a value which is a string
 	domain has a value which is a string
+bool is an int
+RASTGenomesResults is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 </pre>
 
@@ -1660,27 +1595,12 @@ KBaseReferenceGenomeData is a reference to a hash where the following keys are d
 =begin text
 
 $params is a ReferenceDataManager.RASTGenomesParams
-$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+$output is a ReferenceDataManager.RASTGenomesResults
 RASTGenomesParams is a reference to a hash where the following keys are defined:
 	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
-	index_in_solr has a value which is a ReferenceDataManager.bool
+	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
-ReferenceGenomeData is a reference to a hash where the following keys are defined:
-	accession has a value which is a string
-	version_status has a value which is a string
-	asm_name has a value which is a string
-	ftp_dir has a value which is a string
-	file has a value which is a string
-	id has a value which is a string
-	version has a value which is a string
-	source has a value which is a string
-	domain has a value which is a string
-	refseq_category has a value which is a string
-	tax_id has a value which is a string
-	assembly_level has a value which is a string
-bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
 	id has a value which is a string
@@ -1691,13 +1611,18 @@ KBaseReferenceGenomeData is a reference to a hash where the following keys are d
 	version has a value which is a string
 	source has a value which is a string
 	domain has a value which is a string
+bool is an int
+RASTGenomesResults is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 
 =end text
 
 =item Description
 
-Loads specified genomes into KBase workspace and indexes in SOLR on demand
+RASTs specified genomes into KBase workspace and indexes in SOLR on demand
 
 =back
 
@@ -1770,6 +1695,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	phytozome has a value which is a ReferenceDataManager.bool
 	update_only has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	domain has a value which is a string
 	start_offset has a value which is an int
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1797,6 +1723,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	phytozome has a value which is a ReferenceDataManager.bool
 	update_only has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	domain has a value which is a string
 	start_offset has a value which is an int
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -2112,6 +2039,7 @@ ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -2125,6 +2053,7 @@ ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
 
@@ -2192,6 +2121,38 @@ size_bytes has a value which is an int
 ftp_url has a value which is a string
 gc has a value which is a float
 
+
+=end text
+
+=back
+
+
+
+=head2 solrdoc
+
+=over 4
+
+
+
+=item Description
+
+Solr doc data for search requests.                                       
+Arbitrary key-value pairs returned by the solr.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the key is a string and the value is a string
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the key is a string and the value is a string
 
 =end text
 
@@ -2330,6 +2291,8 @@ row_start has a value which is an int
 row_count has a value which is an int
 group_option has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+domain has a value which is a string
+complete has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 
 </pre>
@@ -2344,6 +2307,8 @@ row_start has a value which is an int
 row_count has a value which is an int
 group_option has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+domain has a value which is a string
+complete has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 
 
@@ -2361,7 +2326,7 @@ workspace_name has a value which is a string
 
 =item Description
 
-Structure of a single KBase genome in the list returned by the load_genomes, rast_genomes and update_loaded_genomes functions
+Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
 
 
 =item Definition
@@ -2425,6 +2390,7 @@ genomes has a value which is a reference to a list where each element is a Refer
 solr_core has a value which is a string
 workspace_name has a value which is a string
 start_offset has a value which is an int
+genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -2438,6 +2404,7 @@ genomes has a value which is a reference to a list where each element is a Refer
 solr_core has a value which is a string
 workspace_name has a value which is a string
 start_offset has a value which is an int
+genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
 
@@ -2725,6 +2692,7 @@ taxa has a value which is a reference to a list where each element is a Referenc
 solr_core has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+start_offset has a value which is an int
 
 </pre>
 
@@ -2737,6 +2705,7 @@ taxa has a value which is a reference to a list where each element is a Referenc
 solr_core has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+start_offset has a value which is an int
 
 
 =end text
@@ -2849,8 +2818,7 @@ Arguments for the rast_genomes function
 <pre>
 a reference to a hash where the following keys are defined:
 data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
-index_in_solr has a value which is a ReferenceDataManager.bool
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -2862,10 +2830,43 @@ create_report has a value which is a ReferenceDataManager.bool
 
 a reference to a hash where the following keys are defined:
 data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
-index_in_solr has a value which is a ReferenceDataManager.bool
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+
+
+=end text
+
+=back
+
+
+
+=head2 RASTGenomesResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
 
 
 =end text
@@ -2896,6 +2897,7 @@ refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+domain has a value which is a string
 start_offset has a value which is an int
 
 </pre>
@@ -2910,6 +2912,7 @@ refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
 update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+domain has a value which is a string
 start_offset has a value which is an int
 
 

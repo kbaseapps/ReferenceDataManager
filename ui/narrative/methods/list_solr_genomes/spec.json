@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : "kbaseNarrativeMethodInput",
-    "output" : null
+    "output" : "kbaseReportView" 
   },
   "parameters" : [ {
     "id" : "row_start",
@@ -40,14 +40,14 @@
       "options": [
         {
           "value": "Genomes_ci",
-          "display": "Genomes_ci",
-          "id": "ci_genomes",
+          "display": "Genomes in CI",
+          "id": "Genomes_ci",
           "ui_name": "Genomes_ci"
         },
         {
           "value": "Genomes_prod",
-          "display": "Genomes_prod",
-          "id": "prod_genomes",
+          "display": "Genomes in production",
+          "id": "Genomes_prod",
           "ui_name": "Genomes_prod"
         }
       ]
@@ -145,8 +145,11 @@
       ],
       "output_mapping" : [
         {
-          "service_method_output_path": [0],
-          "target_property": "list_result"
+          "target_property" : "report_ref",
+          "service_method_output_path" : [
+                                0,
+                                0
+                ]
         }
       ]
     }

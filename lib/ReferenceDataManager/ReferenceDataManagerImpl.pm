@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '77348aab993d0502c32cc11962b14f1441f08917';
+our $GIT_COMMIT_HASH = '078ec96a7350f4132a4a1eaa0dea011f1ed8423c';
 
 =head1 NAME
 
@@ -182,28 +182,27 @@ sub util_create_report {
 # Output: a list of KBSolrUtil.solrdoc
 #
 sub _listGenomesInSolr {
-    my ($self, $solrCore, $fields, $rowStart, $rowCount, $gnm_type, $dmn, $cmplt) = @_;
+    my ($self, $solrCore, $fields, $rowStart, $rowCount, $dmn, $cmplt) = @_;
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 0;
     $fields = "*" unless $fields;
-    $gnm_type = "KBaseGenomes.Genome-8.2" unless $gnm_type;
     
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
     
-    my $query = {"object_type"=>$gnm_type};#{ q => "*" };
+    my $query = { q => "*" };
         
     if( defined( $cmplt )) {
         if( defined( $dmn )) {
-            $query = { domain=>$dmn, complete=>$cmplt, object_type=>$gnm_type };
+            $query = { domain=>$dmn, complete=>$cmplt };
         }
         else {
-            $query = { complete=>$cmplt, object_type=>$gnm_type };
+            $query = { complete=>$cmplt };
         }
     }
     else {
         if( defined( $dmn )) {
-            $query = { domain=>$dmn, object_type=>$gnm_type};
+            $query = { domain=>$dmn };
         }
     }
     my $solrgnms;
@@ -3104,11 +3103,10 @@ sub load_refgenomes
 
 <pre>
 $params is a ReferenceDataManager.RASTGenomesParams
-$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+$output is a ReferenceDataManager.RASTGenomesResults
 RASTGenomesParams is a reference to a hash where the following keys are defined:
 	data has a value which is a string
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
-	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -3122,6 +3120,10 @@ KBaseReferenceGenomeData is a reference to a hash where the following keys are d
 	source has a value which is a string
 	domain has a value which is a string
 bool is an int
+RASTGenomesResults is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 </pre>
 
@@ -3130,11 +3132,10 @@ bool is an int
 =begin text
 
 $params is a ReferenceDataManager.RASTGenomesParams
-$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+$output is a ReferenceDataManager.RASTGenomesResults
 RASTGenomesParams is a reference to a hash where the following keys are defined:
 	data has a value which is a string
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
-	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -3148,6 +3149,10 @@ KBaseReferenceGenomeData is a reference to a hash where the following keys are d
 	source has a value which is a string
 	domain has a value which is a string
 bool is an int
+RASTGenomesResults is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 
 =end text
@@ -3182,14 +3187,12 @@ sub rast_genomes
     $params = $self->util_args($params,[],{
         data => undef,
         genomes => [], 
-        index_in_solr => 0,
         create_report => 0,
         workspace_name => undef
     });
     my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev','async_version'=>'dev'));
     #my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
     my $srcgenomes;
-    my $rastgenomes;
     $output = [];
     my $msg = "";
 
@@ -3209,27 +3212,10 @@ sub rast_genomes
             complete => 1
         });
     }
+
     my $rdm_rast_ws=$params->{workspace_name};
-=begin
-    if (defined($params->{workspace_name})) {
-        $rdm_rast_ws = $params->{workspace_name};
-    } else {
-        my $rdm_rast_ws = "ReferenceGenomes_RAST"; #$wsname . "_RAST";
-    }
-    eval {
-        $self->util_ws_client()->create_workspace({workspace=>$rdm_rast_ws,globalread=>"r",description=>"ws for RAST-ed Refseq Genomes"});
-    };
-    if ($@) {
-        print $@;
-	if( $@!~/is already in use/ ) {
-           print "Failed to create the workspace " . $rdm_rast_ws;
-           exit 0;
-	}
-    }
-    else
-=cut
     {
-        print "\nNow rasting genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
+        print "\nNow rasting " . scalar @{$srcgenomes} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         my $rast_ret;
         my $rast_params={
              genomes=>$srcgenomes,
@@ -3253,24 +3239,15 @@ sub rast_genomes
         }
         else
         {
-            $rastgenomes = {
+            $output = {
 		  report_ref => $rast_ret->{report_ref},
                   report => $rast_ret->{report_name},
                   workspace_name => $rast_ret->{workspace}
             };
-            
-            if ($params->{index_in_solr} == 1) {
-                my $gn_solrCore = "GenomeFeatures_RASTed";
-                $self->index_genomes_in_solr({
-                        solr_core => $gn_solrCore,             
-                        genomes => $srcgenomes
-                });
-            }
-            $output = $srcgenomes;
          }
          print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
     }
-    $msg .= "\nRASTed a total of ". scalar @{$output}. " genomes!\n";
+    $msg .= "\nRASTed a total of ". scalar @{$srcgenomes}. " genomes!\n";
     print $msg . "\n";
 
     if ($params->{create_report}) {
@@ -3283,7 +3260,7 @@ sub rast_genomes
 
     #END rast_genomes
     my @_bad_returns;
-    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
 	my $msg = "Invalid returns passed to rast_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
@@ -3939,7 +3916,7 @@ workspace_name has a value which is a string
 
 =item Description
 
-Structure of a single KBase genome in the list returned by the load_genomes, rast_genomes and update_loaded_genomes functions
+Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
 
 
 =item Definition
@@ -4432,7 +4409,6 @@ Arguments for the rast_genomes function
 a reference to a hash where the following keys are defined:
 data has a value which is a string
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
-index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -4445,9 +4421,42 @@ create_report has a value which is a ReferenceDataManager.bool
 a reference to a hash where the following keys are defined:
 data has a value which is a string
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
-index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+
+
+=end text
+
+=back
+
+
+
+=head2 RASTGenomesResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
 
 
 =end text

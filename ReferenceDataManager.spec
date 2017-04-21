@@ -155,7 +155,7 @@ module ReferenceDataManager {
     funcdef list_solr_genomes(ListSolrDocsParams params) returns (list<solrdoc> output) authentication required;
 
     /*  
-        Structure of a single KBase genome in the list returned by the load_genomes, rast_genomes and update_loaded_genomes functions
+        Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
     */  
     typedef structure {
         string ref;
@@ -338,15 +338,20 @@ module ReferenceDataManager {
     typedef structure {
         string data;
         list<KBaseReferenceGenomeData> genomes;
-        bool index_in_solr;
         string workspace_name;
         bool create_report;
     } RASTGenomesParams;
-    
+   
+    typedef structure {
+        string workspace_name;
+        string report_name;
+        string report_ref;
+    } RASTGenomesResults;
+         
     /*
         RASTs specified genomes into KBase workspace and indexes in SOLR on demand
     */
-    funcdef rast_genomes(RASTGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
+    funcdef rast_genomes(RASTGenomesParams params) returns (RASTGenomesResults output) authentication required;
 
 
     /*

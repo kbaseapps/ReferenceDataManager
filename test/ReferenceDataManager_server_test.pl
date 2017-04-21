@@ -57,8 +57,8 @@ eval {
     my $sgret;
     eval {
         $sgret = $impl->list_solr_genomes({
-            solr_core => "Genomes_prod",
-            complete => 1
+            solr_core => "Genomes_ci",
+            domain => "Bacteria"
         });
     };
     ok(!$@,"list_solr_genomes command successful");
