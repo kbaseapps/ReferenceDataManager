@@ -1569,19 +1569,10 @@ $params is a ReferenceDataManager.RASTGenomesParams
 $output is a ReferenceDataManager.RASTGenomesResults
 RASTGenomesParams is a reference to a hash where the following keys are defined:
 	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
-KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
-	ref has a value which is a string
-	id has a value which is a string
-	workspace_name has a value which is a string
-	source_id has a value which is a string
-	accession has a value which is a string
-	name has a value which is a string
-	version has a value which is a string
-	source has a value which is a string
-	domain has a value which is a string
+solrdoc is a reference to a hash where the key is a string and the value is a string
 bool is an int
 RASTGenomesResults is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
@@ -1598,19 +1589,10 @@ $params is a ReferenceDataManager.RASTGenomesParams
 $output is a ReferenceDataManager.RASTGenomesResults
 RASTGenomesParams is a reference to a hash where the following keys are defined:
 	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
-KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
-	ref has a value which is a string
-	id has a value which is a string
-	workspace_name has a value which is a string
-	source_id has a value which is a string
-	accession has a value which is a string
-	name has a value which is a string
-	version has a value which is a string
-	source has a value which is a string
-	domain has a value which is a string
+solrdoc is a reference to a hash where the key is a string and the value is a string
 bool is an int
 RASTGenomesResults is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
@@ -2818,7 +2800,7 @@ Arguments for the rast_genomes function
 <pre>
 a reference to a hash where the following keys are defined:
 data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -2830,7 +2812,7 @@ create_report has a value which is a ReferenceDataManager.bool
 
 a reference to a hash where the following keys are defined:
 data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 

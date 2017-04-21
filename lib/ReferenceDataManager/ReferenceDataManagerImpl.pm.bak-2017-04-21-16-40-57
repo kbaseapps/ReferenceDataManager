@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = 'd7f380da2faa16cf21f0602730b3863da77dd135';
+our $GIT_COMMIT_HASH = '77348aab993d0502c32cc11962b14f1441f08917';
 
 =head1 NAME
 
@@ -191,6 +191,7 @@ sub _listGenomesInSolr {
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
     
     my $query = { q => "*" };
+        
     if( defined( $cmplt )) {
         if( defined( $dmn )) {
             $query = { domain=>$dmn, complete=>$cmplt };
@@ -1580,7 +1581,7 @@ sub list_solr_genomes
     my $fields = "genome_id, workspace_name, scientific_name, genetic_code, domain";
     my $grpOpt = $params->{group_option};
     eval {
-        $solrout = $self->_listGenomesInSolr($params->{solr_core}, $fields, $params->{row_start}, $params->{row_count}, $params->{domain}, $params->{complete});
+        $solrout = $self->_listGenomesInSolr($params->{solr_core}, $fields, $params->{row_start}, $params->{row_count}, $params->{group_option}, $params->{domain}, $params->{complete});
     };
     if($@) {
         print "Cannot list genomes in SOLR information!\n";
@@ -3102,18 +3103,24 @@ sub load_refgenomes
 
 <pre>
 $params is a ReferenceDataManager.RASTGenomesParams
-$output is a ReferenceDataManager.RASTGenomesResults
+$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 RASTGenomesParams is a reference to a hash where the following keys are defined:
 	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
+	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
-solrdoc is a reference to a hash where the key is a string and the value is a string
-bool is an int
-RASTGenomesResults is a reference to a hash where the following keys are defined:
+KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+	id has a value which is a string
 	workspace_name has a value which is a string
-	report_name has a value which is a string
-	report_ref has a value which is a string
+	source_id has a value which is a string
+	accession has a value which is a string
+	name has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+bool is an int
 
 </pre>
 
@@ -3122,18 +3129,24 @@ RASTGenomesResults is a reference to a hash where the following keys are defined
 =begin text
 
 $params is a ReferenceDataManager.RASTGenomesParams
-$output is a ReferenceDataManager.RASTGenomesResults
+$output is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
 RASTGenomesParams is a reference to a hash where the following keys are defined:
 	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
+	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
-solrdoc is a reference to a hash where the key is a string and the value is a string
-bool is an int
-RASTGenomesResults is a reference to a hash where the following keys are defined:
+KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+	id has a value which is a string
 	workspace_name has a value which is a string
-	report_name has a value which is a string
-	report_ref has a value which is a string
+	source_id has a value which is a string
+	accession has a value which is a string
+	name has a value which is a string
+	version has a value which is a string
+	source has a value which is a string
+	domain has a value which is a string
+bool is an int
 
 
 =end text
@@ -3195,9 +3208,9 @@ sub rast_genomes
     }
 
     my $rdm_rast_ws=$params->{workspace_name};
-    my $rast_ret;
     {
         print "\nNow rasting " . scalar @{$srcgenomes} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
+        my $rast_ret;
         my $rast_params={
              genomes=>$srcgenomes,
              workspace=>$rdm_rast_ws
@@ -3220,17 +3233,16 @@ sub rast_genomes
         }
         else
         {
-            $rast_ret = {
+            $output = {
 		  report_ref => $rast_ret->{report_ref},
                   report => $rast_ret->{report_name},
                   workspace_name => $rast_ret->{workspace}
             };
-        }
-        print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
+         }
+         print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
     }
     $msg .= "\nRASTed a total of ". scalar @{$srcgenomes}. " genomes!\n";
     print $msg . "\n";
-    $output = $rast_ret;
 
     if ($params->{create_report}) {
         $self->util_create_report({
@@ -3242,7 +3254,7 @@ sub rast_genomes
 
     #END rast_genomes
     my @_bad_returns;
-    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
 	my $msg = "Invalid returns passed to rast_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
@@ -3898,7 +3910,7 @@ workspace_name has a value which is a string
 
 =item Description
 
-Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
+Structure of a single KBase genome in the list returned by the load_genomes, rast_genomes and update_loaded_genomes functions
 
 
 =item Definition
@@ -4390,7 +4402,8 @@ Arguments for the rast_genomes function
 <pre>
 a reference to a hash where the following keys are defined:
 data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -4402,43 +4415,10 @@ create_report has a value which is a ReferenceDataManager.bool
 
 a reference to a hash where the following keys are defined:
 data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
+genomes has a value which is a reference to a list where each element is a ReferenceDataManager.KBaseReferenceGenomeData
+index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
-
-
-=end text
-
-=back
-
-
-
-=head2 RASTGenomesResults
-
-=over 4
-
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a reference to a hash where the following keys are defined:
-workspace_name has a value which is a string
-report_name has a value which is a string
-report_ref has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-a reference to a hash where the following keys are defined:
-workspace_name has a value which is a string
-report_name has a value which is a string
-report_ref has a value which is a string
 
 
 =end text

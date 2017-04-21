@@ -337,7 +337,7 @@ module ReferenceDataManager {
     */
     typedef structure {
         string data;
-        list<KBaseReferenceGenomeData> genomes;
+        list<solrdoc> genomes;
         string workspace_name;
         bool create_report;
     } RASTGenomesParams;

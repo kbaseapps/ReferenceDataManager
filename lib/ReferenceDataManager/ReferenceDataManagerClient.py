@@ -349,14 +349,9 @@ class ReferenceDataManager(object):
         RASTs specified genomes into KBase workspace and indexes in SOLR on demand
         :param params: instance of type "RASTGenomesParams" (Arguments for
            the rast_genomes function) -> structure: parameter "data" of
-           String, parameter "genomes" of list of type
-           "KBaseReferenceGenomeData" (Structure of a single KBase genome in
-           the list returned by the load_genomes and update_loaded_genomes
-           functions) -> structure: parameter "ref" of String, parameter "id"
-           of String, parameter "workspace_name" of String, parameter
-           "source_id" of String, parameter "accession" of String, parameter
-           "name" of String, parameter "version" of String, parameter
-           "source" of String, parameter "domain" of String, parameter
+           String, parameter "genomes" of list of type "solrdoc" (Solr doc
+           data for search requests. Arbitrary key-value pairs returned by
+           the solr.) -> mapping from String to String, parameter
            "workspace_name" of String, parameter "create_report" of type
            "bool" (A boolean.)
         :returns: instance of type "RASTGenomesResults" -> structure:
