@@ -3174,7 +3174,7 @@ sub rast_genomes
     my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev','async_version'=>'dev'));
     #my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
     my $srcgenomes;
-    $output = [];
+    $output = undef; 
     my $msg = "";
 
     if (defined($params->{data})) {
@@ -3220,9 +3220,9 @@ sub rast_genomes
         }
         else
         {
-            $rast_ret = {
+            $output = {
 		  report_ref => $rast_ret->{report_ref},
-                  report => $rast_ret->{report_name},
+                  report_name => $rast_ret->{report_name},
                   workspace_name => $rast_ret->{workspace}
             };
         }
@@ -3230,16 +3230,7 @@ sub rast_genomes
     }
     $msg .= "\nRASTed a total of ". scalar @{$srcgenomes}. " genomes!\n";
     print $msg . "\n";
-    $output = $rast_ret;
-
-    if ($params->{create_report}) {
-        $self->util_create_report({
-            message => $msg,
-            workspace => $params->{workspace_name}
-        });
-        $output = [$params->{workspace_name}."/rast_genomes"];
-    }
-
+    
     #END rast_genomes
     my @_bad_returns;
     (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
