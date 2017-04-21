@@ -53,16 +53,6 @@
       ]
     }
   }, {
-    "id" : "group_option",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "text",
-    "text_options" : {
-        "validate_as": "text"
-    } 
-  }, {
     "id" : "complete",
     "optional":true,
     "advanced":true,
@@ -121,10 +111,6 @@
         {
           "input_parameter": "row_count",
           "target_property": "row_count"
-        },
-        {
-          "input_parameter": "group_option",
-          "target_property": "group_option"
         },
         {
           "input_parameter": "complete",

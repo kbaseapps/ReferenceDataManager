@@ -48,7 +48,7 @@ sub test_rast_genomes {
              genomes=>$genomes,
              workspace_name=>get_ws_name()
            };
-    my $ret = $impl->rast_genomes($params);
+    return $impl->rast_genomes($params);
 }
 
 eval {
@@ -57,8 +57,9 @@ eval {
     my $sgret;
     eval {
         $sgret = $impl->list_solr_genomes({
-            solr_core => "Genomes_ci",
-            domain => "Bacteria"
+            solr_core => "Genomes_prod",
+            domain => "Bacteria",
+            complete => 1
         });
     };
     ok(!$@,"list_solr_genomes command successful");
@@ -71,18 +72,18 @@ eval {
     }
     ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
 #=cut
+#=begin
+    my $rast_ret;
     eval {
-        test_rast_genomes($sgret);
+        $rast_ret = test_rast_genomes($sgret);
     };  
     ok(!$@, "test_rast_genomes ran successfully.");
     if( $@) {
         print "ERROR:".$@;
     } else {
-        print "Number of records:".@{$sgret}."\n";
-        print "First record:\n";
-        print Dumper($sgret->[0])."\n";
+        print Dumper($rast_ret)."\n";
     }
-  
+#=cut
     done_testing(3);
 };
 
@@ -404,23 +405,22 @@ eval {
         print("Test workspace was named ". $ws_name . "\n");
         my $wsinfo = $ws_client->get_workspace_info({
                     workspace => $ws_name
-                });
-            my $maxid = $wsinfo->[4];
-            print "\nMax genome object id=$maxid\n";
-            eval {                                                                                             
-                  my $wsoutput = $ws_client->list_objects({
-                          workspaces => [$ws_name],
-                          minObjectID => 0,
-                          type => "KBaseGenomes.Genome-",
-                          maxObjectID => $maxid,
-                          includeMetadata => 1
-                      });
-		      print "Genome object count=" . @{$wsoutput}. "\n";
-            };
+        });
+        my $maxid = $wsinfo->[4];
+        print "\nMax genome object id=$maxid\n";
+        eval {                                                                                             
+            my $wsoutput = $ws_client->list_objects({
+                    workspaces => [$ws_name],
+                    minObjectID => 0,
+                    maxObjectID => $maxid,
+                    includeMetadata => 1
+             });
+	     print "Genome object count=" . @{$wsoutput}. "\n";
+        };
 
         $ws_client->delete_workspace({workspace => $ws_name});
         print("Test workspace was deleted\n");
-    }
+ 
 };
 if (defined($err)) {
     if(ref($err) eq "Bio::KBase::Exceptions::KBaseException") {

@@ -54,15 +54,6 @@ parameters :
             Count of rows of result to display
         long-hint  : |
             Count of rows of result to display
-
-    group_option :
-        ui-name : |
-            Group by field
-        short-hint : |
-            Field to group the results by
-        long-hint  : |
-            Field to group the results by
-
     complete :
         ui-name : |
             Genome is complete

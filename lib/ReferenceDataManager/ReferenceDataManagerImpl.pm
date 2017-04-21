@@ -191,7 +191,6 @@ sub _listGenomesInSolr {
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
     
     my $query = { q => "*" };
-        
     if( defined( $cmplt )) {
         if( defined( $dmn )) {
             $query = { domain=>$dmn, complete=>$cmplt };
@@ -1581,7 +1580,7 @@ sub list_solr_genomes
     my $fields = "genome_id, workspace_name, scientific_name, genetic_code, domain";
     my $grpOpt = $params->{group_option};
     eval {
-        $solrout = $self->_listGenomesInSolr($params->{solr_core}, $fields, $params->{row_start}, $params->{row_count}, $params->{group_option}, $params->{domain}, $params->{complete});
+        $solrout = $self->_listGenomesInSolr($params->{solr_core}, $fields, $params->{row_start}, $params->{row_count}, $params->{domain}, $params->{complete});
     };
     if($@) {
         print "Cannot list genomes in SOLR information!\n";
@@ -3214,9 +3213,9 @@ sub rast_genomes
     }
 
     my $rdm_rast_ws=$params->{workspace_name};
+    my $rast_ret;
     {
         print "\nNow rasting " . scalar @{$srcgenomes} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
-        my $rast_ret;
         my $rast_params={
              genomes=>$srcgenomes,
              workspace=>$rdm_rast_ws
@@ -3239,16 +3238,17 @@ sub rast_genomes
         }
         else
         {
-            $output = {
+            $rast_ret = {
 		  report_ref => $rast_ret->{report_ref},
                   report => $rast_ret->{report_name},
                   workspace_name => $rast_ret->{workspace}
             };
-         }
-         print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
+        }
+        print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
     }
     $msg .= "\nRASTed a total of ". scalar @{$srcgenomes}. " genomes!\n";
     print $msg . "\n";
+    $output = $rast_ret;
 
     if ($params->{create_report}) {
         $self->util_create_report({

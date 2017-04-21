@@ -24,7 +24,7 @@ suggestions :
         related :
             []
         next :
-            [index_genomes_in_solr]
+            []
 
 
 #
@@ -55,14 +55,5 @@ parameters :
         long-hint : |
             The name of the workspace where the RAST-ed genomes will reside 
 
-    index_in_solr :
-         ui-name : |
-             Index in Solr
-         short-hint : |
-             Indicate to send the genome info to Solr to be indexed
-         long-hint : |
-             Indicate to send the genome info to Solr to be indexed
-
-
 description : |
-    <p>RAST genomes in KBase and index in solr if want </p>
+    <p>RAST genomes in KBase </p>
