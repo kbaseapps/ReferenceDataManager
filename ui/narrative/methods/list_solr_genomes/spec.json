@@ -147,7 +147,7 @@
         {
           "service_method_output_path": [0],
           "target_property": "list_result"
-        },
+        }
       ]
     }
   }
