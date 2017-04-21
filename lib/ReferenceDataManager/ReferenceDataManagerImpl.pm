@@ -222,7 +222,7 @@ sub _listGenomesInSolr {
     
     eval {
         $solrgnms = $solrer->search_solr({
-          solr_core => $solrCore,
+          search_core => $solrCore,
           search_param => $params,
           search_query => $query,
           result_format => "json",
@@ -268,7 +268,7 @@ sub _listTaxaInSolr {
     
     eval {
         $solrout = $solrer->search_solr({
-          solr_core => $solrCore,
+          search_core => $solrCore,
           search_param => $params,
           search_query => $query,
           result_format => "json",
@@ -311,7 +311,7 @@ sub _updateGenomesCore
 
     eval {
         $solrgnms = $solrer->search_solr({
-          solr_core => $src_core,
+          search_core => $src_core,
           search_param => {
                 rows => 100000,
                 wt => 'json'
@@ -411,7 +411,7 @@ sub _checkGenomeStatus
     my $gcnt;
     eval {
         $solrgnm = $solrer->search_solr({
-          solr_core => $solr_core,
+          search_core => $solr_core,
           search_param => $params,
           search_query => $query,
           result_format => "json",

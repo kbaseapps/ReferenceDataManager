@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : "kbaseNarrativeMethodInput",
-    "output" : "kbaseReportView"
+    "output" : null
   },
   "parameters" : [ {
     "id" : "row_start",
@@ -75,10 +75,10 @@
     }
   }, {
     "id" : "domain",
-    "optional":true,
+    "optional":false,
     "advanced":true,
     "allow_multiple":false,
-    "default_values":[""],
+    "default_values":["Bacteria"],
     "field_type" : "dropdown",
      "dropdown_options":{
       "options": [
@@ -145,12 +145,9 @@
       ],
       "output_mapping" : [
         {
-          "target_property" : "report_ref",
-    	  "service_method_output_path" : [
-				0,
-				0
-        	]
-        }
+          "service_method_output_path": [0],
+          "target_property": "list_result"
+        },
       ]
     }
   }
