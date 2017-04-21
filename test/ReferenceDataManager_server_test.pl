@@ -414,13 +414,13 @@ eval {
                     minObjectID => 0,
                     maxObjectID => $maxid,
                     includeMetadata => 1
-             });
-	     print "Genome object count=" . @{$wsoutput}. "\n";
+            });
+	    print "Genome object count=" . @{$wsoutput}. "\n";
         };
 
         $ws_client->delete_workspace({workspace => $ws_name});
         print("Test workspace was deleted\n");
- 
+    } 
 };
 if (defined($err)) {
     if(ref($err) eq "Bio::KBase::Exceptions::KBaseException") {
