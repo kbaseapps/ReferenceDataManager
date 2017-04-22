@@ -204,6 +204,8 @@ sub _listGenomesInSolr {
             $query = { domain=>$dmn };
         }
     }
+print "Core name passed: " . $solrCore;
+print "\Query: " . Dumper($query);
     my $solrgnms;
     if($count == 0) {#get the real total count
         $count = $solrer->get_total_count({search_core=>$solrCore, search_query=>$query});
@@ -232,7 +234,7 @@ sub _listGenomesInSolr {
          print "ERROR:".$@;
          return undef;
     } else {
-        print "Search results:" . Dumper($solrgnms) . "\n";
+        #print "Search results:" . Dumper($solrgnms) . "\n";
         return $solrgnms;
     }
 }
