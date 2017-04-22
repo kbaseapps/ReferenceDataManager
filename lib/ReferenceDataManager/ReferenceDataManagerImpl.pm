@@ -3190,6 +3190,7 @@ sub rast_genomes
     } else {
         $srcgenomes = $self->list_solr_genomes({
             solr_core => "Genomes_prod",
+            domain => "Bacteria",
             complete => 1
         });
     }

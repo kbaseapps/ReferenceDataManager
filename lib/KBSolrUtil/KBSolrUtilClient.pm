@@ -530,7 +530,7 @@ solrresponse is a reference to a hash where the key is a string and the value is
 
 =item Description
 
-The search_solr function that returns a solrresponse consisting of a string in the format of the specified 'result_format' in SearchSolrParams
+The search_solr function that returns a solrresponse consisting of a string in the format of the Perl structure (hash)
 
 =back
 
@@ -595,6 +595,122 @@ sub _search_solr_submit {
         Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _search_solr_submit",
                         status_line => $self->{client}->status_line,
                         method_name => '_search_solr_submit');
+    }
+}
+
+ 
+
+
+=head2 search_kbase_solr
+
+  $output = $obj->search_kbase_solr($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a KBSolrUtil.SearchSolrParams
+$output is a KBSolrUtil.solrresponse
+SearchSolrParams is a reference to a hash where the following keys are defined:
+	search_core has a value which is a string
+	search_param has a value which is a KBSolrUtil.searchdata
+	search_query has a value which is a KBSolrUtil.searchdata
+	result_format has a value which is a string
+	group_option has a value which is a string
+searchdata is a reference to a hash where the key is a string and the value is a string
+solrresponse is a reference to a hash where the key is a string and the value is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a KBSolrUtil.SearchSolrParams
+$output is a KBSolrUtil.solrresponse
+SearchSolrParams is a reference to a hash where the following keys are defined:
+	search_core has a value which is a string
+	search_param has a value which is a KBSolrUtil.searchdata
+	search_query has a value which is a KBSolrUtil.searchdata
+	result_format has a value which is a string
+	group_option has a value which is a string
+searchdata is a reference to a hash where the key is a string and the value is a string
+solrresponse is a reference to a hash where the key is a string and the value is a string
+
+
+=end text
+
+=item Description
+
+The search_kbase_solr function that returns a solrresponse consisting of a string in the format of the specified 'result_format' in SearchSolrParams
+The interface is exactly the same as that of search_solr, except the output content will be different. And this function is exposed to the narrative for users to search KBase Solr databases, while search_solr will be mainly serving RDM.
+
+=back
+
+=cut
+
+sub search_kbase_solr
+{
+    my($self, @args) = @_;
+    my $job_id = $self->_search_kbase_solr_submit(@args);
+    my $async_job_check_time = $self->{async_job_check_time};
+    while (1) {
+        Time::HiRes::sleep($async_job_check_time);
+        $async_job_check_time *= $self->{async_job_check_time_scale_percent} / 100.0;
+        if ($async_job_check_time > $self->{async_job_check_max_time}) {
+            $async_job_check_time = $self->{async_job_check_max_time};
+        }
+        my $job_state_ref = $self->_check_job($job_id);
+        if ($job_state_ref->{"finished"} != 0) {
+            if (!exists $job_state_ref->{"result"}) {
+                $job_state_ref->{"result"} = [];
+            }
+            return wantarray ? @{$job_state_ref->{"result"}} : $job_state_ref->{"result"}->[0];
+        }
+    }
+}
+
+sub _search_kbase_solr_submit {
+    my($self, @args) = @_;
+# Authentication: required
+    if ((my $n = @args) != 1) {
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+                                   "Invalid argument count for function _search_kbase_solr_submit (received $n, expecting 1)");
+    }
+    {
+        my($params) = @args;
+        my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+            my $msg = "Invalid arguments passed to _search_kbase_solr_submit:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+            Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+                                   method_name => '_search_kbase_solr_submit');
+        }
+    }
+    my $context = undef;
+    if ($self->{service_version}) {
+        $context = {'service_ver' => $self->{service_version}};
+    }
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+        method => "KBSolrUtil._search_kbase_solr_submit",
+        params => \@args, context => $context});
+    if ($result) {
+        if ($result->is_error) {
+            Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+                           code => $result->content->{error}->{code},
+                           method_name => '_search_kbase_solr_submit',
+                           data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+            );
+        } else {
+            return $result->result->[0];  # job_id
+        }
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _search_kbase_solr_submit",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_search_kbase_solr_submit');
     }
 }
 

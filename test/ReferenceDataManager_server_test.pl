@@ -72,7 +72,7 @@ eval {
     }
     ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
 #=cut
-#=begin
+=begin
     my $rast_ret;
     eval {
         $rast_ret = test_rast_genomes($sgret);
@@ -83,7 +83,7 @@ eval {
     } else {
         print Dumper($rast_ret)."\n";
     }
-#=cut
+=cut
     done_testing(3);
 };
 
