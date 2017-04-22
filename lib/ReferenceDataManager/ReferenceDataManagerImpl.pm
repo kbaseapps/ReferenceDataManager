@@ -232,7 +232,7 @@ sub _listGenomesInSolr {
          print "ERROR:".$@;
          return undef;
     } else {
-        print "Search results:" . Dumper($solrgnms->{response}) . "\n";
+        print "Search results:" . Dumper($solrgnms) . "\n";
         return $solrgnms;
     }
 }
