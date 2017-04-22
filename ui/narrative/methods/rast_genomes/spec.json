@@ -9,27 +9,7 @@
     "input" : null,
     "output" : "kbaseReportView"
   },
-  "parameters" : [ {
-    "default_values" : [""],
-    "advanced" : false,
-    "id" : "data",
-    "allow_multiple" : false,
-    "optional" : true,
-    "field_type" : "text",
-    "text_options" : {
-      "valid_as" : "text"
-    }
-  }, {
-    "default_values" : [],
-    "advanced" : false,
-    "id" : "genomes",
-    "allow_multiple" : false,
-    "optional" : true,
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseReferenceGenomeData"]
-    }
-  }],
+  "parameters" :[],
   "job_id_output_field": "docker",
   "behavior" : {
     "service-mapping" : {
@@ -37,14 +17,6 @@
       "name" : "ReferenceDataManager",
       "method" : "rast_genomes",
       "input_mapping" : [
-        {
-          "input_parameter": "data",
-          "target_property": "data"
-        },
-        {
-          "input_parameter": "genomes",
-          "target_property": "genomes"
-        },
         {
           "constant_value" : "1",
           "target_property": "create_report"
