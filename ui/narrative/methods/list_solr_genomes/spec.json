@@ -75,19 +75,19 @@
         {
           "value": "Bacteria",
           "display": "B (Bacteria)",
-          "id": "B",
+          "id": "Bacteria",
           "ui_name": "B (Bacteria)"
         },
         {
           "value": "Archaea",
           "display": "A (Archaea)",
-          "id": "fast",
+          "id": "Archaea",
           "ui_name": "A (Archaea)"
         },
         {
           "value": "Eukaryota",
           "display": "P (Plant)",
-          "id": "P",
+          "id": "Eukaryota",
           "ui_name": "P (Plant)"
         }
       ]
