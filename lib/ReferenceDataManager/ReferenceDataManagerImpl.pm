@@ -193,10 +193,18 @@ sub _listGenomesInSolr {
     my $query = { q => "*" };
     if( defined( $cmplt )) {
         if( defined( $dmn )) {
-            $query = { domain=>$dmn, complete=>$cmplt };
+            if( $cmplt == 1 ) {
+                $query = { domain=>$dmn, complete=> 1 };
+            } else {
+                $query = { domain=>$dmn, -complete=> 1 };
+            }
         }
         else {
-            $query = { complete=>$cmplt };
+            if( $cmplt == 1 ) {
+                $query = { domain=>$dmn, complete=> 1 };
+            } else {
+                $query = { domain=>$dmn, -complete=> 1 };
+            }
         }
     }
     else {
@@ -204,8 +212,6 @@ sub _listGenomesInSolr {
             $query = { domain=>$dmn };
         }
     }
-print "Core name passed: " . $solrCore;
-print "\Query: " . Dumper($query);
     my $solrgnms;
     if($count == 0) {#get the real total count
         $count = $solrer->get_total_count({search_core=>$solrCore, search_query=>$query});
@@ -1575,7 +1581,6 @@ sub list_solr_genomes
         complete => undef,
         workspace_name => undef
     });
-
     $output = [];
     my $msg = "Found ";
     my $solrout;
