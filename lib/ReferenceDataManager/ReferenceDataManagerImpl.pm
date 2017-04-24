@@ -1257,9 +1257,7 @@ sub list_reference_genomes
             workspace => $params->{workspace_name}
         });  
         $output = [$params->{workspace_name}."/list_reference_genomes"];
-    } else {
-        $output = [$summary];
-    }    
+    } 
     #END list_reference_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
