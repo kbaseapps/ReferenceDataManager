@@ -1605,6 +1605,9 @@ sub list_solr_genomes
             $msg .= $grp->{matches}." genome_feature(s) in " . $grp->{ngroups}." ". $grpOpt . " groups";
         }
         $msg .= " in SOLR.\n";
+        $msg .=  "Genome SOLR record example:\n";
+        my $curr = @{$output}-1;
+        $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
     $msg = ($msg ne "") ? $msg : "Nothing found!";
     print $msg . "\n";     
