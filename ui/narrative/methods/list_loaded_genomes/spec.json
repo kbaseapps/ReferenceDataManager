@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : "kbaseNarrativeMethodInput",
-    "output" : "no-display"
+    "output" : "kbaseReportView"
   },
   "parameters" : [ {
     "id" : "refseq",
@@ -86,6 +86,17 @@
         }
       ],
       "output_mapping" : [
+        {
+          "target_property" : "report_ref",
+    	  "service_method_output_path" : [
+				0,
+				0
+        	]
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace_name"
+        }
       ]
     }
   }

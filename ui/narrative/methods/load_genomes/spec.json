@@ -61,6 +61,10 @@
 				0,
 				0
         	]
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace_name"
         }
       ]
     }
