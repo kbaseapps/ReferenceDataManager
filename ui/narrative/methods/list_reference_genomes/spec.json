@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : "kbaseNarrativeMethodInput",
-    "output" : "no-display"
+    "output" : "kbaseReportView"
   },
   "parameters" : [ {
     "id" : "refseq",
@@ -117,7 +117,7 @@
           "target_property": "updated_only"
         },
         {
-          "constant_value" : "0",
+          "constant_value" : "1",
           "target_property": "create_report"
         },
         {
@@ -126,6 +126,13 @@
         }
       ],
       "output_mapping" : [
+        {
+          "target_property" : "report_ref",
+          "service_method_output_path" : [
+                                0,
+                                0
+                ]
+        }
       ]
     }
   }
