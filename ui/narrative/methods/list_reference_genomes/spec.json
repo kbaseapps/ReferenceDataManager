@@ -43,17 +43,6 @@
       "unchecked_value": 0
     }
   }, {
-    "id": "updated_only",
-    "optional":false,
-    "advanced":false,
-    "allow_multiple":false,
-    "default_values":["0"],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
-  }, {
     "id" : "domain",
     "optional":false,
     "advanced":false,
@@ -88,6 +77,28 @@
         }
       ]
     }
+  }, {
+    "id": "updated_only",
+    "optional":false,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":["0"],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id": "create_report",
+    "optional":false,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":["0"],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
   }],
   "job_id_output_field": "docker",
   "behavior" : {
@@ -117,7 +128,7 @@
           "target_property": "updated_only"
         },
         {
-          "constant_value" : "1",
+          "input_parameter" : "create_report",
           "target_property": "create_report"
         },
         {

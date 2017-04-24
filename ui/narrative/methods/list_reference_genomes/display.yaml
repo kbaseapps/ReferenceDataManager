@@ -70,6 +70,14 @@ parameters :
             Only list updated genomes
         long-hint  : |
             Only list updated genomes
+    
+    create_report :
+        ui-name : |
+            Create KBase Report
+        short-hint : |
+            Create KBase Report
+        long-hint  : |
+            Create KBase Report
 
 description : |
     <p>Lists RefSeq genomes from NCBI database</p>
