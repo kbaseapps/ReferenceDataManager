@@ -1246,19 +1246,19 @@ sub list_reference_genomes
     
     my $list_items = $self->_list_ncbi_refgenomes($gn_source, $gn_domain, $params->{update_only});
     if(defined($list_items)) {
-    $output = $list_items->{ref_genomes};
-    $summary = $list_items->{summary};
-
-    $summary .= "\nThere are a total of " . @{$output} . " " . $gn_domain . " Reference genomes in " . $gn_source .".\n";
-    print $summary . "\n";     
-
+        $output = $list_items->{ref_genomes};
+        $summary = $list_items->{summary};
+        $summary .= "\nThere are a total of " . @{$output} . " " . $gn_domain . " Reference genomes in " . $gn_source .".\n";
+        print $summary . "\n";     
+    }
     if ($params->{create_report}) {
         $self->util_create_report({
             message => $summary,
             workspace => $params->{workspace_name}
         });  
         $output = [$params->{workspace_name}."/list_reference_genomes"];
-    }
+    } else {
+        $output = [$summary];
     }    
     #END list_reference_genomes
     my @_bad_returns;
@@ -2419,7 +2419,7 @@ sub load_taxa
         workspace_name => undef
     });
 
-    my $ncbi_taxon_objs = $self->_extract_ncbi_taxons();
+    my $ncbi_taxon_objs = $self->_extract_ncbi_taxa();
 
     my $Taxon_WS = "ReferenceTaxons";
     my $loaded_taxon_objs = $self->list_loaded_taxa({workspace_name=>$Taxon_WS});
