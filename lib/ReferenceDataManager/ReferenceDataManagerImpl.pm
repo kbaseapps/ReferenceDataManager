@@ -42,7 +42,7 @@ sub util_initialize_call {
     $self->{_username} = $ctx->user_id();
     $self->{_method} = $ctx->method();
     $self->{_provenance} = $ctx->provenance();
-
+print "Token passed at initialization: " . Dumper($self->{_token});
     my $config_file = $ENV{ KB_DEPLOYMENT_CONFIG };
     my $cfg = Config::IniFiles->new(-file=>$config_file);
     $self->{data} = $cfg->val('ReferenceDataManager','data');
@@ -155,6 +155,8 @@ sub util_create_report {
             });
         }
     }
+    print "Token used inside create_report: " . Dumper($self->util_ws_client()->{token});
+    print "Workspace name passed to create_report:" . Dumper($args);
     $self->util_ws_client()->save_objects({
         workspace => $args->{workspace},
         objects => [{
