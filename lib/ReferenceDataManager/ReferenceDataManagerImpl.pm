@@ -3174,7 +3174,7 @@ sub rast_genomes
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         data => undef,
-        genomes => [], 
+        genomes => undef, 
         create_report => 0,
         workspace_name => undef
     });
