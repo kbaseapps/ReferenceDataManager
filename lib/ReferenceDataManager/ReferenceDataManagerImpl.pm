@@ -1584,7 +1584,7 @@ sub list_solr_genomes
     $output = [];
     my $msg = "Found ";
     my $solrout;
-    my $fields = "genome_id, workspace_name, scientific_name, genetic_code, domain";
+    my $fields = "ws_ref,genome_id, workspace_name, scientific_name, genetic_code, domain";
     my $grpOpt = $params->{group_option};
     eval {
         $solrout = $self->_listGenomesInSolr($params->{solr_core}, $fields, $params->{row_start}, $params->{row_count}, $params->{domain}, $params->{complete});
@@ -3199,21 +3199,49 @@ sub rast_genomes
             complete => 1
         });
     }
+    my $srcgenome_text = "";
     my $srcgenome_inputs = [];
-    foreach my $srcgn (@{$srcgenomes}) {
-        push @{$srcgenome_inputs}, $srcgn->{workspace_name}."/".$srcgn->{genome_id};
+    #foreach my $srcgn (@{$srcgenomes}) {
+    for (my $gi=100; $gi < 200; $gi++) {
+        if($srcgenome_text ne "") {
+            $srcgenome_text .= "\n";
+        }
+        $srcgenome_text .= $srcgenomes->[$gi]->{ws_ref};
+        push @{$srcgenome_inputs}, $srcgenomes->[$gi]->{ws_ref};
     }
+    #print Dumper($srcgenome_inputs);
+    #print "\nGenome_text string input: \n" . $srcgenome_text;
     my $rdm_rast_ws=$params->{workspace_name};
     my $rast_ret;
     {
-        print "\nNow rasting " . scalar @{$srcgenomes} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
+        print "\nNow rasting " . scalar @{$srcgenome_inputs} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         my $rast_params={
-             input_genomes=>$srcgenome_inputs,
-             genomes=>$srcgenomes,
-             workspace=>$rdm_rast_ws
+             "input_genomes"=>$srcgenome_inputs,
+             "genome_text"=>"", #$srcgenome_text,
+             "genomes"=>$srcgenome_inputs,
+             "workspace"=>$rdm_rast_ws,
+        "call_pyrrolysoproteins"=> 0,
+        "call_features_strep_suis_repeat"=>0,
+        "genome_text"=>"",
+        "call_features_crispr"=>0,
+        "call_features_CDS_prodigal"=>0,
+        "call_features_rRNA_SEED"=>0,
+        "call_features_insertion_sequences"=>0,
+        "annotate_proteins_kmer_v2"=>1,
+        "call_features_prophage_phispy"=>0,
+        "call_features_strep_pneumo_repeat"=>0,
+        "call_selenoproteins"=>0,
+        "retain_old_anno_for_hypotheticals"=>0,
+        "annotate_proteins_similarity"=>1,
+        "kmer_v1_parameters"=>1,
+        "call_features_tRNA_trnascan"=>0,
+        "find_close_neighbors"=>1,
+        "call_features_CDS_glimmer3"=>0,
+        "call_features_repeat_region_SEED"=>0,
+        "resolve_overlapping_features"=>0
         };
         eval {
-          $rast_ret = $raster->annotate_genomes($rast_params);
+           $rast_ret = $raster->annotate_genomes($rast_params);
         };
         if ($@) {
             print "**********Received an exception from calling genbank_to_genome to load $srcgenomes\n";
@@ -3238,7 +3266,7 @@ sub rast_genomes
         }
         print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
     }
-    $msg .= "\nRASTed a total of ". scalar @{$srcgenomes}. " genomes!\n";
+    $msg .= "\nRASTed a total of ". scalar @{$srcgenome_inputs}. " genomes!\n";
     print $msg . "\n";
     
     #END rast_genomes
