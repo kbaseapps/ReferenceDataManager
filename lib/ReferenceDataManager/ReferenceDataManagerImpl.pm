@@ -3206,7 +3206,8 @@ sub rast_genomes
         if($srcgenome_text ne "") {
             $srcgenome_text .= "\n";
         }
-        $srcgenome_text .= $srcgenomes->[$gi]->{ws_ref};
+        $srcgenome_text .= $srcgenomes->[$gi]->{workspace_name}."/".$srcgenomes->[$gi]->{genome_id};
+        #$srcgenome_text .= $srcgenomes->[$gi]->{ws_ref};
         push @{$srcgenome_inputs}, $srcgenomes->[$gi]->{ws_ref};
     }
     #print Dumper($srcgenome_inputs);
@@ -3216,9 +3217,9 @@ sub rast_genomes
     {
         print "\nNow rasting " . scalar @{$srcgenome_inputs} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         my $rast_params={
-             "input_genomes"=>$srcgenome_inputs,
-             "genome_text"=>"", #$srcgenome_text,
-             "genomes"=>$srcgenome_inputs,
+             "input_genomes"=>[],#@{$srcgenome_inputs},
+             "genome_text"=>$srcgenome_text,
+             "genomes"=>@{$srcgenome_inputs},
              "workspace"=>$rdm_rast_ws,
         "call_pyrrolysoproteins"=> 0,
         "call_features_strep_suis_repeat"=>0,
