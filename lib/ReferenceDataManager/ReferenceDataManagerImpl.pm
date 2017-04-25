@@ -3199,13 +3199,16 @@ sub rast_genomes
             complete => 1
         });
     }
-
+    my $srcgenome_inputs = [];
+    foreach my $srcgn (@{$srcgenomes}) {
+        push @{$srcgenome_inputs}, $srcgn->{workspace_name}."/".$srcgn->{genome_id};
+    }
     my $rdm_rast_ws=$params->{workspace_name};
     my $rast_ret;
     {
         print "\nNow rasting " . scalar @{$srcgenomes} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         my $rast_params={
-             input_genomes=>$srcgenomes,
+             input_genomes=>$srcgenome_inputs,
              genomes=>$srcgenomes,
              workspace=>$rdm_rast_ws
         };
