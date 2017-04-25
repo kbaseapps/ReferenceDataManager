@@ -3206,6 +3206,7 @@ sub rast_genomes
         print "\nNow rasting " . scalar @{$srcgenomes} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         my $rast_params={
              input_genomes=>$srcgenomes,
+             genomes=>$srcgenomes,
              workspace=>$rdm_rast_ws
         };
         eval {
