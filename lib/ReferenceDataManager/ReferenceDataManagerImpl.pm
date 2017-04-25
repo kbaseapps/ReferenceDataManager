@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '3c1d631073b2442c3f5b065d6ef2f1ddb8313cfb';
+our $GIT_COMMIT_HASH = 'a98ad310cd00bc5683acfa2c91f4690e3db3b97b';
 
 =head1 NAME
 
@@ -3205,7 +3205,7 @@ sub rast_genomes
     {
         print "\nNow rasting " . scalar @{$srcgenomes} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         my $rast_params={
-             genomes=>$srcgenomes,
+             input_genomes=>$srcgenomes,
              workspace=>$rdm_rast_ws
         };
         eval {
