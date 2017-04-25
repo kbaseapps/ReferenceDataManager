@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = 'd7f380da2faa16cf21f0602730b3863da77dd135';
+our $GIT_COMMIT_HASH = '3c1d631073b2442c3f5b065d6ef2f1ddb8313cfb';
 
 =head1 NAME
 
@@ -3117,9 +3117,7 @@ RASTGenomesParams is a reference to a hash where the following keys are defined:
 	data has a value which is a string
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
 	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
 solrdoc is a reference to a hash where the key is a string and the value is a string
-bool is an int
 RASTGenomesResults is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
 	report_name has a value which is a string
@@ -3137,9 +3135,7 @@ RASTGenomesParams is a reference to a hash where the following keys are defined:
 	data has a value which is a string
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
 	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
 solrdoc is a reference to a hash where the key is a string and the value is a string
-bool is an int
 RASTGenomesResults is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
 	report_name has a value which is a string
@@ -3178,7 +3174,6 @@ sub rast_genomes
     $params = $self->util_args($params,[],{
         data => undef,
         genomes => undef, 
-        create_report => 0,
         workspace_name => undef
     });
     my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev','async_version'=>'dev'));
@@ -4394,7 +4389,6 @@ a reference to a hash where the following keys are defined:
 data has a value which is a string
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
 workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
 
@@ -4406,7 +4400,6 @@ a reference to a hash where the following keys are defined:
 data has a value which is a string
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
 workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
 
 
 =end text

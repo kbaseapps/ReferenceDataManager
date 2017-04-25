@@ -339,7 +339,6 @@ module ReferenceDataManager {
         string data;
         list<solrdoc> genomes;
         string workspace_name;
-        bool create_report;
     } RASTGenomesParams;
    
     typedef structure {

@@ -18,10 +18,6 @@
       "method" : "rast_genomes",
       "input_mapping" : [
         {
-          "constant_value" : "1",
-          "target_property": "create_report"
-        },
-        {
           "narrative_system_variable": "workspace",
           "target_property": "workspace_name"
         }
