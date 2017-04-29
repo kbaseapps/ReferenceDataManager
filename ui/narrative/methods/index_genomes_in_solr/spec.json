@@ -116,10 +116,6 @@
       "method" : "index_genomes_in_solr",
       "input_mapping" : [
         {
-          "input_parameter": "genomes",
-          "target_property": "genomes"
-        },
-        {
           "input_parameter": "solr_core", 
           "target_property": "solr_core" 
         },
