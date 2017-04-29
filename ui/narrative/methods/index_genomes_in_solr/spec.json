@@ -94,6 +94,12 @@
           "display": "GenomeFeatures_prod",
           "id": "prod",
           "ui_name": "GenomeFeatures_prod"
+        },
+        {
+          "value": "RefSeq_RAST",
+          "display": "RefSeq_RAST",
+          "id": "rast",
+          "ui_name": "RefSeq_RAST"
         }
       ]
     }
