@@ -10,16 +10,6 @@
     "output" : "no-display"
   },
   "parameters" : [ {
-    "id" : "genomes",
-    "optional":true,
-    "advanced":false,
-    "allow_multiple":false,
-    "default_values":[],
-    "field_type" : "text",
-    "text_options":{
-	"valid_ws_types" : ["KBaseReferenceGenomeData"]
-    }
-  }, {
     "id" : "start_offset",
     "optional":false,
     "advanced":true,

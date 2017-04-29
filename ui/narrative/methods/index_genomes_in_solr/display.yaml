@@ -29,14 +29,6 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    genomes :
-        ui-name : |
-            KBase genome data
-        short-hint : |
-            KBase genome data
-        long-hint  : |
-            KBase genome data of type 'ReferenceDataManager.KBaseReferenceGenomeData'
-
     solr_core :
         ui-name : |
             Solr database name
