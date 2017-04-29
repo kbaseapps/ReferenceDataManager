@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = 'a98ad310cd00bc5683acfa2c91f4690e3db3b97b';
+our $GIT_COMMIT_HASH = 'af29fbbcf2b8bd379cee9fe49dbd94929b0c8e6b';
 
 =head1 NAME
 
@@ -1132,9 +1132,10 @@ sub new
     #BEGIN_CONSTRUCTOR
 
     $self->{_workspace_map} = {
-        ensembl => "Ensembl_Genomes",
-        phytozome => "Phytozome_Genomes",
-        refseq => "ReferenceDataManager"
+        ensembl=>"Ensembl_Genomes",
+        phytozome=>"Phytozome_Genomes",
+        refseq=>"ReferenceDataManager",
+        others=>"others"
     };
 
     #SOLR specific parameters
@@ -1328,10 +1329,9 @@ sub list_reference_genomes
 $params is a ReferenceDataManager.ListLoadedGenomesParams
 $output is a reference to a list where each element is a ReferenceDataManager.LoadedReferenceGenomeData
 ListLoadedGenomesParams is a reference to a hash where the following keys are defined:
-	ensembl has a value which is a ReferenceDataManager.bool
-	refseq has a value which is a ReferenceDataManager.bool
-	phytozome has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	data_source has a value which is a string
+	other_ws has a value which is a string
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -1362,10 +1362,9 @@ LoadedReferenceGenomeData is a reference to a hash where the following keys are 
 $params is a ReferenceDataManager.ListLoadedGenomesParams
 $output is a reference to a list where each element is a ReferenceDataManager.LoadedReferenceGenomeData
 ListLoadedGenomesParams is a reference to a hash where the following keys are defined:
-	ensembl has a value which is a ReferenceDataManager.bool
-	refseq has a value which is a ReferenceDataManager.bool
-	phytozome has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	data_source has a value which is a string
+	other_ws has a value which is a string
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -1418,26 +1417,28 @@ sub list_loaded_genomes
     #BEGIN list_loaded_genomes
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        ensembl => 0,
-        phytozome => 0,
-        refseq => 1,
-        create_report => 0,
-        genome_ver => 1,
-        workspace_name => undef
+        data_source=>"refseq",
+        create_report=>0,
+        genome_ver=>1,
+        other_ws=>"ReferenceDataManager",
+        workspace_name=>undef
     });
     my $msg = "";
     my $output = [];
     my $batch_count = 1000;
     my $obj_type = "KBaseGenomes.Genome-";
-    my $sources = ["phytozome","refseq","ensembl"];
+    my $sources = ["phytozome","refseq","ensembl","others"];
     my $wsname;
     
     for (my $i=0; $i < @{$sources}; $i++) {
-        if ($params->{$sources->[$i]} == 1) {
+        if ($params->{data_source} eq $sources->[$i]) {
             my $wsinfo;
             my $wsoutput;
             
             $wsname = $self->util_workspace_names($sources->[$i]);
+            if( $wsname eq "others" ) {
+                $wsname = $params->{other_ws};
+            }
             if(defined($self->util_ws_client())){
                 $wsinfo = $self->util_ws_client()->get_workspace_info({
                     workspace => $wsname
@@ -1504,6 +1505,17 @@ sub list_loaded_genomes
                                         }
                                     }       
                                 }
+                            }
+                            else {#others
+                                if( $ws_objinfo->[4] == $params->{genome_ver}) {#check the source to exclude phytozome genomes
+                                    $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
+                                    push @{$output}, $curr_gn_info;
+                            
+                                    if (@{$output} < 10  && @{$output} > 0) {
+                                        $msg .= $self->_genomeInfoString($curr_gn_info);
+                                    }
+                                }
+
                             }
                         }
                     }
@@ -1694,6 +1706,8 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	start_offset has a value which is an int
+	genome_count has a value which is an int
+	genome_source has a value which is a string
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1760,6 +1774,8 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	start_offset has a value which is an int
+	genome_count has a value which is an int
+	genome_source has a value which is a string
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1844,26 +1860,40 @@ sub index_genomes_in_solr
     #BEGIN index_genomes_in_solr
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        genomes => undef,
-        solr_core => "GenomeFeatures_prod",
-        workspace_name => undef,
-        create_report => 0,
-        genome_ver => 1,
-        start_offset => 0
+        genomes=>undef,
+        solr_core=>"GenomeFeatures_prod",
+        workspace_nam =>undef,
+        create_report=>0,
+        genome_ver=>1,
+        start_offset=>0,
+        genome_count=>100,
+        genome_source=>"refseq",
+        other_ws=>undef
     });
 
     my $msg = "";
     my $genomes;
-
+    my $gnsrc = $params->{genome_source};
     my $objVer = $params->{genome_ver};
+    my $otherws = undef;
+    if(defined($params->{other_ws})) {
+        $gnsrc = "others";
+        $otherws = $params->{other_ws};
+    }
     if (!defined($params->{genomes})) {
-        $genomes = $self->list_loaded_genomes({refseq=>1,genome_ver=>$objVer});
+        $genomes = $self->list_loaded_genomes({data_source=>$gnsrc, genome_ver=>$objVer, other_ws=>$otherws});
     } else {
         $genomes = $params->{genomes};
     }
 
     my $solrCore = $params->{solr_core};
-    @{$genomes} = @{$genomes}[$params->{start_offset}..@{$genomes} - 1];
+    my $gn_start = $params->{start_offset};
+    my $gn_total = $params->{genome_count};
+    my $gn_upper = $gn_total + $gn_start;
+    if ($gn_upper > @{$genomes} - 1) {
+        $gn_upper = @{$genomes} - 1;
+    }
+    @{$genomes} = @{$genomes}[$gn_start..$gn_upper];
     print "\nTotal genomes to be indexed: ". @{$genomes} . " to SOLR ". $solrCore ."\n";
     $output = $self->_indexGenomeFeatureData($solrCore, $genomes);
     my $gnft_count = $output->{count};
@@ -3685,10 +3715,9 @@ Arguments for the list_loaded_genomes function
 
 <pre>
 a reference to a hash where the following keys are defined:
-ensembl has a value which is a ReferenceDataManager.bool
-refseq has a value which is a ReferenceDataManager.bool
-phytozome has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+data_source has a value which is a string
+other_ws has a value which is a string
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -3699,10 +3728,9 @@ create_report has a value which is a ReferenceDataManager.bool
 =begin text
 
 a reference to a hash where the following keys are defined:
-ensembl has a value which is a ReferenceDataManager.bool
-refseq has a value which is a ReferenceDataManager.bool
-phytozome has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+data_source has a value which is a string
+other_ws has a value which is a string
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -4040,6 +4068,8 @@ genomes has a value which is a reference to a list where each element is a Refer
 solr_core has a value which is a string
 workspace_name has a value which is a string
 start_offset has a value which is an int
+genome_count has a value which is an int
+genome_source has a value which is a string
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -4054,6 +4084,8 @@ genomes has a value which is a reference to a list where each element is a Refer
 solr_core has a value which is a string
 workspace_name has a value which is a string
 start_offset has a value which is an int
+genome_count has a value which is an int
+genome_source has a value which is a string
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 

@@ -50,16 +50,58 @@ sub test_rast_genomes {
            };
     return $impl->rast_genomes($params);
 }
+    #Testing list_loaded_genomes
+    my $wsret;
+    eval {
+        $wsret = $impl->list_loaded_genomes({
+            genome_ver => 1,
+            data_source => "others",
+	    other_ws => "ReferenceDataManager2"	
+	});
+    };
+    ok(!$@,"list_loaded_genomes command successful");
+    if ($@) {
+        print "ERROR:".$@;
+    } else {
+        print "Number of records:".@{$wsret}."\n";
+        print "First record:\n";
+        print Data::Dumper->Dump([$wsret->[@{$wsret} -1]])."\n";
+        #print Data::Dumper->Dump([$wsret->[0]])."\n";
+    }
+    ok(defined($wsret->[0]),"list_loaded_genomes command returned at least one genome");
+=begin
+    #Testing the list_reference_genomes function
+    my $refret;
+    eval {
+        $refret = $impl->list_reference_genomes({
+            refseq => 1,
+            domain => "bacteria,archaea,plant,fungi",
+            update_only => 0,
+            create_report => 1,
+            workspace_name => get_ws_name() 
+        });
+    };
 
-eval {
-#=begin
-     #Testing list_solr_genomes function
+    ok(!$@,"list_reference_Genomes command successful");
+    if ($@) {
+        print "ERROR:".$@;
+    } else {
+        print "Number of records:".@{$refret}."\n";
+        print "First record:\n";
+        print Data::Dumper->Dump([$refret->[0]])."\n";
+        #print Data::Dumper->Dump([$refret->[@{$refret} - 1]])."\n";
+    }
+    ok(defined($refret->[0]),"list_reference_Genomes command returned at least one genome");
+    
+    #Testing list_solr_genomes function
     my $sgret;
     eval {
         $sgret = $impl->list_solr_genomes({
             solr_core => "Genomes_prod",
             domain => "Bacteria",
-            complete => 1
+            create_report => 1,
+            workspace_name => get_ws_name(), 
+            complete => 1 
         });
     };
     ok(!$@,"list_solr_genomes command successful");
@@ -71,11 +113,33 @@ eval {
         print Dumper($sgret->[0])."\n";
     }
     ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
-#=cut
+=cut
+eval {
 =begin
-    my $rast_ret;
+     #Testing list_solr_genomes function
+    my $sgret;
     eval {
-        $rast_ret = test_rast_genomes($sgret);
+        $sgret = $impl->list_solr_genomes({
+            solr_core => "Genomes_prod",
+            domain => "Bacteria",
+            complete => 1 
+        });
+    };
+    ok(!$@,"list_solr_genomes command successful");
+    if ($@) {
+        print "ERROR:".$@;
+    } else {
+        print "Number of records:".@{$sgret}."\n";
+        print "First record:\n";
+        print Dumper($sgret->[0])."\n";
+    }
+    ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
+=cut
+#=begin
+    my $rast_ret;
+    my $sgret = undef;
+    eval {
+        #$rast_ret = test_rast_genomes($sgret);
     };  
     ok(!$@, "test_rast_genomes ran successfully.");
     if( $@) {
@@ -83,7 +147,7 @@ eval {
     } else {
         print Dumper($rast_ret)."\n";
     }
-=cut
+#=cut
     done_testing(3);
 };
 
@@ -281,10 +345,9 @@ eval {
     my $wsret;
     eval {
         $wsret = $impl->list_loaded_genomes({
-            refseq => 1,
-	    phytozome => 0,
-            genome_ver => 2,
-	    ensembl => 0	
+            genome_ver => 1,
+            data_source => "others",
+	    other_ws => "RefSeq_plant" #"qzhang:narrative_1493170238855"	
 	});
     };
     ok(!$@,"list_loaded_genomes command successful");
@@ -297,6 +360,34 @@ eval {
         #print Data::Dumper->Dump([$wsret->[0]])."\n";
     }
     ok(defined($wsret->[0]),"list_loaded_genomes command returned at least one genome");
+
+    #Testing index_genomes_in_solr
+    my $slrcore = "RefSeq_RAST";
+    my $ret;
+    eval {
+        $ret = $impl->index_genomes_in_solr({
+             #genomes => $wsret,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
+             solr_core => $slrcore,
+             genome_ver => 1,
+             start_offset => 0,
+             genome_count => 6000,
+             other_ws =>"ReferenceDataManager2"
+        });
+    };
+    ok(!$@,"index_genomes_in_solr command successful");
+    if ($@) {
+        print "ERROR:".$@;
+        #my $err = $@;
+        #print "Error type: " . ref($err) . "\n";
+        #print "Error message: " . $err->{message} . "\n";
+        #print "Error error: " . $err->{error} . "\n";
+        #print "Error data: " .$err->{data} . "\n";
+    } else {
+        print "Number of records:".@{$ret}."\n";
+        print "First record:\n";
+        print Data::Dumper->Dump([$ret->[0]])."\n";
+   }
+    ok(defined($ret->[0]),"\nindex_genomes_in_solr command returned at least one genome");
 
     #Testing index_genomes_in_solr
     my $slrcore = "GenomeFeatures_ci";
@@ -406,6 +497,7 @@ eval {
         my $wsinfo = $ws_client->get_workspace_info({
                     workspace => $ws_name
         });
+    print Dumper($wsinfo);
         my $maxid = $wsinfo->[4];
         print "\nMax genome object id=$maxid\n";
         eval {                                                                                             

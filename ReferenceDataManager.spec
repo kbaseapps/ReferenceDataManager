@@ -48,10 +48,9 @@ module ReferenceDataManager {
         Arguments for the list_loaded_genomes function
     */
     typedef structure {
-        bool ensembl;
-        bool refseq;
-        bool phytozome;
 	string workspace_name;
+        string data_source;
+        string other_ws;
         int genome_ver;
 	bool create_report;
     } ListLoadedGenomesParams;
@@ -177,6 +176,8 @@ module ReferenceDataManager {
         string solr_core;
         string workspace_name;
         int start_offset;
+        int genome_count;
+        string genome_source;
         int genome_ver;
         bool create_report; 
     } IndexGenomesInSolrParams;
