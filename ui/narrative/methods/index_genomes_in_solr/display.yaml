@@ -45,6 +45,22 @@ parameters :
         long-hint  : |
             Name of the solr core
 
+    genome_source :
+        ui-name : |
+            Source where the genomes are from
+        short-hint : |
+            Source where the genomes are from
+        long-hint  : |
+            Source where the genomes are from
+
+    genome_ws :
+        ui-name : |
+            Workspace name of the genomes
+        short-hint : |
+            Workspace name of the genomes
+        long-hint  : |
+            Workspace name of the genomes
+
     start_offset :
         ui-name : |
             Offset start position
@@ -52,6 +68,14 @@ parameters :
             Skip this count of the genomes before indexing
         long-hint  : |
             Skip this count of the genomes before indexing
+
+    genome_count :
+        ui-name : |
+            Total count of genomes to be indexed
+        short-hint : |
+            Total count of genomes to be indexed
+        long-hint  : |
+            Total count of genomes to be indexed
 
     genome_ver :
         ui-name : |

@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = 'af29fbbcf2b8bd379cee9fe49dbd94929b0c8e6b';
+our $GIT_COMMIT_HASH = '024474352858b653027f34b1c8991910a0306556';
 
 =head1 NAME
 
@@ -1331,7 +1331,7 @@ $output is a reference to a list where each element is a ReferenceDataManager.Lo
 ListLoadedGenomesParams is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
 	data_source has a value which is a string
-	other_ws has a value which is a string
+	genome_ws has a value which is a string
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -1364,7 +1364,7 @@ $output is a reference to a list where each element is a ReferenceDataManager.Lo
 ListLoadedGenomesParams is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
 	data_source has a value which is a string
-	other_ws has a value which is a string
+	genome_ws has a value which is a string
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -1420,7 +1420,7 @@ sub list_loaded_genomes
         data_source=>"refseq",
         create_report=>0,
         genome_ver=>1,
-        other_ws=>"ReferenceDataManager",
+        genome_ws=>"ReferenceDataManager",
         workspace_name=>undef
     });
     my $msg = "";
@@ -1437,7 +1437,7 @@ sub list_loaded_genomes
             
             $wsname = $self->util_workspace_names($sources->[$i]);
             if( $wsname eq "others" ) {
-                $wsname = $params->{other_ws};
+                $wsname = $params->{genome_ws};
             }
             if(defined($self->util_ws_client())){
                 $wsinfo = $self->util_ws_client()->get_workspace_info({
@@ -1868,20 +1868,20 @@ sub index_genomes_in_solr
         start_offset=>0,
         genome_count=>100,
         genome_source=>"refseq",
-        other_ws=>undef
+        genome_ws=>undef
     });
 
     my $msg = "";
     my $genomes;
     my $gnsrc = $params->{genome_source};
     my $objVer = $params->{genome_ver};
-    my $otherws = undef;
-    if(defined($params->{other_ws})) {
+    my $gnws = undef;
+    if(defined($params->{genome_ws})) {
         $gnsrc = "others";
-        $otherws = $params->{other_ws};
+        $gnws = $params->{genome_ws};
     }
     if (!defined($params->{genomes})) {
-        $genomes = $self->list_loaded_genomes({data_source=>$gnsrc, genome_ver=>$objVer, other_ws=>$otherws});
+        $genomes = $self->list_loaded_genomes({data_source=>$gnsrc, genome_ver=>$objVer, genome_ws=>$gnws});
     } else {
         $genomes = $params->{genomes};
     }
@@ -3717,7 +3717,7 @@ Arguments for the list_loaded_genomes function
 a reference to a hash where the following keys are defined:
 workspace_name has a value which is a string
 data_source has a value which is a string
-other_ws has a value which is a string
+genome_ws has a value which is a string
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -3730,7 +3730,7 @@ create_report has a value which is a ReferenceDataManager.bool
 a reference to a hash where the following keys are defined:
 workspace_name has a value which is a string
 data_source has a value which is a string
-other_ws has a value which is a string
+genome_ws has a value which is a string
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 

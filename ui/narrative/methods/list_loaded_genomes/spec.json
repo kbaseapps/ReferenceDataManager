@@ -10,37 +10,24 @@
     "output" : "kbaseReportView"
   },
   "parameters" : [ {
-    "id" : "refseq",
+    "id" : "data_source",
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
-    "default_values":["1"],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
+    "default_values":["refseq"],
+    "field_type" : "text",
+    "text_options":{
+	"validate_as" : "text"
     }
   }, {
-    "id" : "ensembl",
+    "id" : "genome_ws",
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
-    "default_values":["0"],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
-  }, {
-    "id": "phytozome",
-    "optional":false,
-    "advanced":false,
-    "allow_multiple":false,
-    "default_values":["0"],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
+    "default_values":["ReferenceDataManager"],
+    "field_type" : "text",
+    "text_options":{
+	"validate_as" : "text"
     }
   }, {
     "id": "genome_ver",
@@ -61,16 +48,12 @@
       "method" : "list_loaded_genomes",
       "input_mapping" : [
         {
-          "input_parameter": "refseq",
-          "target_property": "refseq"
+          "input_parameter": "data_source",
+          "target_property": "data_source"
         },
         {
-          "input_parameter": "ensembl",
-          "target_property": "ensembl"
-        },
-        {
-          "input_parameter": "phytozome",
-          "target_property": "phytozome"
+          "input_parameter": "genome_ws",
+          "target_property": "genome_ws"
         },
 	{
           "input_parameter": "genome_ver",

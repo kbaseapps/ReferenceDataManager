@@ -50,7 +50,7 @@ module ReferenceDataManager {
     typedef structure {
 	string workspace_name;
         string data_source;
-        string other_ws;
+        string genome_ws;
         int genome_ver;
 	bool create_report;
     } ListLoadedGenomesParams;
@@ -178,6 +178,7 @@ module ReferenceDataManager {
         int start_offset;
         int genome_count;
         string genome_source;
+        string genome_ws;
         int genome_ver;
         bool create_report; 
     } IndexGenomesInSolrParams;

@@ -30,6 +30,16 @@
 	"validate_as" : "int"
     }
   }, {
+    "id" : "genome_count",
+    "optional":false,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":["100"],
+    "field_type" : "text",
+    "text_options":{
+	"validate_as" : "int"
+    }
+  }, {
     "id": "genome_ver",
     "optional":false,
     "advanced":true,
@@ -38,6 +48,41 @@
     "field_type" : "text",
     "text_options":{
 	"validate_as" : "int"
+    }
+  }, {
+    "id" : "genome_source",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["refseq"],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "refseq",
+          "display": "refseq",
+          "id": "refseq",
+          "ui_name": "refseq"
+        },
+        {
+          "value": "ensembl",
+          "display": "ensembl",
+          "id": "ensembl",
+          "ui_name": "ensembl"
+        },
+        {
+          "value": "phytozome",
+          "display": "phytozome",
+          "id": "phytozome",
+          "ui_name": "phytozome"
+        },
+        {
+          "value": "others",
+          "display": "others",
+          "id": "others",
+          "ui_name": "others"
+        }
+      ]
     }
   }, {
     "id" : "solr_core",
@@ -62,6 +107,16 @@
         }
       ]
     }
+  }, {
+    "id" : "genome_ws",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":"",
+    "field_type" : "text",
+    "text_options":{
+	"validate_as" : "text"
+    }
   }],
   "job_id_output_field": "docker",
   "behavior" : {
@@ -82,9 +137,21 @@
           "input_parameter" : "start_offset",
           "target_property": "start_offset"
         },
+        {
+          "input_parameter" : "genome_count",
+          "target_property": "genome_count"
+        },
 	{
           "input_parameter" : "genome_ver",
           "target_property": "genome_ver"
+        },
+        {
+          "input_parameter" : "genome_ws",
+          "target_property": "genome_ws"
+        },
+        {
+          "input_parameter" : "genome_source",
+          "target_property": "genome_source"
         },
         {
           "narrative_system_variable": "workspace",
