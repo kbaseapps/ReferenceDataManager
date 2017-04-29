@@ -6,7 +6,7 @@
   "visble" : true,
   "categories" : ["active"],
   "widgets" : {
-    "input" : "kbaseNarrativeMethodInput",
+    "input" : null,
     "output" : "kbaseReportView"
   },
   "parameters" : [ {
@@ -15,9 +15,34 @@
     "advanced":false,
     "allow_multiple":false,
     "default_values":["refseq"],
-    "field_type" : "text",
-    "text_options":{
-	"validate_as" : "text"
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "refseq",
+          "display": "refseq",
+          "id": "refseq",
+          "ui_name": "refseq"
+        },
+        {
+          "value": "ensembl",
+          "display": "ensembl",
+          "id": "ensembl",
+          "ui_name": "ensembl"
+        },
+        {
+          "value": "phytozome",
+          "display": "phytozome",
+          "id": "phytozome",
+          "ui_name": "phytozome"
+        },
+        {
+          "value": "others",
+          "display": "others",
+          "id": "others",
+          "ui_name": "others"
+        }
+      ]
     }
   }, {
     "id" : "genome_ws",
