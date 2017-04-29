@@ -34,6 +34,7 @@ use LWP::UserAgent;
 use XML::Simple;
 use Try::Tiny;
 use DateTime;
+use List::Util qw(none);
 
 #The first thing every function should do is call this function
 sub util_initialize_call {
@@ -838,7 +839,46 @@ sub _genomeInfoString
     return $retStr;
 }
 
-#################### End subs for accessing SOLR #######################
+#
+#internal method, for retrieving genome names of a given workspace, genome type and range
+#
+sub _getWorkspaceGenomes
+{
+    my ($self, $ws_name, $gn_type, $minID, $maxID) = @_;
+    $gn_type = "KBaseGenomes.Genome-" unless $gn_type;
+    $ws_name = "ReferenceDataManager" unless $ws_name;
+    $minID = 0 unless $minID;
+    $maxID = 1000 unless $maxID;
+
+    my $wsoutput;
+    my $list_genomes;
+    eval {
+        $wsoutput = $self->util_ws_client()->list_objects({
+                workspaces => [$ws_name],
+                minObjectID => $minID,
+                type => $gn_type,
+                maxObjectID => $maxID,
+                includeMetadata => 1
+        });
+    };
+    if($@) {
+        print "Cannot list genomes!\n";
+        print "ERROR:" . $@;#->{message}."\n";
+        if(ref($@) eq 'HASH' && defined($@->{status_line})) {
+            print "ERROR:" . $@->{status_line}."\n";
+        }
+    } else {
+        #print "Genome object count=" . @{$wsoutput}. "\n";
+        if( @{$wsoutput} > 0 ) {
+            for (my $j=0; $j < @{$wsoutput}; $j++) {
+                push @{$list_genomes}, $wsoutput->[$j]->[1]; 
+            }
+        }
+    }
+    print "List of genomes:\n" . Dumper($list_genomes);
+
+    return {"workspace_name"=>$ws_name, "genome_names"=>$list_genomes};
+}
 
 #################### Start subs for accessing NCBI refseq genomes#######################
 
@@ -3199,20 +3239,28 @@ sub rast_genomes
             complete => 1
         });
     }
+    my $rasted_gnNames = [];
+    $rasted_gnNames = $self->_getWorkspaceGenomes("RefSeq_RAST",,0,6000);
+    $rasted_gnNames = $rasted_gnNames->{genome_names};
+
     my $srcgenome_text = "";
     my $srcgenome_inputs = [];
-    #foreach my $srcgn (@{$srcgenomes}) {
-    for (my $gi=100; $gi < 200; $gi++) {
-        if($srcgenome_text ne "") {
-            $srcgenome_text .= "\n";
+    my $srcgn;
+    foreach my $srcgn (@{$srcgenomes}) {
+    #for (my $gi=0; $gi < 5570; $gi++) {
+        #$srcgn = $srcgenomes->[$gi]->{genome_id};
+        my $gnnm = $srcgn->{genome_id};
+        if( none { /$gnnm/ } @{$rasted_gnNames}) {
+            if($srcgenome_text ne "") {
+                $srcgenome_text .= ";";
+            }
+            $srcgenome_text .= $srcgn->{workspace_name}."/".$srcgn->{genome_id};
+            push @{$srcgenome_inputs}, $srcgn->{ws_ref};
         }
-        $srcgenome_text .= $srcgenomes->[$gi]->{workspace_name}."/".$srcgenomes->[$gi]->{genome_id};
-        #$srcgenome_text .= $srcgenomes->[$gi]->{ws_ref};
-        push @{$srcgenome_inputs}, $srcgenomes->[$gi]->{ws_ref};
     }
     #print Dumper($srcgenome_inputs);
     #print "\nGenome_text string input: \n" . $srcgenome_text;
-    my $rdm_rast_ws=$params->{workspace_name};
+    my $rdm_rast_ws = $params->{workspace_name};
     my $rast_ret;
     {
         print "\nNow rasting " . scalar @{$srcgenome_inputs} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
@@ -3242,7 +3290,7 @@ sub rast_genomes
         "resolve_overlapping_features"=>0
         };
         eval {
-           $rast_ret = $raster->annotate_genomes($rast_params);
+            #$rast_ret = $raster->annotate_genomes($rast_params);
         };
         if ($@) {
             print "**********Received an exception from calling genbank_to_genome to load $srcgenomes\n";
