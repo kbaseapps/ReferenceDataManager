@@ -3343,6 +3343,7 @@ sub rast_genomes
     }
     $msg .= "\nRASTed a total of ". scalar @{$srcgenome_inputs}. " genomes:\n";
     print $msg . "\n";
+    
     #END rast_genomes
     my @_bad_returns;
     (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
