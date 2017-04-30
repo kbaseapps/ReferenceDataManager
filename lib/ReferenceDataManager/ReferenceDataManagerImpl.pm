@@ -43,7 +43,7 @@ sub util_initialize_call {
     $self->{_username} = $ctx->user_id();
     $self->{_method} = $ctx->method();
     $self->{_provenance} = $ctx->provenance();
-print "Token passed at initialization: " . Dumper($self->{_token});
+    #print "Token passed at initialization: " . Dumper($self->{_token});
     my $config_file = $ENV{ KB_DEPLOYMENT_CONFIG };
     my $cfg = Config::IniFiles->new(-file=>$config_file);
     $self->{data} = $cfg->val('ReferenceDataManager','data');
@@ -156,8 +156,8 @@ sub util_create_report {
             });
         }
     }
-    print "Token used inside create_report: " . Dumper($self->util_ws_client()->{token});
-    print "Workspace name passed to create_report:" . Dumper($args);
+    #print "Token used inside create_report: " . Dumper($self->util_ws_client()->{token});
+    #print "Workspace name passed to create_report:" . Dumper($args);
     $self->util_ws_client()->save_objects({
         workspace => $args->{workspace},
         objects => [{
@@ -868,7 +868,7 @@ sub _getWorkspaceGenomes
             print "ERROR:" . $@->{status_line}."\n";
         }
     } else {
-        #print "Genome object count=" . @{$wsoutput}. "\n";
+        print "Genome object count=" . @{$wsoutput}. "\n";
         if( @{$wsoutput} > 0 ) {
             for (my $j=0; $j < @{$wsoutput}; $j++) {
                 push @{$list_genomes}, $wsoutput->[$j]->[1]; 
@@ -3268,7 +3268,7 @@ sub rast_genomes
         });
     }
     my $rasted_gnNames = [];
-    $rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855",,0,6000);
+    $rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-",0,6000);
     $rasted_gnNames = $rasted_gnNames->{genome_names};
 
     my $srcgenome_text = "";
