@@ -868,14 +868,14 @@ sub _getWorkspaceGenomes
             print "ERROR:" . $@->{status_line}."\n";
         }
     } else {
-        print "Genome object count=" . @{$wsoutput}. "\n";
+        #print "Genome object count=" . @{$wsoutput}. "\n";
         if( @{$wsoutput} > 0 ) {
             for (my $j=0; $j < @{$wsoutput}; $j++) {
                 push @{$list_genomes}, $wsoutput->[$j]->[1]; 
             }
         }
     }
-    print "List of genomes:\n" . Dumper($list_genomes);
+    #print "List of genomes:\n" . Dumper($list_genomes);
 
     return {"workspace_name"=>$ws_name, "genome_names"=>$list_genomes};
 }
@@ -3289,7 +3289,7 @@ sub rast_genomes
     my $rdm_rast_ws = $params->{workspace_name};
     my $rast_ret;
     {
-        print "\nNow rasting " . scalar @{$srcgenome_inputs} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
+        print "\nStart rasting " . scalar @{$srcgenome_inputs} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         my $rast_params={
              "input_genomes"=>[],#@{$srcgenome_inputs},
              "genome_text"=>$srcgenome_text,
@@ -3316,7 +3316,7 @@ sub rast_genomes
         "resolve_overlapping_features"=>0
         };
         eval {
-            #$rast_ret = $raster->annotate_genomes($rast_params);
+            $rast_ret = $raster->annotate_genomes($rast_params);
         };
         if ($@) {
             print "**********Received an exception from calling genbank_to_genome to load $srcgenomes\n";
@@ -3339,10 +3339,9 @@ sub rast_genomes
                   workspace_name => $rast_ret->{workspace}
             };
         }
-        print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
+        #print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
     }
     $msg .= "\nRASTed a total of ". scalar @{$srcgenome_inputs}. " genomes:\n";
-    $msg .= $srcgenome_text;
     print $msg . "\n";
     #END rast_genomes
     my @_bad_returns;
