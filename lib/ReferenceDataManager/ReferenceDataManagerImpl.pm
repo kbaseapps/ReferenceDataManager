@@ -1515,7 +1515,6 @@ sub list_loaded_genomes
                                         $msg .= $self->_genomeInfoString($curr_gn_info);
                                     }
                                 }
-
                             }
                         }
                     }
@@ -3249,7 +3248,6 @@ sub rast_genomes
     my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev','async_version'=>'dev'));
     #my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
     my $srcgenomes;
-    $output = undef; 
     my $msg = "";
 
     if (defined($params->{data})) {
@@ -3320,7 +3318,7 @@ sub rast_genomes
         "resolve_overlapping_features"=>0
         };
         eval {
-            #$rast_ret = $raster->annotate_genomes($rast_params);
+            $rast_ret = $raster->annotate_genomes($rast_params);
         };
         if ($@) {
             print "**********Received an exception from calling genbank_to_genome to load $srcgenomes\n";
@@ -3345,9 +3343,9 @@ sub rast_genomes
         }
         print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
     }
-    $msg .= "\nRASTed a total of ". scalar @{$srcgenome_inputs}. " genomes!\n";
+    $msg .= "\nRASTed a total of ". scalar @{$srcgenome_inputs}. " genomes:\n";
+    $msg .= $srcgenome_text;
     print $msg . "\n";
-    
     #END rast_genomes
     my @_bad_returns;
     (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
