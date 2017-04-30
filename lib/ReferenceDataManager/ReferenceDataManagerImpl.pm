@@ -3268,15 +3268,13 @@ sub rast_genomes
         });
     }
     my $rasted_gnNames = [];
-    $rasted_gnNames = $self->_getWorkspaceGenomes("RefSeq_RAST",,0,6000);
+    $rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855",,0,6000);
     $rasted_gnNames = $rasted_gnNames->{genome_names};
 
     my $srcgenome_text = "";
     my $srcgenome_inputs = [];
     my $srcgn;
     foreach my $srcgn (@{$srcgenomes}) {
-    #for (my $gi=0; $gi < 5570; $gi++) {
-        #$srcgn = $srcgenomes->[$gi]->{genome_id};
         my $gnnm = $srcgn->{genome_id};
         if( none { /$gnnm/ } @{$rasted_gnNames}) {
             if($srcgenome_text ne "") {
