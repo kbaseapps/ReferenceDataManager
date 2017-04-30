@@ -3318,7 +3318,7 @@ sub rast_genomes
         "resolve_overlapping_features"=>0
         };
         eval {
-            $rast_ret = $raster->annotate_genomes($rast_params);
+            #$rast_ret = $raster->annotate_genomes($rast_params);
         };
         if ($@) {
             print "**********Received an exception from calling genbank_to_genome to load $srcgenomes\n";
