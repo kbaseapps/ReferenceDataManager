@@ -189,7 +189,8 @@ sub _listGenomesInSolr {
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 0;
     $fields = "*" unless $fields;
-    
+    my $gn_type = "KBaseGenomes.Genome-8.2";
+
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
     
@@ -197,22 +198,22 @@ sub _listGenomesInSolr {
     if( defined( $cmplt )) {
         if( defined( $dmn )) {
             if( $cmplt == 1 ) {
-                $query = { domain=>$dmn, complete=> 1 };
+                $query = { domain=>$dmn, complete=> 1, object_type=>$gn_type};
             } else {
-                $query = { domain=>$dmn, -complete=> 1 };
+                $query = { domain=>$dmn, -complete=> 1, object_type=>$gn_type };
             }
         }
         else {
             if( $cmplt == 1 ) {
-                $query = { domain=>$dmn, complete=> 1 };
+                $query = { complete=> 1, object_type=>$gn_type };
             } else {
-                $query = { domain=>$dmn, -complete=> 1 };
+                $query = { -complete=> 1, object_type=>$gn_type };
             }
         }
     }
     else {
         if( defined( $dmn )) {
-            $query = { domain=>$dmn };
+            $query = { domain=>$dmn, object_type=>$gn_type };
         }
     }
     my $solrgnms;
@@ -3267,9 +3268,18 @@ sub rast_genomes
             complete => 1
         });
     }
+    my $rasted_gns = [];
     my $rasted_gnNames = [];
-    $rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-",0,6000);
-    $rasted_gnNames = $rasted_gnNames->{genome_names};
+    #$rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-",0,6000);
+    #$rasted_gnNames = $rasted_gnNames->{genome_names};
+    $rasted_gns = $self->_listGenomesInSolr("RefSeq_RAST", "genome_id", 0, 5660, "Bacteria");
+    $rasted_gns = $rasted_gns->{response}->{response}->{docs};
+    foreach my $rsgn (@{$rasted_gns}) {
+        $rsgn = $rsgn->{genome_id};
+        $rsgn =~ s/(^GCF_\d+\.\d)(\.RAST$)/$1/g;
+        push @{$rasted_gnNames}, $rsgn
+    }
+    #print Dumper($rasted_gnNames);
 
     my $srcgenome_text = "";
     my $srcgenome_inputs = [];
@@ -3285,7 +3295,7 @@ sub rast_genomes
         }
     }
     #print Dumper($srcgenome_inputs);
-    #print "\nGenome_text string input: \n" . $srcgenome_text;
+    print "\nGenome_text string input: \n" . $srcgenome_text;
     my $rdm_rast_ws = $params->{workspace_name};
     my $rast_ret;
     {
@@ -3294,29 +3304,10 @@ sub rast_genomes
              "input_genomes"=>[],#@{$srcgenome_inputs},
              "genome_text"=>$srcgenome_text,
              "genomes"=>@{$srcgenome_inputs},
-             "workspace"=>$rdm_rast_ws,
-        "call_pyrrolysoproteins"=> 0,
-        "call_features_strep_suis_repeat"=>0,
-        "genome_text"=>"",
-        "call_features_crispr"=>0,
-        "call_features_CDS_prodigal"=>0,
-        "call_features_rRNA_SEED"=>0,
-        "call_features_insertion_sequences"=>0,
-        "annotate_proteins_kmer_v2"=>1,
-        "call_features_prophage_phispy"=>0,
-        "call_features_strep_pneumo_repeat"=>0,
-        "call_selenoproteins"=>0,
-        "retain_old_anno_for_hypotheticals"=>0,
-        "annotate_proteins_similarity"=>1,
-        "kmer_v1_parameters"=>1,
-        "call_features_tRNA_trnascan"=>0,
-        "find_close_neighbors"=>1,
-        "call_features_CDS_glimmer3"=>0,
-        "call_features_repeat_region_SEED"=>0,
-        "resolve_overlapping_features"=>0
+             "workspace"=>$rdm_rast_ws
         };
         eval {
-            $rast_ret = $raster->annotate_genomes($rast_params);
+            #$rast_ret = $raster->annotate_genomes($rast_params);
         };
         if ($@) {
             print "**********Received an exception from calling genbank_to_genome to load $srcgenomes\n";
