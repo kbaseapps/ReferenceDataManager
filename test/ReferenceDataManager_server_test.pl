@@ -50,25 +50,6 @@ sub test_rast_genomes {
            };
     return $impl->rast_genomes($params);
 }
-    #Testing list_loaded_genomes
-    my $wsret;
-    eval {
-        $wsret = $impl->list_loaded_genomes({
-            genome_ver => 1,
-            data_source => "others",
-	    other_ws => "ReferenceDataManager2"	
-	});
-    };
-    ok(!$@,"list_loaded_genomes command successful");
-    if ($@) {
-        print "ERROR:".$@;
-    } else {
-        print "Number of records:".@{$wsret}."\n";
-        print "First record:\n";
-        print Data::Dumper->Dump([$wsret->[@{$wsret} -1]])."\n";
-        #print Data::Dumper->Dump([$wsret->[0]])."\n";
-    }
-    ok(defined($wsret->[0]),"list_loaded_genomes command returned at least one genome");
 =begin
     #Testing the list_reference_genomes function
     my $refret;
@@ -139,7 +120,7 @@ eval {
     my $rast_ret;
     my $sgret = undef;
     eval {
-        #$rast_ret = test_rast_genomes($sgret);
+        $rast_ret = test_rast_genomes($sgret);
     };  
     ok(!$@, "test_rast_genomes ran successfully.");
     if( $@) {
@@ -339,7 +320,6 @@ eval {
          #'genome_id' => 'kb|g.0' 
     };
     #$impl->_deleteRecords($delcore, $ds);
-
 
     #Testing list_loaded_genomes
     my $wsret;

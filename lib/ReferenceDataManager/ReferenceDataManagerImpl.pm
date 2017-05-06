@@ -754,12 +754,12 @@ sub _indexGenomeFeatureData
                         }
                         push @{$gnft_batch}, $ws_gnft;
                         $count ++;
-                        
                         if(@{$gnft_batch} >= $batchCount) {
+                            my $solrret = 0;                        
                             eval {
-                                $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
+                                $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
                             };
-                            if($@) {
+                            if($@ or $solrret == 0) {
                                 print "Failed to index the genome_feature(s)!\n";
                                 print "ERROR:". Dumper( $@ );
                                 if(ref($@) eq 'HASH' && defined($@->{status_line})) {
@@ -774,10 +774,11 @@ sub _indexGenomeFeatureData
                     }
                     #after looping through all features, index the leftover set of genomeFeature objects
                     if(@{$gnft_batch} > 0) {
+                        my $solrret = 0;
                         eval {
-                            $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
+                            $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
                         };
-                        if($@) {
+                        if($@ or $solrret == 0) {
                             print "Failed to index the genome_feature(s)!\n";
                             print "ERROR:". Dumper( $@ );
                             if(ref($@) eq 'HASH' && defined($@->{status_line})) {
@@ -2715,10 +2716,11 @@ sub index_taxa_in_solr
 
         push(@{$solrBatch}, $current_taxon);
         if(@{$solrBatch} >= $solrBatchCount) {
+            my $solrret = 0;
             eval {
-                $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$solrBatch});
+                $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$solrBatch});
             };
-            if($@) {
+            if($@ or $solrret == 0) {
                 print "Failed to index the taxa!\n";
                 if( defined ($@)){
                     print "ERROR:".Dumper($@);
@@ -2741,10 +2743,11 @@ sub index_taxa_in_solr
         }
     }
     if(@{$solrBatch} > 0) {
+            my $solrret = 0;
             eval {
-                $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$solrBatch});
+                $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$solrBatch});
             };
-            if($@) {
+            if($@ or $solrret == 0) {
                 print "Failed to index the taxa!\n";
                 if( defined ($@)){
                     print "ERROR:". Dumper($@);
@@ -3279,7 +3282,7 @@ sub rast_genomes
         $rsgn =~ s/(^GCF_\d+\.\d)(\.RAST$)/$1/g;
         push @{$rasted_gnNames}, $rsgn
     }
-    #print Dumper($rasted_gnNames);
+    print "Total number of RASTed genomes in SOLR=" . scalar @{$rasted_gnNames}; #Dumper($rasted_gnNames);
 
     my $srcgenome_text = "";
     my $srcgenome_inputs = [];
