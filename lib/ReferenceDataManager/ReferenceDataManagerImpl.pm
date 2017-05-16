@@ -515,7 +515,6 @@ sub _getGenomeInfo
 sub _buildSolrGenome
 {
     my ($self, $ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date) = @_;
-
     my $ws_gnobj = {
         object_id => "kb|ws_ref:" . $ws_ref->{ref},
         object_name => "kb|g." . $ws_gn_data->{id}, 
@@ -681,7 +680,7 @@ sub _indexGenomeFeatureData
     my $ws_gnout;
     my $solr_gnftData = [];
     my $gnft_batch = [];
-    my $batchCount = 10000000;
+    my $batchCount = 1000000;
     my $gn_solr_core = $solrCore;
     my $count = 0;
 
@@ -756,6 +755,7 @@ sub _indexGenomeFeatureData
                         push @{$gnft_batch}, $ws_gnft;
                         $count ++;
                         if(@{$gnft_batch} >= $batchCount) {
+                            print "\nTo be indexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
                             my $solrret = 0;                        
                             eval {
                                 $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
@@ -773,7 +773,11 @@ sub _indexGenomeFeatureData
                             $gnft_batch = [];
                         }
                     }
-                    #after looping through all features, index the leftover set of genomeFeature objects
+                }
+            }
+        }
+    }
+                    #after looping through all genomes and features, index the leftover set of genomeFeature objects
                     if(@{$gnft_batch} > 0) {
                         my $solrret = 0;
                         eval {
@@ -787,14 +791,10 @@ sub _indexGenomeFeatureData
                             }
                         }
                         else {
-                            #print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
+                            print "\nIndexed leftover of " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
                         }
                         $gnft_batch = [];
                     }
-                }
-            }
-        }
-    }
     return {"genome_features"=>$solr_gnftData,"count"=>$count};
 }
 
@@ -1878,9 +1878,9 @@ sub index_genomes_in_solr
     my $gnsrc = $params->{genome_source};
     my $objVer = $params->{genome_ver};
     my $gnws = undef;
-    if(defined($params->{genome_ws})) {
+    if(defined($params->{other_ws})) {
         $gnsrc = "others";
-        $gnws = $params->{genome_ws};
+        $gnws = $params->{other_ws};
     }
     if (!defined($params->{genomes})) {
         $genomes = $self->list_loaded_genomes({data_source=>$gnsrc, genome_ver=>$objVer, genome_ws=>$gnws});
