@@ -681,7 +681,7 @@ sub _indexGenomeFeatureData
     my $ws_gnout;
     my $solr_gnftData = [];
     my $gnft_batch = [];
-    my $batchCount = 10000;
+    my $batchCount = 10000000;
     my $gn_solr_core = $solrCore;
     my $count = 0;
 
@@ -692,10 +692,11 @@ sub _indexGenomeFeatureData
         my $ws_ref = {"ref" => $ws_gn->{ref}};
         my $gn_id = $ws_gn->{name};
         #check if the genome is already present in the database by querying SOLR
-        if(($solrer->exists_in_solr({search_core=>$gn_solr_core,search_query=>{genome_id=>$gn_id}}))==1) {
+        #if(($solrer->exists_in_solr({search_core=>$gn_solr_core,search_query=>{genome_id=>$gn_id}}))==1) {
             #print $gn_id . ": has already been indexed in Solr " . $gn_solr_core . ".\n";
-        }
-        else {
+        #}
+        #else 
+        {
             #print $gn_id . ": is not found in Solr " . $gn_solr_core . ".\n";         
             #print "\nStart to fetch the object(s) for " . $gn_id .  " on " . scalar localtime . "\n";
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
@@ -767,7 +768,7 @@ sub _indexGenomeFeatureData
                                 }
                             }
                             else {
-                                #print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
+                                print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
                             }
                             $gnft_batch = [];
                         }
