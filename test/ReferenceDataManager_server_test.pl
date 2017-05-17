@@ -50,6 +50,31 @@ sub test_rast_genomes {
            };
     return $impl->rast_genomes($params);
 }
+    #Testing index_genomes_in_solr
+    my $slrcore = "GenomeFeatures_ci";
+    my $ret;
+    eval {
+        $ret = $impl->index_genomes_in_solr({
+             #genomes => $wsret,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
+             solr_core => $slrcore,
+             genome_ver => 1,
+             start_offset => 0
+        });
+    };
+    ok(!$@,"index_genomes_in_solr command successful");
+    if ($@) {
+        print "ERROR:".$@;
+        #my $err = $@;
+        #print "Error type: " . ref($err) . "\n";
+        #print "Error message: " . $err->{message} . "\n";
+        #print "Error error: " . $err->{error} . "\n";
+        #print "Error data: " .$err->{data} . "\n";
+    } else {
+        print "Number of records:".@{$ret}."\n";
+        print "First record:\n";
+        print Data::Dumper->Dump([$ret->[0]])."\n";
+   }
+    ok(defined($ret->[0]),"\nindex_genomes_in_solr command returned at least one genome");
 =begin
     #Testing the list_reference_genomes function
     my $refret;
@@ -116,7 +141,7 @@ eval {
     }
     ok(defined($sgret->[0]),"list_solr_genomes command returned at least one genome");
 =cut
-#=begin
+=begin
     my $rast_ret;
     my $sgret = undef;
     eval {
@@ -128,7 +153,7 @@ eval {
     } else {
         print Dumper($rast_ret)."\n";
     }
-#=cut
+=cut
     done_testing(3);
 };
 
