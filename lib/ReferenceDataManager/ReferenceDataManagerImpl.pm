@@ -808,7 +808,7 @@ sub _indexGenomeFeatureData
     my $gnftBatchCount = 1000000;
     my $gn_solr_core = $solrCore;
     my $count = 0;
-    my $gnBatchCount = 80;
+    my $gnBatchCount = 30;
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
