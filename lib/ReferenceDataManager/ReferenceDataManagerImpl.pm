@@ -804,17 +804,17 @@ sub _indexGenomeFeatureData
     
     my $ws_gnout;
     my $solr_gnftData = [];
+    my $gn_batch = [];
     my $gnft_batch = [];
     my $gnftBatchCount = 1000000;
     my $gn_solr_core = $solrCore;
-    my $count = 0;
+    my $gn_count = 0;
+    my $ft_count = 0;
     my $gnBatchCount = 30;
+    my $gn_refs = [];
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-print "Inside _indexGenomeFeatureData...";
-    my $gn_count = 0;
-    my $gn_refs = [];
     #foreach my $ws_gn (@{$ws_gnData}) { 
     for($gn_count = 0; $gn_count < @{$ws_gnData}; $gn_count++) {
         my $ws_gn = $ws_gnData->[$gn_count];
@@ -842,7 +842,6 @@ print "Inside _indexGenomeFeatureData...";
                 my $ws_gn_save_date;
                 my $numCDs = 0;
                 my $ws_gn_asmlevel;
-print "Fetched " . @{$gn_refs}. " genomes' data with " . @{$ws_gnout} . "features.";
                 #fetch individual data item to assemble the genome_feature info for $solr_gnftData
                 for (my $i=0; $i < @{$ws_gnout}; $i++) {
                     $ws_gn_data = $ws_gnout->[$i]->{data};#an UnspecifiedObject
@@ -865,8 +864,7 @@ print "Fetched " . @{$gn_refs}. " genomes' data with " . @{$ws_gnout} . "feature
                     if( @{$solr_gnftData} < 10 ) {
                         push @{$solr_gnftData}, $ws_gnobj;
                     }
-                    push @{$gnft_batch}, $ws_gnobj;
-                    $count ++;
+                    push @{$gn_batch}, $ws_gnobj;
                 
                     ###2)---Build the genome_feature solr object
                     for (my $ii=0; $ii < @{$ws_gn_features}; $ii++) {
@@ -875,9 +873,9 @@ print "Fetched " . @{$gn_refs}. " genomes' data with " . @{$ws_gnout} . "feature
                             push @{$solr_gnftData}, $ws_gnft;
                         }
                         push @{$gnft_batch}, $ws_gnft;
-                        $count ++;
+                        $ft_count ++;
                         if(@{$gnft_batch} >= $gnftBatchCount) {
-                            print "\nTo be indexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
+                            print "\nTo be indexed: " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
                             my $solrret = 0;                        
                             eval {
                                 $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
@@ -901,14 +899,14 @@ print "Fetched " . @{$gn_refs}. " genomes' data with " . @{$ws_gnout} . "feature
         }
         
     }
-    #after looping through all genomes and features, index the leftover set of genomeFeature objects
+    #after looping through all genome features, index the leftover set of genomeFeature objects
     if(@{$gnft_batch} > 0) {
         my $solrret = 0;
         eval {
-            $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
+            #$solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
         };
         if($@ or $solrret == 0) {
-            print "Failed to index the genome_feature(s)!\n";
+            print "Failed to index the leftover of genome_feature(s)!\n";
             print "ERROR:". Dumper( $@ );
             if(ref($@) eq 'HASH' && defined($@->{status_line})) {
                 print $@->{status_line}."\n";
@@ -917,9 +915,25 @@ print "Fetched " . @{$gn_refs}. " genomes' data with " . @{$ws_gnout} . "feature
         else {
             print "\nIndexed leftover of " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
         }
-        $gnft_batch = [];
     }
-    return {"genome_features"=>$solr_gnftData,"count"=>$count};
+    #after all genome features, index the genome objects
+    if(@{$gn_batch} > 0) {
+        my $solrret = 0;
+        eval {
+            #$solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gn_batch});
+        };
+        if($@ or $solrret == 0) {
+            print "Failed to index the genome(s))!\n";
+            print "ERROR:". Dumper( $@ );
+            if(ref($@) eq 'HASH' && defined($@->{status_line})) {
+                print $@->{status_line}."\n";
+            }
+        }
+        else {
+            print "\nIndexed a total of " . @{$gn_batch} . " genome(s) on " . scalar localtime . "\n";
+        }
+    }
+    return {"genome_features"=>$solr_gnftData,"count"=>$ft_count + $gn_count};
 }
 #
 #internal method, for fetching one taxon record to be indexed in solr
