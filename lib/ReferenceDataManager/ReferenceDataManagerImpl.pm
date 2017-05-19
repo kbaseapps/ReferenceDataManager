@@ -680,7 +680,7 @@ sub _indexGenomeFeatureData1
     my $ws_gnout;
     my $solr_gnftData = [];
     my $gnft_batch = [];
-    my $gnftBatchCount = 1000000;
+    my $gnftBatchCount = 500000;
     my $gn_solr_core = $solrCore;
     my $count = 0;
 
