@@ -541,7 +541,6 @@ sub _buildSolrGenome
    };
    return $ws_gnobj;
 }
-
 #
 # Internal method 
 # Build the genome_feature solr object
@@ -673,131 +672,6 @@ sub _buildSolrGenomeFeature
 #Input: a list of ReferenceDataManager.KBaseReferenceGenomeData
 #Output: a list of SolrGenomeFeatureData and the total count of genome_features indexed
 #
-sub _indexGenomeFeatureData1 
-{
-    my ($self, $solrCore, $ws_gnData) = @_;
-    
-    my $ws_gnout;
-    my $solr_gnftData = [];
-    my $gnft_batch = [];
-    my $gnftBatchCount = 1000000;
-    my $gn_solr_core = $solrCore;
-    my $count = 0;
-
-    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
-    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-
-    foreach my $ws_gn (@{$ws_gnData}) { 
-        my $ws_ref = {"ref" => $ws_gn->{ref}};
-        my $gn_id = $ws_gn->{name};
-        #check if the genome is already present in the database by querying SOLR
-        #if(($solrer->exists_in_solr({search_core=>$gn_solr_core,search_query=>{genome_id=>$gn_id}}))==1) {
-            #print $gn_id . ": has already been indexed in Solr " . $gn_solr_core . ".\n";
-        #}
-        #else 
-        {
-            #print $gn_id . ": is not found in Solr " . $gn_solr_core . ".\n";         
-            #print "\nStart to fetch the object(s) for " . $gn_id .  " on " . scalar localtime . "\n";
-            eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
-                $ws_gnout = $self->util_ws_client()->get_objects2({
-                        objects => [$ws_ref]
-                });
-            };
-            if($@) {
-                print "Cannot get object information!\n";
-                print "ERROR:".$@;
-                if(ref($@) eq 'HASH' && defined($@->{status_line})) {
-                    print $@->{status_line}."\n";
-                }
-            }
-            else {
-                #print "Done getting genome object info for " . $gn_id . " on " . scalar localtime . "\n";
-                $ws_gnout = $ws_gnout->{data};#a reference to a list where each element is a Workspace.ObjectData
-                my $ws_gn_data;#to hold a value which is a Workspace.objectData
-                my $ws_gn_info;#to hold a value which is a Workspace.object_info
-                my $ws_gn_features = {};
-                my $ws_gn_tax;
-                my $ws_gn_save_date;
-                my $numCDs = 0;
-                my $ws_gn_asmlevel;
-
-                #fetch individual data item to assemble the genome_feature info for $solr_gnftData
-                for (my $i=0; $i < @{$ws_gnout}; $i++) {
-                    $ws_gn_data = $ws_gnout->[$i]->{data};#an UnspecifiedObject
-                    $ws_gn_info = $ws_gnout->[$i]->{info};#is a reference to a list containing 11 items
-                    $ws_gn_features = $ws_gn_data->{features};
-                    $ws_gn_tax = $ws_gn_data->{taxonomy};
-                    $ws_gn_tax =~s/ *; */;;/g;
-                    $ws_gn_save_date = $ws_gn_info->[3];
-                    $ws_gn_asmlevel = ($ws_gn_info->[10]->{assembly_level}=~/Complete Genome/i);
-                            
-                    $numCDs  = 0;
-                    foreach my $feature (@{$ws_gn_features}) {
-                        if ($feature->{type} eq "gene") {
-                            $numCDs++;
-                        }
-                    }
-
-                    ###1)---Build the genome solr object for the sake of the search UI/search service
-                    my $ws_gnobj = $self->_buildSolrGenome($ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
-                    if( @{$solr_gnftData} < 10 ) {
-                        push @{$solr_gnftData}, $ws_gnobj;
-                    }
-                    push @{$gnft_batch}, $ws_gnobj;
-                    $count ++;
-                
-                    ###2)---Build the genome_feature solr object
-                    for (my $ii=0; $ii < @{$ws_gn_features}; $ii++) {
-                        my $ws_gnft = $self->_buildSolrGenomeFeature($ws_gn_features->[$ii], $ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
-                        if( @{$solr_gnftData} < 10 ) {
-                            push @{$solr_gnftData}, $ws_gnft;
-                        }
-                        push @{$gnft_batch}, $ws_gnft;
-                        $count ++;
-                        if(@{$gnft_batch} >= $gnftBatchCount) {
-                            print "\nTo be indexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
-                            my $solrret = 0;                        
-                            eval {
-                                $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
-                            };
-                            if($@ or $solrret == 0) {
-                                print "Failed to index the genome_feature(s)!\n";
-                                print "ERROR:". Dumper( $@ );
-                                if(ref($@) eq 'HASH' && defined($@->{status_line})) {
-                                    print $@->{status_line}."\n";
-                                }
-                            }
-                            else {
-                                print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
-                            }
-                            $gnft_batch = [];
-                        }
-                    }
-                }
-            }
-        }
-    }
-                    #after looping through all genomes and features, index the leftover set of genomeFeature objects
-                    if(@{$gnft_batch} > 0) {
-                        my $solrret = 0;
-                        eval {
-                            $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
-                        };
-                        if($@ or $solrret == 0) {
-                            print "Failed to index the genome_feature(s)!\n";
-                            print "ERROR:". Dumper( $@ );
-                            if(ref($@) eq 'HASH' && defined($@->{status_line})) {
-                                print $@->{status_line}."\n";
-                            }
-                        }
-                        else {
-                            print "\nIndexed leftover of " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
-                        }
-                        $gnft_batch = [];
-                    }
-    return {"genome_features"=>$solr_gnftData,"count"=>$count};
-}
-
 sub _indexGenomeFeatureData 
 {
     my ($self, $solrCore, $ws_gnData) = @_;
@@ -903,7 +777,7 @@ sub _indexGenomeFeatureData
     if(@{$gnft_batch} > 0) {
         my $solrret = 0;
         eval {
-            #$solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
+            $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
         };
         if($@ or $solrret == 0) {
             print "Failed to index the leftover of genome_feature(s)!\n";
@@ -920,7 +794,7 @@ sub _indexGenomeFeatureData
     if(@{$gn_batch} > 0) {
         my $solrret = 0;
         eval {
-            #$solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gn_batch});
+            $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gn_batch});
         };
         if($@ or $solrret == 0) {
             print "Failed to index the genome(s))!\n";
