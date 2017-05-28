@@ -516,7 +516,7 @@ sub _buildSolrGenome
 {
     my ($self, $obj_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date) = @_;
     my $ws_gnobj = {
-        object_id => "kb|ws_ref:" . $obj_ref,
+        object_id => "kb|ws_ref--" . $obj_ref,
         object_name => "kb|g." . $ws_gn_data->{id}, 
         object_type => $ws_gn_info->[2], 
         ws_ref => $obj_ref,
@@ -641,9 +641,9 @@ sub _buildSolrGenomeFeature
                 save_date => $ws_gn_save_date,
                 refseq_category => $ws_gn_data->{type},        
             #feature data
-                genome_feature_id => $ws_gn_data->{id} . "|feature:" . $ws_gn_feature->{id},
-                object_id => "kb|ws_ref:". $obj_ref. "|feature:" . $ws_gn_feature->{id},
-                object_name => $ws_gn_info->[1] . "|feature:" . $ws_gn_feature->{id},
+                genome_feature_id => $ws_gn_data->{id} . "|feature--" . $ws_gn_feature->{id},
+                object_id => "kb|ws_ref:". $obj_ref. "|feature--" . $ws_gn_feature->{id},
+                object_name => $ws_gn_info->[1] . "|feature--" . $ws_gn_feature->{id},
                 object_type => $ws_gn_info->[2] . ".Feature",
                 feature_type => $ws_gn_feature->{type},
                 feature_id => $ws_gn_feature->{id},
