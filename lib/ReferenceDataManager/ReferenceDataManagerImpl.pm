@@ -680,7 +680,7 @@ sub _indexGenomeFeatureData
     my $solr_gnftData = [];
     my $gn_batch = [];
     my $gnft_batch = [];
-    my $gnftBatchCount = 500000;
+    my $gnftBatchCount = 1000000;
     my $gn_solr_core = $solrCore;
     my $gn_count = 0;
     my $ft_count = 0;
@@ -1917,7 +1917,7 @@ sub index_genomes_in_solr
         $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
     
-    $msg .= "Indexed ". $gnft_count. " genome_feature(s)/genomes!\n";
+    $msg .= "Totally indexed ". $gnft_count. " genome_feature(s)/genomes!\n";
     print $msg . "\n";
     
     if ($params->{create_report}) {
