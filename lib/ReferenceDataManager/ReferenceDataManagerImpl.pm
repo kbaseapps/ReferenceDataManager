@@ -695,9 +695,10 @@ sub _indexGenomeFeatureData
         my $ws_ref = {"ref" => $ws_gn->{ref}};
         push @{$gn_refs}, $ws_ref;
         if( @{$gn_refs} >= $gnBatchCount ) {
+            print "\nProcessing the batch of " . @{$gn_refs} . " genomes.\n";
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
-                    objects => $gn_refs
+                        objects => $gn_refs
                 });
             };
             if($@) {
@@ -717,6 +718,7 @@ sub _indexGenomeFeatureData
                 my $numCDs = 0;
                 my $ws_gn_asmlevel;
                 #fetch individual data item to assemble the genome_feature info for $solr_gnftData
+                print "\nLooping through the workspace objects of " . @{$ws_gnout} . " genomes.\n";
                 for (my $i=0; $i < @{$ws_gnout}; $i++) {
                     $ws_gn_data = $ws_gnout->[$i]->{data};#an UnspecifiedObject
                     $ws_gn_info = $ws_gnout->[$i]->{info};#is a reference to a list containing 11 items
@@ -763,15 +765,14 @@ sub _indexGenomeFeatureData
                             }
                             else {
                                 print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
+                                $gnft_batch = [];
                             }
-                            $gnft_batch = [];
                         }
                     }
                 }
             }
             $gn_refs = [];
-        }
-        
+        } 
     }
     #after looping through all genome features, index the leftover set of genomeFeature objects
     if(@{$gnft_batch} > 0) {
@@ -809,6 +810,7 @@ sub _indexGenomeFeatureData
     }
     return {"genome_features"=>$solr_gnftData,"count"=>$ft_count + $gn_count};
 }
+
 #
 #internal method, for fetching one taxon record to be indexed in solr
 #
@@ -1916,7 +1918,7 @@ sub index_genomes_in_solr
         $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
     
-    $msg .= "Indexed ". $gnft_count. " genome_feature(s)!\n";
+    $msg .= "Indexed ". $gnft_count. " genome_feature(s)/genomes!\n";
     print $msg . "\n";
     
     if ($params->{create_report}) {
@@ -3279,8 +3281,8 @@ sub rast_genomes
     } else {
         $srcgenomes = $self->list_solr_genomes({
             solr_core => "Genomes_prod",
-            domain => "Bacteria",
-            complete => 1
+            domain => "Bacteria"#,
+            #complete => 1
         });
     }
     my $rasted_gns = [];
