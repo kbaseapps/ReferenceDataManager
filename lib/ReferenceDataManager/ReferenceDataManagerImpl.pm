@@ -514,12 +514,12 @@ sub _getGenomeInfo
 #
 sub _buildSolrGenome
 {
-    my ($self, $ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date) = @_;
+    my ($self, $obj_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date) = @_;
     my $ws_gnobj = {
-        object_id => "kb|ws_ref:" . $ws_ref->{ref},
+        object_id => "kb|ws_ref:" . $obj_ref,
         object_name => "kb|g." . $ws_gn_data->{id}, 
         object_type => $ws_gn_info->[2], 
-        ws_ref => $ws_ref->{ref},
+        ws_ref => $obj_ref,
         genome_id => $ws_gn_data->{id},
         genome_source_id => $ws_gn_info->[10]->{"Source ID"},
         genome_source => $ws_gn_data->{source},
@@ -558,7 +558,7 @@ sub _buildSolrGenome
 #
 sub _buildSolrGenomeFeature
 {
-    my ($self, $ws_gn_feature, $ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date) = @_;
+    my ($self, $ws_gn_feature, $obj_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date) = @_;
 
     my $ws_gn_aliases;
     my $ws_gn_nm;
@@ -624,7 +624,7 @@ sub _buildSolrGenomeFeature
             #genome data (redundant)
                 genome_source_id => $ws_gn_info->[10]->{"Source ID"},
                 genome_id => $ws_gn_data->{id},
-                ws_ref => $ws_ref->{ref},
+                ws_ref => $obj_ref,
                 genome_source => $ws_gn_data->{source},
                 genetic_code => $ws_gn_data->{genetic_code},
                 domain => $ws_gn_data->{domain},
@@ -642,7 +642,7 @@ sub _buildSolrGenomeFeature
                 refseq_category => $ws_gn_data->{type},        
             #feature data
                 genome_feature_id => $ws_gn_data->{id} . "|feature:" . $ws_gn_feature->{id},
-                object_id => "kb|ws_ref:". $ws_ref->{ref}. "|feature:" . $ws_gn_feature->{id},
+                object_id => "kb|ws_ref:". $obj_ref. "|feature:" . $ws_gn_feature->{id},
                 object_name => $ws_gn_info->[1] . "|feature:" . $ws_gn_feature->{id},
                 object_type => $ws_gn_info->[2] . ".Feature",
                 feature_type => $ws_gn_feature->{type},
@@ -684,7 +684,7 @@ sub _indexGenomeFeatureData
     my $gn_solr_core = $solrCore;
     my $gn_count = 0;
     my $ft_count = 0;
-    my $gnBatchCount = 30;
+    my $gnBatchCount = 35;
     my $gn_refs = [];
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
@@ -692,10 +692,8 @@ sub _indexGenomeFeatureData
     #foreach my $ws_gn (@{$ws_gnData}) { 
     for($gn_count = 0; $gn_count < @{$ws_gnData}; $gn_count++) {
         my $ws_gn = $ws_gnData->[$gn_count];
-        my $ws_ref = {"ref" => $ws_gn->{ref}};
-        push @{$gn_refs}, $ws_ref;
+        push @{$gn_refs}, {"ref" => $ws_gn->{ref}};
         if( @{$gn_refs} >= $gnBatchCount ) {
-            print "\nProcessing the batch of " . @{$gn_refs} . " genomes.\n";
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
                         objects => $gn_refs
@@ -712,22 +710,23 @@ sub _indexGenomeFeatureData
                 $ws_gnout = $ws_gnout->{data};#a reference to a list where each element is a Workspace.ObjectData
                 my $ws_gn_data;#to hold a value which is a Workspace.objectData
                 my $ws_gn_info;#to hold a value which is a Workspace.object_info
+                my $obj_ref;#to hold the KBase workspace reference id for an object
                 my $ws_gn_features = {};
                 my $ws_gn_tax;
                 my $ws_gn_save_date;
                 my $numCDs = 0;
                 my $ws_gn_asmlevel;
                 #fetch individual data item to assemble the genome_feature info for $solr_gnftData
-                print "\nLooping through the workspace objects of " . @{$ws_gnout} . " genomes.\n";
                 for (my $i=0; $i < @{$ws_gnout}; $i++) {
                     $ws_gn_data = $ws_gnout->[$i]->{data};#an UnspecifiedObject
                     $ws_gn_info = $ws_gnout->[$i]->{info};#is a reference to a list containing 11 items
+                    $obj_ref = $ws_gn_info->[6] . '/' . $ws_gn_info->[0] . '/' . $ws_gn_info->[4];
                     $ws_gn_features = $ws_gn_data->{features};
                     $ws_gn_tax = $ws_gn_data->{taxonomy};
                     $ws_gn_tax =~s/ *; */;;/g;
-                    $ws_gn_save_date = $ws_gn_info->[3];
                     $ws_gn_asmlevel = ($ws_gn_info->[10]->{assembly_level}=~/Complete Genome/i);
-                            
+                    $ws_gn_save_date = $ws_gn_info->[3];
+                    $ws_gn_save_date =~s/(\d{4}-\d{2}-\d{2})(.*)/$1/;
                     $numCDs  = 0;
                     foreach my $feature (@{$ws_gn_features}) {
                         if ($feature->{type} eq "gene") {
@@ -736,7 +735,7 @@ sub _indexGenomeFeatureData
                     }
 
                     ###1)---Build the genome solr object for the sake of the search UI/search service
-                    my $ws_gnobj = $self->_buildSolrGenome($ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
+                    my $ws_gnobj = $self->_buildSolrGenome($obj_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
                     if( @{$solr_gnftData} < 10 ) {
                         push @{$solr_gnftData}, $ws_gnobj;
                     }
@@ -744,7 +743,7 @@ sub _indexGenomeFeatureData
                 
                     ###2)---Build the genome_feature solr object
                     for (my $ii=0; $ii < @{$ws_gn_features}; $ii++) {
-                        my $ws_gnft = $self->_buildSolrGenomeFeature($ws_gn_features->[$ii], $ws_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
+                        my $ws_gnft = $self->_buildSolrGenomeFeature($ws_gn_features->[$ii], $obj_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
                         if( @{$solr_gnftData} < 10 ) {
                             push @{$solr_gnftData}, $ws_gnft;
                         }
@@ -765,8 +764,8 @@ sub _indexGenomeFeatureData
                             }
                             else {
                                 print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
-                                $gnft_batch = [];
                             }
+                            $gnft_batch = [];
                         }
                     }
                 }
