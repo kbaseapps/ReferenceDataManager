@@ -642,7 +642,7 @@ sub _buildSolrGenomeFeature
                 refseq_category => $ws_gn_data->{type},        
             #feature data
                 genome_feature_id => $ws_gn_data->{id} . "|feature--" . $ws_gn_feature->{id},
-                object_id => "kb|ws_ref:". $obj_ref. "|feature--" . $ws_gn_feature->{id},
+                object_id => "kb|ws_ref--". $obj_ref. "|feature--" . $ws_gn_feature->{id},
                 object_name => $ws_gn_info->[1] . "|feature--" . $ws_gn_feature->{id},
                 object_type => $ws_gn_info->[2] . ".Feature",
                 feature_type => $ws_gn_feature->{type},
