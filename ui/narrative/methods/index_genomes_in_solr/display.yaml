@@ -39,7 +39,7 @@ parameters :
 
     genome_source :
         ui-name : |
-            Source where the genomes are from
+            Genome Source
         short-hint : |
             Source where the genomes are from
         long-hint  : |
@@ -47,7 +47,7 @@ parameters :
 
     genome_ws :
         ui-name : |
-            Workspace name of the genomes
+            Workspace name for genomes
         short-hint : |
             Workspace name of the genomes
         long-hint  : |
@@ -63,7 +63,7 @@ parameters :
 
     genome_count :
         ui-name : |
-            Total count of genomes to be indexed
+            Total count of genomes
         short-hint : |
             Total count of genomes to be indexed
         long-hint  : |

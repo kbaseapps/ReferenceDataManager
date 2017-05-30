@@ -885,7 +885,7 @@ sub _getWorkspaceGenomes
             print "ERROR:" . $@->{status_line}."\n";
         }
     } else {
-        #print "Genome object count=" . @{$wsoutput}. "\n";
+        print "In workspace " . $ws_name . " the Genome object count=" . @{$wsoutput}. "\n";
         if( @{$wsoutput} > 0 ) {
             for (my $j=0; $j < @{$wsoutput}; $j++) {
                 push @{$list_genomes}, $wsoutput->[$j]->[1]; 
@@ -1539,7 +1539,7 @@ sub list_loaded_genomes
             }
         }
     }
-    $msg .= "\nThere are a total of " . @{$output} . " Reference genomes loaded in KBase.\n";
+    $msg .= "\nThere are a total of " . @{$output} . " Reference genomes loaded in KBase workspace " . $wsname ."\n";
     print $msg . "\n";     
 
     if ($params->{create_report}) {
@@ -1882,7 +1882,7 @@ sub index_genomes_in_solr
     $params = $self->util_args($params,[],{
         genomes=>undef,
         solr_core=>"GenomeFeatures_prod",
-        workspace_nam =>undef,
+        workspace_name =>undef,
         create_report=>0,
         genome_ver=>1,
         start_offset=>0,
@@ -1897,9 +1897,8 @@ sub index_genomes_in_solr
     my $gnsrc = $params->{genome_source};
     my $objVer = $params->{genome_ver};
     my $gnws = undef;
-    if(defined($params->{other_ws})) {
-        $gnsrc = "others";
-        $gnws = $params->{other_ws};
+    if($gnsrc eq "others") {
+        $gnws = $params->{genome_ws};
     }
     if (!defined($params->{genomes})) {
         $genomes = $self->list_loaded_genomes({data_source=>$gnsrc, genome_ver=>$objVer, genome_ws=>$gnws});
@@ -3291,9 +3290,11 @@ sub rast_genomes
             #complete => 1
         });
     }
+
     my $rasted_gns = [];
     my $rasted_gnNames = [];
-    #$rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-",0,6000);
+    #$rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-",0,100000);
+    #$rasted_gnNames = $self->_getWorkspaceGenomes(undef,"KBaseGenomes.Genome-",0,60000);
     #$rasted_gnNames = $rasted_gnNames->{genome_names};
     $rasted_gns = $self->_listGenomesInSolr("RefSeq_RAST", "genome_id", 0, 5660, "Bacteria");
     $rasted_gns = $rasted_gns->{response}->{response}->{docs};
