@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '024474352858b653027f34b1c8991910a0306556';
+our $GIT_COMMIT_HASH = 'cfc050b967572b0d29b1af4188fcceea35f15bf7';
 
 =head1 NAME
 
@@ -674,7 +674,7 @@ sub _buildSolrGenomeFeature
 #
 sub _indexGenomeFeatureData 
 {
-    my ($self, $solrCore, $ws_gnData) = @_;
+    my ($self, $solrCore, $ws_gnData, $index_features) = @_;
     
     my $ws_gnout;
     my $solr_gnftData = [];
@@ -741,6 +741,7 @@ sub _indexGenomeFeatureData
                     }
                     push @{$gn_batch}, $ws_gnobj;
                 
+                    if($index_features == 1) {
                     ###2)---Build the genome_feature solr object
                     for (my $ii=0; $ii < @{$ws_gn_features}; $ii++) {
                         my $ws_gnft = $self->_buildSolrGenomeFeature($ws_gn_features->[$ii], $obj_ref, $ws_gn_data, $ws_gn_info, $ws_gn_asmlevel, $ws_gn_tax, $numCDs, $ws_gn_save_date);
@@ -768,13 +769,14 @@ sub _indexGenomeFeatureData
                             $gnft_batch = [];
                         }
                     }
+                    }
                 }
             }
             $gn_refs = [];
         } 
     }
     #after looping through all genome features, index the leftover set of genomeFeature objects
-    if(@{$gnft_batch} > 0) {
+    if($index_features == 1 && @{$gnft_batch} > 0) {
         my $solrret = 0;
         eval {
             $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
@@ -1722,6 +1724,8 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	start_offset has a value which is an int
 	genome_count has a value which is an int
 	genome_source has a value which is a string
+	genome_ws has a value which is a string
+	index_features has a value which is a ReferenceDataManager.bool
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1790,6 +1794,8 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	start_offset has a value which is an int
 	genome_count has a value which is an int
 	genome_source has a value which is a string
+	genome_ws has a value which is a string
+	index_features has a value which is a ReferenceDataManager.bool
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1882,6 +1888,7 @@ sub index_genomes_in_solr
         start_offset=>0,
         genome_count=>100,
         genome_source=>"refseq",
+        index_features=>0,
         genome_ws=>undef
     });
 
@@ -1909,7 +1916,7 @@ sub index_genomes_in_solr
     }
     @{$genomes} = @{$genomes}[$gn_start..$gn_upper];
     print "\nTotal genomes to be indexed: ". @{$genomes} . " to SOLR ". $solrCore ."\n";
-    $output = $self->_indexGenomeFeatureData($solrCore, $genomes);
+    $output = $self->_indexGenomeFeatureData($solrCore, $genomes,$params->{index_features});
     my $gnft_count = $output->{count};
     $output = $output->{genome_features};
     if (@{$output} > 0) {
@@ -4073,6 +4080,8 @@ workspace_name has a value which is a string
 start_offset has a value which is an int
 genome_count has a value which is an int
 genome_source has a value which is a string
+genome_ws has a value which is a string
+index_features has a value which is a ReferenceDataManager.bool
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -4089,6 +4098,8 @@ workspace_name has a value which is a string
 start_offset has a value which is an int
 genome_count has a value which is an int
 genome_source has a value which is a string
+genome_ws has a value which is a string
+index_features has a value which is a ReferenceDataManager.bool
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 

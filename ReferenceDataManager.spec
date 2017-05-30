@@ -179,6 +179,7 @@ module ReferenceDataManager {
         int genome_count;
         string genome_source;
         string genome_ws;
+        bool index_features;
         int genome_ver;
         bool create_report; 
     } IndexGenomesInSolrParams;

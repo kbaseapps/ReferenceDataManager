@@ -77,5 +77,13 @@ parameters :
         long-hint  : |
             List genomes loaded for this version only
 
+    index_features :
+        ui-name : |
+            Index features
+        short-hint : |
+            Index features (if checked) as well as genomes
+        long-hint  : |
+            Index features (if checked) as well as genomes
+
 description : |
     <p>Send KBaseReferenceGenomeData genomes for index in Solr</p>

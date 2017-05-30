@@ -113,6 +113,17 @@
     "text_options":{
 	"validate_as" : "text"
     }
+  }, {
+    "id" : "index_features",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values": [ "0" ],                                                                                                                        
+    "field_type": "checkbox",
+    "checkbox_options":{
+         "checked_value": 1,
+         "unchecked_value": 0
+    }   
   }],
   "job_id_output_field": "docker",
   "behavior" : {
@@ -136,6 +147,10 @@
 	{
           "input_parameter" : "genome_ver",
           "target_property": "genome_ver"
+        },
+	{
+          "input_parameter" : "index_features",
+          "target_property": "index_features"
         },
         {
           "input_parameter" : "genome_ws",
