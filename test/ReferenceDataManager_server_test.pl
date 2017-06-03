@@ -48,16 +48,51 @@ sub test_rast_genomes {
              genomes=>$genomes,
              workspace_name=>get_ws_name()
            };
-    return $impl->rast_genomes($params);
+    return $impl->get_genomes4RAST();
 }
+
+#=begin
+     #Testing get_genomes4RAST function
+     my $rgret;
+     eval {
+        $rgret = $impl->get_genomes4RAST();
+     };
+     ok(!$@,"rast_genomes command successful");
+     if ($@) {
+        print "ERROR:".$@;
+     } else {
+        print "Number of records:". $rgret->{genome_text}."\n";
+     }
+     ok(defined($rgret->{genome_text}),"get_genomes4RAST command returned successfully.");
+#=cut
+
+=begin
+     #Testing _getWorkspaceGenomes function
+     my $rgret;
+     eval {
+        $rgret = $impl->_getWorkspaceGenomes("ReferenceDataManager", "KBaseGenomes.Genome-12.3", 0, 100); 
+        #$rgret = $impl->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-8.2",0,100000); 
+     };
+     ok(!$@,"_getWorkspaceGenomes command successful");
+     if ($@) {
+        print "ERROR:".$@;
+     } else {
+        print "Number of records:". @{$rgret->{genome_names}}."\n";
+     }
+     ok(defined($rgret->[0]),"_getWorkspaceGenomes command returned successfully.");
+=cut
+=begin
     #Testing index_genomes_in_solr
     my $slrcore = "GenomeFeatures_ci";
     my $ret;
     eval {
         $ret = $impl->index_genomes_in_solr({
-             #genomes => $wsret,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
+             genomes => undef,#$wsret,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
              solr_core => $slrcore,
              genome_ver => 1,
+             genome_source => 'others',
+             genome_ws => 'ReferenceGenomeWS',
+             genome_count => 50000,
              start_offset => 0
         });
     };
@@ -75,6 +110,7 @@ sub test_rast_genomes {
         print Data::Dumper->Dump([$ret->[0]])."\n";
    }
     ok(defined($ret->[0]),"\nindex_genomes_in_solr command returned at least one genome");
+=cut
 =begin
     #Testing the list_reference_genomes function
     my $refret;
@@ -98,7 +134,8 @@ sub test_rast_genomes {
         #print Data::Dumper->Dump([$refret->[@{$refret} - 1]])."\n";
     }
     ok(defined($refret->[0]),"list_reference_Genomes command returned at least one genome");
-    
+=cut 
+=begin
     #Testing list_solr_genomes function
     my $sgret;
     eval {
@@ -197,20 +234,6 @@ eval {
      }
      ok(defined($solrret),"_listGenomesInSolr command returned at least one genome");
 
-     #Testing rast_genomes function
-     my $rgret;
-     eval {
-        $rgret = $impl->rast_genomes({});
-     };
-     ok(!$@,"rast_genomes command successful");
-     if ($@) {
-        print "ERROR:".$@;
-     } else {
-        print "Number of records:".@{$rgret}."\n";
-        print "First record:\n";
-        print Dumper($rgret->[0])."\n";
-     }
-     ok(defined($rgret->[0]),"rast_genomes command returned at least one genome");
 
     #Testing list_solr_taxa function
     my $stret;

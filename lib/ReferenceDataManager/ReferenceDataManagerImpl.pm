@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = 'cfc050b967572b0d29b1af4188fcceea35f15bf7';
+our $GIT_COMMIT_HASH = '81abf5957cdcf005b841ce03080ef0d0d380096c';
 
 =head1 NAME
 
@@ -35,6 +35,7 @@ use XML::Simple;
 use Try::Tiny;
 use DateTime;
 use List::Util qw(none);
+use List::MoreUtils qw(uniq);
 
 #The first thing every function should do is call this function
 sub util_initialize_call {
@@ -293,6 +294,56 @@ sub _listTaxaInSolr {
         #print "Search results:" . Dumper($solrout->{response}) . "\n";
         return $solrout;
     }
+}
+
+sub get_genomes4RAST
+{
+    my ($self) = @_;
+
+    my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev','async_version'=>'dev'));
+    #my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
+
+    my $srcgenomes = $self->list_solr_genomes({
+            solr_core => "Genomes_prod",
+            domain => "Bacteria"
+    });
+    my $rasted_gns = [];
+    my $rasted_gnNames = [];
+    $rasted_gns = $self->list_solr_genomes({
+        solr_core => "RefSeq_RAST", 
+        domain => "Bacteria"
+    });
+
+    foreach my $rsgn (@{$rasted_gns}) {
+        $rsgn = $rsgn->{genome_id};
+        $rsgn =~ s/(^GCF_\d+\.\d)(\.RAST$)/$1/g;
+        push @{$rasted_gnNames}, $rsgn;
+    }
+    #$rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-8.2",0,100000);
+    print "Total number of RASTed genomes in SOLR=" . scalar @{$rasted_gns}; #Dumper($rasted_gns);
+
+    my $srcgenome_text = "";
+    my $srcgenome_inputs = [];
+    my $srcgnlist = [];
+    foreach my $srcgn (@{$srcgenomes}) {
+        my $gnnm = $srcgn->{genome_id};
+        my $gnref = $srcgn->{ws_ref};
+        if (grep ( /$gnnm/, @{$rasted_gnNames})) {
+        }
+        else {
+            push @{$srcgenome_inputs}, $gnref;
+            push @{$srcgnlist}, $gnnm;
+        }
+    }
+    #print "\nBefore uniq call: " . @{$srcgnlist} . " genomes.";
+    @{$srcgnlist} = uniq(@{$srcgnlist});
+    #print "\nAfter uniq call: " . @{$srcgnlist} . " genomes.";
+
+    #print Dumper($srcgenome_inputs);
+    $srcgenome_text = join(';', @{$srcgnlist});
+    #print "\nGenome_text string input: \n" . $srcgenome_text;
+    #print "\nTotal genome for rasting " . scalar @{$srcgnlist};
+    return {"genome_text"=>$srcgenome_text, "genome_ref_list"=>$srcgnlist};
 }
 
 #
@@ -693,7 +744,7 @@ sub _indexGenomeFeatureData
     for($gn_count = 0; $gn_count < @{$ws_gnData}; $gn_count++) {
         my $ws_gn = $ws_gnData->[$gn_count];
         push @{$gn_refs}, {"ref" => $ws_gn->{ref}};
-        if( @{$gn_refs} >= $gnBatchCount ) {
+        if( @{$gn_refs} >= $gnBatchCount or ($gn_count+1) == @{$ws_gnData}) {
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
                         objects => $gn_refs
@@ -866,7 +917,6 @@ sub _getWorkspaceGenomes
     $ws_name = "ReferenceDataManager" unless $ws_name;
     $minID = 0 unless $minID;
     $maxID = 1000 unless $maxID;
-
     my $wsoutput;
     my $list_genomes;
     eval {
@@ -1541,7 +1591,7 @@ sub list_loaded_genomes
     }
     $msg .= "\nThere are a total of " . @{$output} . " Reference genomes loaded in KBase workspace " . $wsname ."\n";
     print $msg . "\n";     
-
+=begin
     if ($params->{create_report}) {
         $self->util_create_report({
                 message => $msg,
@@ -1549,7 +1599,7 @@ sub list_loaded_genomes
         });
         $output = [$params->{workspace_name}."/list_loaded_genomes"];
     }
-
+=cut
     #END list_loaded_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -3192,187 +3242,6 @@ sub load_refgenomes
 
 
 
-=head2 rast_genomes
-
-  $output = $obj->rast_genomes($params)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$params is a ReferenceDataManager.RASTGenomesParams
-$output is a ReferenceDataManager.RASTGenomesResults
-RASTGenomesParams is a reference to a hash where the following keys are defined:
-	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
-	workspace_name has a value which is a string
-solrdoc is a reference to a hash where the key is a string and the value is a string
-RASTGenomesResults is a reference to a hash where the following keys are defined:
-	workspace_name has a value which is a string
-	report_name has a value which is a string
-	report_ref has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$params is a ReferenceDataManager.RASTGenomesParams
-$output is a ReferenceDataManager.RASTGenomesResults
-RASTGenomesParams is a reference to a hash where the following keys are defined:
-	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
-	workspace_name has a value which is a string
-solrdoc is a reference to a hash where the key is a string and the value is a string
-RASTGenomesResults is a reference to a hash where the following keys are defined:
-	workspace_name has a value which is a string
-	report_name has a value which is a string
-	report_ref has a value which is a string
-
-
-=end text
-
-
-
-=item Description
-
-RASTs specified genomes into KBase workspace and indexes in SOLR on demand
-
-=back
-
-=cut
-
-sub rast_genomes
-{
-    my $self = shift;
-    my($params) = @_;
-
-    my @_bad_arguments;
-    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to rast_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'rast_genomes');
-    }
-
-    my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
-    my($output);
-    #BEGIN rast_genomes
-    $params = $self->util_initialize_call($params,$ctx);
-    $params = $self->util_args($params,[],{
-        data => undef,
-        genomes => undef, 
-        workspace_name => undef
-    });
-    my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev','async_version'=>'dev'));
-    #my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
-    my $srcgenomes;
-    my $msg = "";
-
-    if (defined($params->{data})) {
-        my $array = [split(/;/,$params->{data})];
-        $srcgenomes = [{
-            genome_id => $array->[0],
-            scientific_name => $array->[1],
-            domain => $array->[2],
-            genetic_code => $array->[3]
-        }];
-    } elsif (defined($params->{genomes})) {
-        $srcgenomes = $params->{genomes};
-    } else {
-        $srcgenomes = $self->list_solr_genomes({
-            solr_core => "Genomes_prod",
-            domain => "Bacteria"#,
-            #complete => 1
-        });
-    }
-
-    my $rasted_gns = [];
-    my $rasted_gnNames = [];
-    #$rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-",0,100000);
-    #$rasted_gnNames = $self->_getWorkspaceGenomes(undef,"KBaseGenomes.Genome-",0,60000);
-    #$rasted_gnNames = $rasted_gnNames->{genome_names};
-    $rasted_gns = $self->_listGenomesInSolr("RefSeq_RAST", "genome_id", 0, 5660, "Bacteria");
-    $rasted_gns = $rasted_gns->{response}->{response}->{docs};
-    foreach my $rsgn (@{$rasted_gns}) {
-        $rsgn = $rsgn->{genome_id};
-        $rsgn =~ s/(^GCF_\d+\.\d)(\.RAST$)/$1/g;
-        push @{$rasted_gnNames}, $rsgn
-    }
-    print "Total number of RASTed genomes in SOLR=" . scalar @{$rasted_gnNames}; #Dumper($rasted_gnNames);
-
-    my $srcgenome_text = "";
-    my $srcgenome_inputs = [];
-    my $srcgn;
-    foreach my $srcgn (@{$srcgenomes}) {
-        my $gnnm = $srcgn->{genome_id};
-        if( none { /$gnnm/ } @{$rasted_gnNames}) {
-            if($srcgenome_text ne "") {
-                $srcgenome_text .= ";";
-            }
-            $srcgenome_text .= $srcgn->{workspace_name}."/".$srcgn->{genome_id};
-            push @{$srcgenome_inputs}, $srcgn->{ws_ref};
-        }
-    }
-    #print Dumper($srcgenome_inputs);
-    print "\nGenome_text string input: \n" . $srcgenome_text;
-    my $rdm_rast_ws = $params->{workspace_name};
-    my $rast_ret;
-    {
-        print "\nStart rasting " . scalar @{$srcgenome_inputs} . " genomes with rast_sdk url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
-        my $rast_params={
-             "input_genomes"=>[],#@{$srcgenome_inputs},
-             "genome_text"=>$srcgenome_text,
-             "genomes"=>@{$srcgenome_inputs},
-             "workspace"=>$rdm_rast_ws
-        };
-        eval {
-            #$rast_ret = $raster->annotate_genomes($rast_params);
-        };
-        if ($@) {
-            print "**********Received an exception from calling genbank_to_genome to load $srcgenomes\n";
-            if (ref($@) eq "HASH") { 
-                print "Exception message: " . $@->{"message"} . "\n";
-                print "JSONRPC code: " . $@->{"code"} . "\n";
-                print "Method: " . $@->{"method_name"} . "\n";
-                print "\nServer-side exception:\n";
-                print $@->{"data"};
-            } else {
-                print "Client-side exception:\n";
-                print $@;
-            }
-        }
-        else
-        {
-            $output = {
-		  report_ref => $rast_ret->{report_ref},
-                  report_name => $rast_ret->{report_name},
-                  workspace_name => $rast_ret->{workspace}
-            };
-        }
-        #print "**********************Genome rasting process ends on " . scalar localtime . "************************\n";
-    }
-    $msg .= "\nRASTed a total of ". scalar @{$srcgenome_inputs}. " genomes:\n";
-    print $msg . "\n";
-    
-    #END rast_genomes
-    my @_bad_returns;
-    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to rast_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'rast_genomes');
-    }
-    return($output);
-}
-
-
-
-
 =head2 update_loaded_genomes
 
   $output = $obj->update_loaded_genomes($params)
@@ -4489,79 +4358,6 @@ phytozome has a value which is a ReferenceDataManager.bool
 start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
-
-
-=end text
-
-=back
-
-
-
-=head2 RASTGenomesParams
-
-=over 4
-
-
-
-=item Description
-
-Arguments for the rast_genomes function
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a reference to a hash where the following keys are defined:
-data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
-workspace_name has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-a reference to a hash where the following keys are defined:
-data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
-workspace_name has a value which is a string
-
-
-=end text
-
-=back
-
-
-
-=head2 RASTGenomesResults
-
-=over 4
-
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a reference to a hash where the following keys are defined:
-workspace_name has a value which is a string
-report_name has a value which is a string
-report_ref has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-a reference to a hash where the following keys are defined:
-workspace_name has a value which is a string
-report_name has a value which is a string
-report_ref has a value which is a string
 
 
 =end text

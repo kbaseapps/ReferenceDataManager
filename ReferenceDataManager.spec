@@ -336,27 +336,6 @@ module ReferenceDataManager {
    
 
     /*
-        Arguments for the rast_genomes function
-    */
-    typedef structure {
-        string data;
-        list<solrdoc> genomes;
-        string workspace_name;
-    } RASTGenomesParams;
-   
-    typedef structure {
-        string workspace_name;
-        string report_name;
-        string report_ref;
-    } RASTGenomesResults;
-         
-    /*
-        RASTs specified genomes into KBase workspace and indexes in SOLR on demand
-    */
-    funcdef rast_genomes(RASTGenomesParams params) returns (RASTGenomesResults output) authentication required;
-
-
-    /*
         Arguments for the update_loaded_genomes function
     */
     typedef structure {
