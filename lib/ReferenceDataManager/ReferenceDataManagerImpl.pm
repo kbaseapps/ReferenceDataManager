@@ -737,13 +737,31 @@ sub _indexGenomeFeatureData
     my $ft_count = 0;
     my $gnBatchCount = 35;
     my $gn_refs = [];
+    my $slrgn_refs = [];
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-    #foreach my $ws_gn (@{$ws_gnData}) { 
+
+    #First, exclude the genomes already indexed in SOLR
+    my $solrGenomes = $self->list_solr_genomes({ 
+            solr_core => "GenomeFeatures_prod",
+            domain => "Bacteria"
+    });
+    foreach my $src_gn (@{$ws_gnData}) {
+        push @{$gn_refs}, $src_gn->{ref};
+    }
+    foreach my $slr_gn (@{$solrGenomes}) {
+        push @{$slrgn_refs}, $slr_gn->{ws_ref};
+    }
+ 
+    my %indxed = map {($_, 1)} @{$slrgn_refs};
+    my @yetindxed = grep {!$indxed{$_}} @{$gn_refs};
     for($gn_count = 0; $gn_count < @{$ws_gnData}; $gn_count++) {
         my $ws_gn = $ws_gnData->[$gn_count];
-        push @{$gn_refs}, {"ref" => $ws_gn->{ref}};
+        my $gn_ref = $ws_gn->{ref};
+        if (grep ( /$gn_ref/, @yetindxed)) {
+            push @{$gn_refs}, {"ref" => $gn_ref};
+        }
         if( @{$gn_refs} >= $gnBatchCount or ($gn_count+1) == @{$ws_gnData}) {
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
@@ -767,7 +785,7 @@ sub _indexGenomeFeatureData
                 my $ws_gn_save_date;
                 my $numCDs = 0;
                 my $ws_gn_asmlevel;
-                #fetch individual data item to assemble the genome_feature info for $solr_gnftData
+                #fetch individual genome data item to assemble the genome/genome_feature info for $solr_gnftData
                 for (my $i=0; $i < @{$ws_gnout}; $i++) {
                     $ws_gn_data = $ws_gnout->[$i]->{data};#an UnspecifiedObject
                     $ws_gn_info = $ws_gnout->[$i]->{info};#is a reference to a list containing 11 items
@@ -1591,7 +1609,6 @@ sub list_loaded_genomes
     }
     $msg .= "\nThere are a total of " . @{$output} . " Reference genomes loaded in KBase workspace " . $wsname ."\n";
     print $msg . "\n";     
-=begin
     if ($params->{create_report}) {
         $self->util_create_report({
                 message => $msg,
@@ -1599,7 +1616,6 @@ sub list_loaded_genomes
         });
         $output = [$params->{workspace_name}."/list_loaded_genomes"];
     }
-=cut
     #END list_loaded_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
