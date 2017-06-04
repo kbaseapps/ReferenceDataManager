@@ -737,6 +737,7 @@ sub _indexGenomeFeatureData
     my $ft_count = 0;
     my $gnBatchCount = 35;
     my $gn_refs = [];
+    my $kbgn_refs = [];
     my $slrgn_refs = [];
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
@@ -746,15 +747,17 @@ sub _indexGenomeFeatureData
     my $solrGenomes = $self->list_solr_genomes({ 
             solr_core => "GenomeFeatures_prod"
     });
-    foreach my $src_gn (@{$ws_gnData}) {
-        push @{$gn_refs}, $src_gn->{ref};
+    foreach my $kb_gn (@{$ws_gnData}) {
+        push @{$kbgn_refs}, $kb_gn->{ref};
     }
     foreach my $slr_gn (@{$solrGenomes}) {
         push @{$slrgn_refs}, $slr_gn->{ws_ref};
     }
  
     my %indxed = map {($_, 1)} @{$slrgn_refs};
-    my @yetindxed = grep {!$indxed{$_}} @{$gn_refs};
+    my @yetindxed = grep {!$indxed{$_}} @{$kbgn_refs};
+    print "\nGenomes to be indexed after excluding SOLR existing genomes: " . @yetindxed;
+
     for($gn_count = 0; $gn_count < @{$ws_gnData}; $gn_count++) {
         my $ws_gn = $ws_gnData->[$gn_count];
         my $gn_ref = $ws_gn->{ref};
