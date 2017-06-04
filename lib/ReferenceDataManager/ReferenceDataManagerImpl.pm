@@ -744,8 +744,7 @@ sub _indexGenomeFeatureData
 
     #First, exclude the genomes already indexed in SOLR
     my $solrGenomes = $self->list_solr_genomes({ 
-            solr_core => "GenomeFeatures_prod",
-            domain => "Bacteria"
+            solr_core => "GenomeFeatures_prod"
     });
     foreach my $src_gn (@{$ws_gnData}) {
         push @{$gn_refs}, $src_gn->{ref};
