@@ -762,9 +762,9 @@ sub _indexGenomeFeatureData
     foreach my $kb_gn (@{$ws_gnData}) {
         push @{$kbgn_refs}, $kb_gn->{ref};
     }
-    #my $slrGenomes = $self->list_solr_genomes({solr_core => $solrCore});
-    my $slrGenomes = $self->_listGenomesInSolr( $solrCore, 'ws_ref',0,0,undef,undef, "KBaseGenomes.Genome-8.2");#12.3" );
-    $slrGenomes = $slrGenomes->{response}->{response}->{docs};
+    my $slrGenomes = $self->list_solr_genomes({solr_core => $solrCore});
+    #my $slrGenomes = $self->_listGenomesInSolr( $solrCore, 'ws_ref',0,0,undef,undef, "KBaseGenomes.Genome-12.3" );
+    #$slrGenomes = $slrGenomes->{response}->{response}->{docs};
     foreach my $slr_gn (@{$slrGenomes}) {
         push @{$slrgn_refs}, $slr_gn->{ws_ref};
     } 
