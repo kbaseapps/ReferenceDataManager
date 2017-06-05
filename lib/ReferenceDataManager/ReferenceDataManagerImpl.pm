@@ -781,6 +781,7 @@ sub _indexGenomeFeatureData
             };
             if($@) {
                 print "Cannot get object information!\n";
+                print "Input parameter: \n" . Dumper($gn_refs);
                 print "ERROR:".$@;
                 if(ref($@) eq 'HASH' && defined($@->{status_line})) {
                     print $@->{status_line}."\n";
