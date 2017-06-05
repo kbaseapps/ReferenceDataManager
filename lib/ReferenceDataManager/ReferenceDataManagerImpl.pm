@@ -186,11 +186,11 @@ sub util_create_report {
 # Output: a list of KBSolrUtil.solrdoc
 #
 sub _listGenomesInSolr {
-    my ($self, $solrCore, $fields, $rowStart, $rowCount, $dmn, $cmplt) = @_;
+    my ($self, $solrCore, $fields, $rowStart, $rowCount, $dmn, $cmplt, $gn_type) = @_;
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 0;
     $fields = "*" unless $fields;
-    my $gn_type = "KBaseGenomes.Genome-8.2";
+    my $gn_type = ($gn_type) ? $gn_type : "KBaseGenomes.Genome-8.2";
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
@@ -216,6 +216,9 @@ sub _listGenomesInSolr {
         if( defined( $dmn )) {
             $query = { domain=>$dmn, object_type=>$gn_type };
         }
+        else {
+            $query = { object_type=>$gn_type }; 
+        }
     }
     my $solrgnms;
     if($count == 0) {#get the real total count
@@ -226,7 +229,6 @@ sub _listGenomesInSolr {
         fl => $fields,
         wt => "json",
         rows => $count,
-        sort => "genome_id asc",
         hl => "false",
         start => $start
     };
@@ -307,24 +309,33 @@ sub get_genomes4RAST
             solr_core => "Genomes_prod",
             domain => "Bacteria"
     });
-    my $rasted_gns = [];
-    my $rasted_gnNames = [];
-    $rasted_gns = $self->list_solr_genomes({
+    my $kbgn_ids = [];
+    foreach my $kb_gn (@{$srcgenomes}) {
+        push @{$kbgn_ids}, $kb_gn->{workspace_name} . "/" . $kb_gn->{genome_id};
+    }
+
+    #my $rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-8.2",0,100000);
+    my $rasted_genomes = $self->list_solr_genomes({
         solr_core => "RefSeq_RAST", 
         domain => "Bacteria"
     });
-
-    foreach my $rsgn (@{$rasted_gns}) {
-        $rsgn = $rsgn->{genome_id};
-        $rsgn =~ s/(^GCF_\d+\.\d)(\.RAST$)/$1/g;
-        push @{$rasted_gnNames}, $rsgn;
+    my $rasted_ids = [];
+    my $rasted_gnNames = [];
+    my $src_wsname = $srcgenomes->[0]->{workspace_name};
+    foreach my $rsgn (@{$rasted_genomes}) {
+        my $rsgnid = $rsgn->{genome_id};
+        $rsgnid =~ s/(^GCF_\d+\.\d)(\.RAST$)/$1/g;
+        push @{$rasted_ids}, $src_wsname . "/" . $rsgnid;
+        push @{$rasted_gnNames}, $rsgnid;
     }
-    #$rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-8.2",0,100000);
-    print "Total number of RASTed genomes in SOLR=" . scalar @{$rasted_gns}; #Dumper($rasted_gns);
+    print "Total number of RASTed genomes in SOLR=" . scalar @{$rasted_ids}; #Dumper($rasted_ids);
+    
+    my @yetRASTed = $self->_diffLists($kbgn_ids, $rasted_ids);
+    print "\nTotal genome for rasting " . scalar @yetRASTed;
+    my $srcgenome_text = join(';', @yetRASTed);
+    #print "\nGenome_text string input: \n" . $srcgenome_text;
 
-    my $srcgenome_text = "";
     my $srcgenome_inputs = [];
-    my $srcgnlist = [];
     foreach my $srcgn (@{$srcgenomes}) {
         my $gnnm = $srcgn->{genome_id};
         my $gnref = $srcgn->{ws_ref};
@@ -332,18 +343,10 @@ sub get_genomes4RAST
         }
         else {
             push @{$srcgenome_inputs}, $gnref;
-            push @{$srcgnlist}, $gnnm;
         }
     }
-    #print "\nBefore uniq call: " . @{$srcgnlist} . " genomes.";
-    @{$srcgnlist} = uniq(@{$srcgnlist});
-    #print "\nAfter uniq call: " . @{$srcgnlist} . " genomes.";
 
-    #print Dumper($srcgenome_inputs);
-    $srcgenome_text = join(';', @{$srcgnlist});
-    #print "\nGenome_text string input: \n" . $srcgenome_text;
-    #print "\nTotal genome for rasting " . scalar @{$srcgnlist};
-    return {"genome_text"=>$srcgenome_text, "genome_ref_list"=>$srcgnlist};
+    return {"genome_text"=>$srcgenome_text, "genome_ref_list"=>\@yetRASTed};
 }
 
 #
@@ -715,6 +718,19 @@ sub _buildSolrGenomeFeature
 }
 
 #
+#Internal method, to return the difference of two lists whose items are strings
+#return: the list with unique items ocurring in $list1 but not in $list2
+#
+sub _diffLists
+{
+    my ($self, $list1, $list2) = @_;
+    
+    my %eliminates = map {($_, 1)} @{$list2};
+    my @diff = grep {!$eliminates{$_}} @{$list1};
+
+    return uniq(@diff);
+}
+#
 #Internal method, to fetch genome records for a given set of ws_ref's and index the genome_feature combo in SOLR.
 #
 #First call get_objects2() to get the genome object one at a time.
@@ -732,7 +748,6 @@ sub _indexGenomeFeatureData
     my $gn_batch = [];
     my $gnft_batch = [];
     my $gnftBatchCount = 300000;
-    my $gn_solr_core = $solrCore;
     my $gn_count = 0;
     my $ft_count = 0;
     my $gnBatchCount = 35;
@@ -742,29 +757,23 @@ sub _indexGenomeFeatureData
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-
+    
     #First, exclude the genomes already indexed in SOLR
-    my $solrGenomes = $self->list_solr_genomes({ 
-            solr_core => "GenomeFeatures_prod"
-    });
     foreach my $kb_gn (@{$ws_gnData}) {
         push @{$kbgn_refs}, $kb_gn->{ref};
     }
-    foreach my $slr_gn (@{$solrGenomes}) {
+    #my $slrGenomes = $self->list_solr_genomes({solr_core => $solrCore});
+    my $slrGenomes = $self->_listGenomesInSolr( $solrCore, 'ws_ref',0,0,undef,undef, "KBaseGenomes.Genome-8.2");#12.3" );
+    $slrGenomes = $slrGenomes->{response}->{response}->{docs};
+    foreach my $slr_gn (@{$slrGenomes}) {
         push @{$slrgn_refs}, $slr_gn->{ws_ref};
-    }
- 
-    my %indxed = map {($_, 1)} @{$slrgn_refs};
-    my @yetindxed = grep {!$indxed{$_}} @{$kbgn_refs};
+    } 
+    my @yetindxed = $self->_diffLists($kbgn_refs, $slrgn_refs);
     print "\nGenomes to be indexed after excluding SOLR existing genomes: " . @yetindxed;
 
-    for($gn_count = 0; $gn_count < @{$ws_gnData}; $gn_count++) {
-        my $ws_gn = $ws_gnData->[$gn_count];
-        my $gn_ref = $ws_gn->{ref};
-        if (grep ( /$gn_ref/, @yetindxed)) {
-            push @{$gn_refs}, {"ref" => $gn_ref};
-        }
-        if( @{$gn_refs} >= $gnBatchCount or ($gn_count+1) == @{$ws_gnData}) {
+    for($gn_count = 0; $gn_count < @yetindxed; $gn_count++) {
+        push @{$gn_refs}, {"ref" => @yetindxed[$gn_count]};
+        if( @{$gn_refs} >= $gnBatchCount or ($gn_count+1) == @yetindxed) {
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
                         objects => $gn_refs
