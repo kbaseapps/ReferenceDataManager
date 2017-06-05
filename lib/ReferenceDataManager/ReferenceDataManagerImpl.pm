@@ -4,8 +4,8 @@ use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
 our $VERSION = '0.0.1';
-our $GIT_URL = 'https://qzzhang@github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '81abf5957cdcf005b841ce03080ef0d0d380096c';
+our $GIT_URL = 'https://github.com/kbaseapps/ReferenceDataManager.git';
+our $GIT_COMMIT_HASH = 'd71cc097f645a8c13c388173d531ee3afbf7e7d6';
 
 =head1 NAME
 
@@ -186,11 +186,18 @@ sub util_create_report {
 # Output: a list of KBSolrUtil.solrdoc
 #
 sub _listGenomesInSolr {
-    my ($self, $solrCore, $fields, $rowStart, $rowCount, $dmn, $cmplt, $gn_type) = @_;
+    my ($self, $solrCore, $fields, $rowStart, $rowCount, $dmn, $cmplt) = @_;
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 0;
     $fields = "*" unless $fields;
-    my $gn_type = ($gn_type) ? $gn_type : "KBaseGenomes.Genome-8.2";
+
+    my $gn_type;
+    if( $solrCore =~ /prod$/i ){
+       $gn_type = "KBaseGenomes.Genome-8.2";
+    }
+    else {
+       $gn_type = "KBaseGenomes.Genome-12.3";
+    }
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
@@ -763,13 +770,11 @@ sub _indexGenomeFeatureData
         push @{$kbgn_refs}, $kb_gn->{ref};
     }
     my $slrGenomes = $self->list_solr_genomes({solr_core => $solrCore});
-    #my $slrGenomes = $self->_listGenomesInSolr( $solrCore, 'ws_ref',0,0,undef,undef, "KBaseGenomes.Genome-12.3" );
-    #$slrGenomes = $slrGenomes->{response}->{response}->{docs};
     foreach my $slr_gn (@{$slrGenomes}) {
         push @{$slrgn_refs}, $slr_gn->{ws_ref};
     } 
     my @yetindxed = $self->_diffLists($kbgn_refs, $slrgn_refs);
-    print "\nGenomes to be indexed after excluding SOLR existing genomes: " . @yetindxed;
+    print "\nGenomes to be indexed after excluding SOLR existing genomes: " . scalar @yetindxed;
 
     for($gn_count = 0; $gn_count < @yetindxed; $gn_count++) {
         push @{$gn_refs}, {"ref" => @yetindxed[$gn_count]};
@@ -991,10 +996,10 @@ sub _getWorkspaceGenomes
 #
 sub _list_ncbi_refgenomes
 {
-    my ($self, $source, $division, $update_only) = @_;
-       
+    my ($self, $source, $division, $update_only, $solr_core) = @_;
     $source = "refseq" unless $source;
     $update_only = 0 unless $update_only;
+    $solr_core = "GenomeFeatures_ci" unless $solr_core;
 
     my $output = [];
     my $summary = "";
@@ -1032,13 +1037,15 @@ sub _list_ncbi_refgenomes
             $current_genome->{assembly_level} = $attribs[11];
 
             if( $update_only == 1 ) {
-                my $gn_solr_core = "GenomeFeatures_prod";
-                if( ($self->_checkGenomeStatus( $current_genome, $gn_solr_core ))=~/(new|updated)/i ) {
-                    push(@{$output},$current_genome);
+                my $gn_status = $self->_checkGenomeStatus( $current_genome, $solr_core );
+                if( $gn_status=~/(new|updated)/i ) {
+                    $current_genome->{gn_status} = $gn_status;
+                    push @{$output},$current_genome;
                 }
             }
             else {
-                push(@{$output},$current_genome);
+                $current_genome->{gn_status} = undef;
+                push @{$output},$current_genome;
             }
             
             if ($count <= 10) {
@@ -1279,6 +1286,7 @@ ListReferenceGenomesParams is a reference to a hash where the following keys are
 	domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
+	solr_core has a value which is a string
 bool is an int
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
@@ -1310,6 +1318,7 @@ ListReferenceGenomesParams is a reference to a hash where the following keys are
 	domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
+	solr_core has a value which is a string
 bool is an int
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
@@ -1362,7 +1371,8 @@ sub list_reference_genomes
         domain => "bacteria",
         update_only => 0,
         create_report => 0,
-        workspace_name => undef
+        workspace_name => undef,
+        solr_core => "GenomeFeatures_ci"
     });
 
     my $summary = "";
@@ -1384,7 +1394,7 @@ sub list_reference_genomes
     
     print $gn_source . "---" . $gn_domain . "\n";
     
-    my $list_items = $self->_list_ncbi_refgenomes($gn_source, $gn_domain, $params->{update_only});
+    my $list_items = $self->_list_ncbi_refgenomes($gn_source, $gn_domain, $params->{update_only}, $params->{solr_core});
     if(defined($list_items)) {
         $output = $list_items->{ref_genomes};
         $summary = $list_items->{summary};
@@ -2900,6 +2910,7 @@ LoadGenomesParams is a reference to a hash where the following keys are defined:
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	kb_env has a value which is a string
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
 	version_status has a value which is a string
@@ -2938,6 +2949,7 @@ LoadGenomesParams is a reference to a hash where the following keys are defined:
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	kb_env has a value which is a string
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
 	version_status has a value which is a string
@@ -2997,7 +3009,8 @@ sub load_genomes
         data => undef,
         genomes => [],
         index_in_solr => 0,
-        workspace_name => undef
+        workspace_name => undef,
+        kb_env => "ci"
     });
 #my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service=ver parameter when master is done.
     my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL });
@@ -3022,8 +3035,14 @@ sub load_genomes
         $ncbigenomes = $params->{genomes};
     }
 
+    my $tx_solr_core = lc $params->{kb_env} == "prod" ? "taxonomy_prod" : "taxonomy_ci";
     for (my $i=0; $i < @{$ncbigenomes}; $i++) {
         my $ncbigenome = $ncbigenomes->[$i];
+        #check if the taxon of the genome (named in KBase as $gnm->{tax_id} . "_taxon") is loaded in a KBase workspace
+        if( ($self->_checkTaxonStatus($ncbigenome, $tx_solr_core))!~/in KBase/i ){
+            continue;
+        }
+        #print "A genome with taxon in KBase found.";
         #print "\n******************Genome#: $i ********************";
         my $wsname = "";
         if(defined( $ncbigenome->{workspace_name}))
@@ -3098,7 +3117,6 @@ sub load_genomes
                     source => $ncbigenome->{source},
                     domain => $ncbigenome->{domain}
                 };
-
                 my $gn_solrCore = "GenomeFeatures_prod";
                 if ($params->{index_in_solr} == 1) {
                     $self->index_genomes_in_solr({
@@ -3291,6 +3309,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	workspace_name has a value which is a string
 	domain has a value which is a string
 	start_offset has a value which is an int
+	kb_env has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -3319,6 +3338,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	workspace_name has a value which is a string
 	domain has a value which is a string
 	start_offset has a value which is an int
+	kb_env has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -3365,9 +3385,10 @@ sub update_loaded_genomes
         refseq=>1,
         phytozome=>0,
         ensembl=>0, 
-        update_only=>0,
+        update_only=>1,
         domain => "bacteria",
         start_offset=>0,
+        kb_env => "ci",
         workspace_name=>undef
     });
 
@@ -3375,37 +3396,32 @@ sub update_loaded_genomes
     $output = [];
 
     my $count = 0;
-    my $gn_solr_core = "GenomeFeatures_prod";
-    my $tx_solr_core = "taxonomy_prod";
+    my $solr_core = lc $params->{kb_env} == "prod" ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
 
-    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},domain=>$params->{domain},update_only=>$params->{update_only}});
+    my $ref_genomes = $self->list_reference_genomes({
+            refseq=>$params->{refseq},
+            phytozome=>$params->{phytozome},
+            ensembl=>$params->{ensembl},
+            domain=>$params->{domain},
+            update_only=>$params->{update_only},
+            solr_core=>$solr_core
+        });
 
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
-    for (my $i=0; $i < @{$ref_genomes}; $i++) {
-        #print "\n***************Ref genome #". $i. "****************\n";
-        my $gnm = $ref_genomes->[$i];
+    if( $params->{update_only} == 1) { #($gn_status=~/(new|updated)/i) is always true for genomes in $ref_genomes 
+        $output = $self->load_genomes( {genomes => @{$ref_genomes}} ); 
+        $msg .= "Updated ".@{$output}." genomes!";
+        print $msg . "\n";
     
-        #check if the genome is already present in the database by querying SOLR
-        my $gn_status = $self->_checkGenomeStatus( $gnm, $gn_solr_core );
-       
-        if ($gn_status=~/(new|updated)/i) { 
-                #check if the taxon of the genome (named in KBase as $gnm->{tax_id} . "_taxon") is loaded in a KBase workspace
-                if( ($self->_checkTaxonStatus($gnm, $tx_solr_core))=~/in KBase/i ){
-                    $count ++;
-                    #print "A '" . $gn_status . "' genome with taxon in KBase found, update_total=" . $count;
-                    $self->load_genomes( {genomes => [$gnm], index_in_solr => 1} ); 
-                    push(@{$output},{genome_id=>$gnm->{id}});
-                    if ($count < 10) {
-                        $msg .= $gnm->{accession}.";".$gnm->{status}.";".$gnm->{name}.";".$gnm->{ftp_dir}.";".$gnm->{file}.";".$gnm->{id}.";".$gnm->{version}.";".$gnm->{source}.";".$gnm->{domain}."\n";
-                    }
-                }
-        }else{
-            #print "Current version already in KBase"; #check for annotation update
-        }
+        $self->index_genomes_in_solr({
+            solr_core => $solr_core,             
+            genomes => @{$output}
+        });
+        print "Indexed " .@{$output}." genomes!\n";
+    }else{
+         #print "Current version already in KBase"; #check for annotation update
     }
-    $msg .= "Updated ".@{$output}." genomes!";
-    print $msg . "\n";
-    
+
     if ($params->{create_report}) {
         $self->util_create_report({
                 message => $msg,
@@ -3526,6 +3542,7 @@ updated_only has a value which is a ReferenceDataManager.bool
 domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+solr_core has a value which is a string
 
 </pre>
 
@@ -3541,6 +3558,7 @@ updated_only has a value which is a ReferenceDataManager.bool
 domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
+solr_core has a value which is a string
 
 
 =end text
@@ -4329,6 +4347,7 @@ data has a value which is a string
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+kb_env has a value which is a string
 
 </pre>
 
@@ -4341,6 +4360,7 @@ data has a value which is a string
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+kb_env has a value which is a string
 
 
 =end text
@@ -4418,6 +4438,7 @@ update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 domain has a value which is a string
 start_offset has a value which is an int
+kb_env has a value which is a string
 
 </pre>
 
@@ -4433,6 +4454,7 @@ update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 domain has a value which is a string
 start_offset has a value which is an int
+kb_env has a value which is a string
 
 
 =end text

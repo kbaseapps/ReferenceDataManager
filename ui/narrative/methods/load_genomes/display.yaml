@@ -47,5 +47,10 @@ parameters :
          long-hint : |
              Indicate to send the genome info to Solr to be indexed
 
+    kb_env :
+         ui-name : |
+             KBase environment
+         short-hint : |
+             Indicate the computing environment, CI or prod
 description : |
     <p>Load RefSeq genomes into KBase and index in solr if want </p>

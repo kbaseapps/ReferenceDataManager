@@ -9,9 +9,19 @@
     "input" : "kbaseNarrativeMethodInput"
   }, 
   "parameters" : [ {
+    "id" : "data",
     "default_values" : [""],
     "advanced" : false,
-    "id" : "data",
+    "allow_multiple" : false,
+    "optional" : false,
+    "field_type" : "text",
+    "text_options" : {
+      "valid_as" : "text"
+    }
+  }, {
+    "id" : "kb_env",
+    "default_values" : ["ci"],
+    "advanced" : false,
     "allow_multiple" : false,
     "optional" : false,
     "field_type" : "text",
@@ -44,6 +54,10 @@
         {
           "input_parameter": "index_in_solr",
           "target_property": "index_in_solr"
+        },
+        {
+          "input_parameter" : "kb_env",
+          "target_property": "kb_env"
         },
         {
           "constant_value" : "1",

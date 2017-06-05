@@ -71,5 +71,11 @@ parameters :
         long-hint  : |
             Skip this count of the genomes before updating
 
+    kb_env :
+         ui-name : | 
+             KBase environment
+         short-hint : | 
+             Indicate the computing environment, CI or prod
+
 description : |
     <p>Update genomes from source databases</p>
