@@ -192,11 +192,11 @@ sub _listGenomesInSolr {
     $fields = "*" unless $fields;
 
     my $gn_type;
-    if( $solrCore =~ /prod$/i ){
-       $gn_type = "KBaseGenomes.Genome-8.2";
+    if( $solrCore =~ /ci$/i ){
+       $gn_type = "KBaseGenomes.Genome-12.3";
     }
     else {
-       $gn_type = "KBaseGenomes.Genome-12.3";
+       $gn_type = "KBaseGenomes.Genome-8.2";
     }
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
