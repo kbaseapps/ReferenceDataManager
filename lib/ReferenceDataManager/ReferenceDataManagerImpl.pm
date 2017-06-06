@@ -1977,7 +1977,7 @@ sub index_genomes_in_solr
         start_offset=>0,
         genome_count=>100,
         genome_source=>"refseq",
-        index_features=>0,
+        index_features=>1,
         genome_ws=>undef
     });
 
@@ -3036,7 +3036,17 @@ sub load_genomes
         $ncbigenomes = $params->{genomes};
     }
 
-    my $tx_solr_core = lc $params->{kb_env} == "prod" ? "taxonomy_prod" : "taxonomy_ci";
+    my $tx_solr_core;
+    my $gn_solr_core;
+    if( $params->{kb_env} =~ /prod$/i ) { 
+        $tx_solr_core = "taxonomy_prod";
+        $gn_solr_core = "GenomeFeatures_prod";
+    }
+    else {
+        $tx_solr_core = "taxonomy_ci";
+        $gn_solr_core = "GenomeFeatures_ci";
+    }
+
     for (my $i=0; $i < @{$ncbigenomes}; $i++) {
         my $ncbigenome = $ncbigenomes->[$i];
         #check if the taxon of the genome (named in KBase as $gnm->{tax_id} . "_taxon") is loaded in a KBase workspace
@@ -3118,16 +3128,9 @@ sub load_genomes
                     source => $ncbigenome->{source},
                     domain => $ncbigenome->{domain}
                 };
-                my $gn_solrCore = "GenomeFeatures_prod";
-                if ($params->{index_in_solr} == 1) {
-                    $self->index_genomes_in_solr({
-                        solr_core => $gn_solrCore,             
-                        genomes => [$genomeout]
-                    });
-                }
                 push(@{$output},$genomeout);
                 if (@{$output} < 10  && @{$output} > 0) {
-                   $msg .= "Loaded genome: ".$genomeout->{id}." into workspace ".$genomeout->{workspace_name}.";\n";
+                   $msg .= "Loaded genome: ".$genomeout->{ref}." into workspace ".$genomeout->{workspace_name}.";\n";
                 }
             }
             #print "**********************Genome loading process ends on " . scalar localtime . "************************\n";
@@ -3150,6 +3153,15 @@ sub load_genomes
     }
     $msg .= "\nLoaded a total of ". scalar @{$output}. " genomes!\n";
     print $msg . "\n";
+                
+    if ($params->{index_in_solr} == 1) {
+        $self->index_genomes_in_solr({
+                solr_core => $gn_solr_core,             
+                genomes => @{$output},
+                index_features => 1
+        });
+        print "Indexed " .@{$output}." genomes!\n";
+    }
     
     if ($params->{create_report}) {
         $self->util_create_report({
@@ -3396,8 +3408,7 @@ sub update_loaded_genomes
     my $msg = "";
     $output = [];
 
-    my $count = 0;
-    my $solr_core = lc $params->{kb_env} == "prod" ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
+    my $solr_core = ($params->{kb_env} =~ /prod$/i) ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
 
     my $ref_genomes = $self->list_reference_genomes({
             refseq=>$params->{refseq},
@@ -3410,15 +3421,9 @@ sub update_loaded_genomes
 
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
     if( $params->{update_only} == 1) { #($gn_status=~/(new|updated)/i) is always true for genomes in $ref_genomes 
-        $output = $self->load_genomes( {genomes => @{$ref_genomes}} ); 
+        $output = $self->load_genomes( {genomes => @{$ref_genomes}, index_in_solr => 1} ); 
         $msg .= "Updated ".@{$output}." genomes!";
-        print $msg . "\n";
-    
-        $self->index_genomes_in_solr({
-            solr_core => $solr_core,             
-            genomes => @{$output}
-        });
-        print "Indexed " .@{$output}." genomes!\n";
+        print $msg . "\n"; 
     }else{
          #print "Current version already in KBase"; #check for annotation update
     }

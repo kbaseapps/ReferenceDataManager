@@ -10,6 +10,16 @@
     "output" : "no-display"
   },
   "parameters" : [ {
+    "id" : "genomes",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [""],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseReferenceGenomeData" ]
+    }
+  }, {
     "id" : "start_offset",
     "optional":false,
     "advanced":true,
@@ -118,7 +128,7 @@
     "optional":false,
     "advanced":false,
     "allow_multiple":false,
-    "default_values": [ "0" ],                                                                                                                        
+    "default_values": [ "1" ],                                                                                                                        
     "field_type": "checkbox",
     "checkbox_options":{
          "checked_value": 1,
@@ -132,6 +142,10 @@
       "name" : "ReferenceDataManager",
       "method" : "index_genomes_in_solr",
       "input_mapping" : [
+        {
+          "input_parameter": "genomes",
+          "target_property": "genomes"
+        },
         {
           "input_parameter": "solr_core", 
           "target_property": "solr_core" 

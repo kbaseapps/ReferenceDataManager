@@ -29,6 +29,13 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    genomes :
+        ui-name : |
+            Genomes
+        short-hint : |
+            Genomes to index
+        long-hint  : |
+            Genomes to index
     solr_core :
         ui-name : |
             Solr database name
