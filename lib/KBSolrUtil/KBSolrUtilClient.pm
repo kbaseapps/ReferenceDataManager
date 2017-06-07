@@ -56,7 +56,7 @@ sub new
     if (exists $arg_hash{"async_job_check_max_time_ms"}) {
         $self->{async_job_check_max_time} = $arg_hash{"async_job_check_max_time_ms"} / 1000.0;
     }
-    my $service_version = 'dev';
+    my $service_version = 'release';
     if (exists $arg_hash{"service_version"}) {
         $service_version = $arg_hash{"service_version"};
     }
@@ -266,6 +266,115 @@ sub _index_in_solr_submit {
         Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _index_in_solr_submit",
                         status_line => $self->{client}->status_line,
                         method_name => '_index_in_solr_submit');
+    }
+}
+
+ 
+
+
+=head2 new_or_updated
+
+  $return = $obj->new_or_updated($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a KBSolrUtil.NewOrUpdatedParams
+$return is a reference to a list where each element is a KBSolrUtil.searchdata
+NewOrUpdatedParams is a reference to a hash where the following keys are defined:
+	search_core has a value which is a string
+	search_docs has a value which is a reference to a list where each element is a KBSolrUtil.searchdata
+	search_type has a value which is a string
+searchdata is a reference to a hash where the key is a string and the value is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a KBSolrUtil.NewOrUpdatedParams
+$return is a reference to a list where each element is a KBSolrUtil.searchdata
+NewOrUpdatedParams is a reference to a hash where the following keys are defined:
+	search_core has a value which is a string
+	search_docs has a value which is a reference to a list where each element is a KBSolrUtil.searchdata
+	search_type has a value which is a string
+searchdata is a reference to a hash where the key is a string and the value is a string
+
+
+=end text
+
+=item Description
+
+The new_or_updated function that returns a list of docs
+
+=back
+
+=cut
+
+sub new_or_updated
+{
+    my($self, @args) = @_;
+    my $job_id = $self->_new_or_updated_submit(@args);
+    my $async_job_check_time = $self->{async_job_check_time};
+    while (1) {
+        Time::HiRes::sleep($async_job_check_time);
+        $async_job_check_time *= $self->{async_job_check_time_scale_percent} / 100.0;
+        if ($async_job_check_time > $self->{async_job_check_max_time}) {
+            $async_job_check_time = $self->{async_job_check_max_time};
+        }
+        my $job_state_ref = $self->_check_job($job_id);
+        if ($job_state_ref->{"finished"} != 0) {
+            if (!exists $job_state_ref->{"result"}) {
+                $job_state_ref->{"result"} = [];
+            }
+            return wantarray ? @{$job_state_ref->{"result"}} : $job_state_ref->{"result"}->[0];
+        }
+    }
+}
+
+sub _new_or_updated_submit {
+    my($self, @args) = @_;
+# Authentication: required
+    if ((my $n = @args) != 1) {
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+                                   "Invalid argument count for function _new_or_updated_submit (received $n, expecting 1)");
+    }
+    {
+        my($params) = @args;
+        my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+            my $msg = "Invalid arguments passed to _new_or_updated_submit:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+            Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+                                   method_name => '_new_or_updated_submit');
+        }
+    }
+    my $context = undef;
+    if ($self->{service_version}) {
+        $context = {'service_ver' => $self->{service_version}};
+    }
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+        method => "KBSolrUtil._new_or_updated_submit",
+        params => \@args, context => $context});
+    if ($result) {
+        if ($result->is_error) {
+            Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+                           code => $result->content->{error}->{code},
+                           method_name => '_new_or_updated_submit',
+                           data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+            );
+        } else {
+            return $result->result->[0];  # job_id
+        }
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _new_or_updated_submit",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_new_or_updated_submit');
     }
 }
 
@@ -1087,6 +1196,62 @@ doc_data has a value which is a reference to a list where each element is a KBSo
 
 
 
+=head2 NewOrUpdatedParams
+
+=over 4
+
+
+
+=item Description
+
+Arguments for the new_or_updated function - search solr according to the parameters passed and return the ones not found in solr.
+
+string search_core - the name of the solr core to be searched
+list<searchdata> search_docs - a list of arbitrary user-supplied key-value pairs specifying the definitions of docs 
+    to be searched, a hash for each doc, see the example below:
+        search_docs=[
+            {
+                field1 => 'val1',
+                field2 => 'val2',
+                domain => 'Bacteria'
+            },
+            {
+                field1 => 'val3',
+                field2 => 'val4',
+                domain => 'Bacteria'                     
+            }
+         ];
+string search_type - the object (genome) type to be searched
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+search_core has a value which is a string
+search_docs has a value which is a reference to a list where each element is a KBSolrUtil.searchdata
+search_type has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+search_core has a value which is a string
+search_docs has a value which is a reference to a list where each element is a KBSolrUtil.searchdata
+search_type has a value which is a string
+
+
+=end text
+
+=back
+
+
+
 =head2 ExistsInputParams
 
 =over 4
@@ -1096,7 +1261,7 @@ doc_data has a value which is a reference to a list where each element is a KBSo
 =item Description
 
 Arguments for the exists_in_solr function - search solr according to the parameters passed and return 1 if found at least one doc 0 if nothing found. A shorter version of search_solr.
-
+        
 string search_core - the name of the solr core to be searched
 searchdata search_query - arbitrary user-supplied key-value pairs specifying the fields to be searched and their values to be matched, a hash which specifies how the documents will be searched, see the example below:
         search_query={

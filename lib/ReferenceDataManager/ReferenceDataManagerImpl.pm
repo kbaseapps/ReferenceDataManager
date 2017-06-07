@@ -759,12 +759,12 @@ sub _indexGenomeFeatureData
     my $ft_count = 0;
     my $gnBatchCount = 35;
     my $gn_refs = [];
-    my $kbgn_refs = [];
-    my $slrgn_refs = [];
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-    
+=begin    
+    my $kbgn_refs = [];
+    my $slrgn_refs = [];
     #First, exclude the genomes already indexed in SOLR
     foreach my $kb_gn (@{$ws_gnData}) {
         push @{$kbgn_refs}, $kb_gn->{ref};
@@ -775,10 +775,11 @@ sub _indexGenomeFeatureData
     } 
     my @yetindxed = $self->_diffLists($kbgn_refs, $slrgn_refs);
     print "\nGenomes to be indexed after excluding SOLR existing genomes: " . scalar @yetindxed;
-
-    for($gn_count = 0; $gn_count < @yetindxed; $gn_count++) {
-        push @{$gn_refs}, {"ref" => @yetindxed[$gn_count]};
-        if( @{$gn_refs} >= $gnBatchCount or ($gn_count+1) == @yetindxed) {
+=cut
+    for($gn_count = 0; $gn_count < @{$ws_gnData}; $gn_count++) {
+        my $kb_gn = $ws_gnData->[$gn_count];
+        push @{$gn_refs}, {"ref" => $kb_gn->{ref}};
+        if( @{$gn_refs} >= $gnBatchCount or ($gn_count+1) == @{$ws_gnData}) {
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
                         objects => $gn_refs
@@ -794,7 +795,7 @@ sub _indexGenomeFeatureData
             }
             else {
                 $ws_gnout = $ws_gnout->{data};#a reference to a list where each element is a Workspace.ObjectData
-                print "\nget_objects returned " . scalar @{$ws_gnout} . " genomes.\n";
+                #print "\nget_objects returned " . scalar @{$ws_gnout} . " genomes.\n";
                 my $ws_gn_data;#to hold a value which is a Workspace.objectData
                 my $ws_gn_info;#to hold a value which is a Workspace.object_info
                 my $obj_ref;#to hold the KBase workspace reference id for an object
@@ -984,7 +985,6 @@ sub _getWorkspaceGenomes
 }
 
 #################### Start subs for accessing NCBI refseq genomes#######################
-
 #
 # Internal method: _list_ncbi_refgenomes
 # params:
@@ -1036,7 +1036,7 @@ sub _list_ncbi_refgenomes
             $current_genome->{refseq_category} = $attribs[4];
             $current_genome->{tax_id} = $attribs[5];
             $current_genome->{assembly_level} = $attribs[11];
-
+=begin
             if( $update_only == 1 ) {
                 my $gn_status = $self->_checkGenomeStatus( $current_genome, $solr_core );
                 if( $gn_status=~/(new|updated)/i ) {
@@ -1048,7 +1048,10 @@ sub _list_ncbi_refgenomes
                 $current_genome->{gn_status} = undef;
                 push @{$output},$current_genome;
             }
-            
+=cut
+
+            push @{$output},$current_genome;
+
             if ($count <= 10) {
                 $summary .= $current_genome->{accession}.";".$current_genome->{version_status}.";".$current_genome->{id}.";".$current_genome->{ftp_dir}.";".$current_genome->{file}.";".$current_genome->{id}.";".$current_genome->{version}.";".$current_genome->{source}.";".$current_genome->{domain}."\n";
             }
@@ -3036,24 +3039,17 @@ sub load_genomes
         $ncbigenomes = $params->{genomes};
     }
 
-    my $tx_solr_core;
     my $gn_solr_core;
-    if( $params->{kb_env} =~ /prod$/i ) { 
-        $tx_solr_core = "taxonomy_prod";
+    if( $params->{kb_env}=~/prod$/i ) { 
         $gn_solr_core = "GenomeFeatures_prod";
     }
     else {
-        $tx_solr_core = "taxonomy_ci";
         $gn_solr_core = "GenomeFeatures_ci";
     }
 
     for (my $i=0; $i < @{$ncbigenomes}; $i++) {
         my $ncbigenome = $ncbigenomes->[$i];
         #check if the taxon of the genome (named in KBase as $gnm->{tax_id} . "_taxon") is loaded in a KBase workspace
-        if( ($self->_checkTaxonStatus($ncbigenome, $tx_solr_core))!~/in KBase/i ){
-            continue;
-        }
-        #print "A genome with taxon in KBase found.";
         #print "\n******************Genome#: $i ********************";
         my $wsname = "";
         if(defined( $ncbigenome->{workspace_name}))
@@ -3151,13 +3147,13 @@ sub load_genomes
             push(@{$output},$genomeout);
         }
     }
-    $msg .= "\nLoaded a total of ". scalar @{$output}. " genomes!\n";
+    $msg .= "\nLoaded a total of ". scalar @{$output}. " genome(s)!\n";
     print $msg . "\n";
                 
-    if ($params->{index_in_solr} == 1) {
+    if ((scalar @{$output}) > 0 && $params->{index_in_solr} == 1) {
         $self->index_genomes_in_solr({
                 solr_core => $gn_solr_core,             
-                genomes => @{$output},
+                genomes => $output,
                 index_features => 1
         });
         print "Indexed " .@{$output}." genomes!\n";
@@ -3286,7 +3282,10 @@ sub load_refgenomes
     $output = [];
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only=>0});
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
-    $output = $self->load_genomes({genomes =>$ref_genomes, index_in_solr=>$params->{index_in_solr}}); 
+
+    if( (scalar @{$ref_genomes}) > 0 ) {
+        $output = $self->load_genomes({genomes =>$ref_genomes, index_in_solr=>$params->{index_in_solr}});
+    } 
     #END load_refgenomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -3420,13 +3419,14 @@ sub update_loaded_genomes
         });
 
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
-    if( $params->{update_only} == 1) { #($gn_status=~/(new|updated)/i) is always true for genomes in $ref_genomes 
-        $output = $self->load_genomes( {genomes => @{$ref_genomes}, index_in_solr => 1} ); 
-        $msg .= "Updated ".@{$output}." genomes!";
-        print $msg . "\n"; 
-    }else{
-         #print "Current version already in KBase"; #check for annotation update
-    }
+    
+    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    
+    my $new_genomes = $solrer->new_or_updated({solr_core=>$solr_core, search_docs=>$ref_genomes});
+    $output = $self->load_genomes( {genomes => $new_genomes, index_in_solr => 1} ); 
+    $msg .= "Updated ".@{$output}." genomes!";
+    print $msg . "\n"; 
 
     if ($params->{create_report}) {
         $self->util_create_report({
