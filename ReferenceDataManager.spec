@@ -18,7 +18,8 @@ module ReferenceDataManager {
         bool updated_only;
         string domain;
         string workspace_name;
-        bool create_report; 
+        bool create_report;
+        string solr_core; 
     } ListReferenceGenomesParams;
 
     /*
@@ -310,6 +311,7 @@ module ReferenceDataManager {
         list<ReferenceGenomeData> genomes;
         bool index_in_solr;
         string workspace_name;
+        string kb_env;
     } LoadGenomesParams;
     
     /*
@@ -346,6 +348,7 @@ module ReferenceDataManager {
         string workspace_name;
         string domain;
         int start_offset;
+        string kb_env;
     } UpdateLoadedGenomesParams;
     
     /*

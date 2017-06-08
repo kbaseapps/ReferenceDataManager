@@ -1992,7 +1992,7 @@ sub index_genomes_in_solr
     if($gnsrc eq "others") {
         $gnws = $params->{genome_ws};
     }
-    if (!defined($params->{genomes})) {
+    if (!defined($params->{genomes}) or (scalar @{$params->{genomes}}) == 0) {
         $genomes = $self->list_loaded_genomes({data_source=>$gnsrc, genome_ver=>$objVer, genome_ws=>$gnws});
     } else {
         $genomes = $params->{genomes};
