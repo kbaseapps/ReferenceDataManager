@@ -3388,6 +3388,7 @@ sub update_loaded_genomes
     $output = [];
 
     my $solr_core = ($params->{kb_env} =~ /prod$/i) ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
+    my $obj_typ = ($params->{kb_env} =~ /prod$/i) ? "KBaseGenomes.Genome-8.2" : "KBaseGenomes.Genome-12.3";  
 
     my $ref_genomes = $self->list_reference_genomes({
             refseq=>$params->{refseq},
@@ -3403,7 +3404,7 @@ sub update_loaded_genomes
     
     my $new_genomes;
     if( $params->{update_only} == 1 ) {
-        $new_genomes = $solrer->new_or_updated({solr_core=>$solr_core, search_docs=>$ref_genomes});
+        $new_genomes = $solrer->new_or_updated({solr_core=>$solr_core, search_docs=>$ref_genomes,search_type=>$obj_typ});
     }
     else {
         $new_genomes = $ref_genomes;
