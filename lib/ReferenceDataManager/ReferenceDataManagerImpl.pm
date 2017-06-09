@@ -3386,9 +3386,9 @@ sub update_loaded_genomes
 
     my $msg = "";
     $output = [];
-
-    my $solr_core = ($params->{kb_env} =~ /prod$/i) ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
-    my $obj_typ = ($params->{kb_env} =~ /prod$/i) ? "KBaseGenomes.Genome-8.2" : "KBaseGenomes.Genome-12.3";  
+    my $kbenv = $params->{kb_env};
+    my $solr_core = ($kbenv =~ /prod$/i) ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
+    my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-8.2" : "KBaseGenomes.Genome-12.3";  
 
     my $ref_genomes = $self->list_reference_genomes({
             refseq=>$params->{refseq},
@@ -3410,7 +3410,7 @@ sub update_loaded_genomes
         $new_genomes = $ref_genomes;
     }
 
-    $output = $self->load_genomes( {genomes => $new_genomes, index_in_solr => $params->{index_in_solr}} ); 
+    $output = $self->load_genomes( {genomes=>$new_genomes, index_in_solr=>$params->{index_in_solr},kb_env=>$kbenv} ); 
     $msg .= "Updated ".@{$output}." genomes!";
     print $msg . "\n"; 
 
