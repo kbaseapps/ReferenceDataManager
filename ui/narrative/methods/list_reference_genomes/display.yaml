@@ -63,14 +63,6 @@ parameters :
         long-hint  : |
             List genomes of this division available in given source
             
-    updated_only :
-        ui-name : |
-            Updated genomes only
-        short-hint : |
-            Only list updated genomes
-        long-hint  : |
-            Only list updated genomes
-    
     create_report :
         ui-name : |
             Create KBase Report

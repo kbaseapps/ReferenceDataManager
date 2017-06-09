@@ -15,11 +15,9 @@ module ReferenceDataManager {
         bool ensembl;
         bool refseq;
         bool phytozome;
-        bool updated_only;
         string domain;
         string workspace_name;
         bool create_report;
-        string solr_core; 
     } ListReferenceGenomesParams;
 
     /*
@@ -348,6 +346,7 @@ module ReferenceDataManager {
         string workspace_name;
         string domain;
         int start_offset;
+        bool index_in_solr;
         string kb_env;
     } UpdateLoadedGenomesParams;
     

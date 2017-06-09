@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = 'd71cc097f645a8c13c388173d531ee3afbf7e7d6';
+our $GIT_COMMIT_HASH = '80763c8d98b3d36a7ffe746ecc89faa0d0848dd5';
 
 =head1 NAME
 
@@ -991,16 +991,13 @@ sub _getWorkspaceGenomes
 #   input:
 #       $source: "refseq" | "genbank" {default => "refseq"}
 #       $division: "bacteria" | "archaea" | "plant" | "fungi" | multivalued, comma-seperated, {default => "bacteria"}
-#       $update_only: 0 | 1 {default => 0}
 #   output:
 #       a list of ncbi genomes
 #
 sub _list_ncbi_refgenomes
 {
-    my ($self, $source, $division, $update_only, $solr_core) = @_;
+    my ($self, $source, $division) = @_;
     $source = "refseq" unless $source;
-    $update_only = 0 unless $update_only;
-    $solr_core = "GenomeFeatures_ci" unless $solr_core;
 
     my $output = [];
     my $summary = "";
@@ -1036,20 +1033,6 @@ sub _list_ncbi_refgenomes
             $current_genome->{refseq_category} = $attribs[4];
             $current_genome->{tax_id} = $attribs[5];
             $current_genome->{assembly_level} = $attribs[11];
-=begin
-            if( $update_only == 1 ) {
-                my $gn_status = $self->_checkGenomeStatus( $current_genome, $solr_core );
-                if( $gn_status=~/(new|updated)/i ) {
-                    $current_genome->{gn_status} = $gn_status;
-                    push @{$output},$current_genome;
-                }
-            }
-            else {
-                $current_genome->{gn_status} = undef;
-                push @{$output},$current_genome;
-            }
-=cut
-
             push @{$output},$current_genome;
 
             if ($count <= 10) {
@@ -1286,11 +1269,9 @@ ListReferenceGenomesParams is a reference to a hash where the following keys are
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
-	updated_only has a value which is a ReferenceDataManager.bool
 	domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
-	solr_core has a value which is a string
 bool is an int
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
@@ -1318,11 +1299,9 @@ ListReferenceGenomesParams is a reference to a hash where the following keys are
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
-	updated_only has a value which is a ReferenceDataManager.bool
 	domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
-	solr_core has a value which is a string
 bool is an int
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
@@ -1373,10 +1352,8 @@ sub list_reference_genomes
         phytozome => 0,
         ensembl => 0, 
         domain => "bacteria",
-        update_only => 0,
         create_report => 0,
-        workspace_name => undef,
-        solr_core => "GenomeFeatures_ci"
+        workspace_name => undef
     });
 
     my $summary = "";
@@ -1398,7 +1375,7 @@ sub list_reference_genomes
     
     print $gn_source . "---" . $gn_domain . "\n";
     
-    my $list_items = $self->_list_ncbi_refgenomes($gn_source, $gn_domain, $params->{update_only}, $params->{solr_core});
+    my $list_items = $self->_list_ncbi_refgenomes($gn_source, $gn_domain);
     if(defined($list_items)) {
         $output = $list_items->{ref_genomes};
         $summary = $list_items->{summary};
@@ -3280,7 +3257,7 @@ sub load_refgenomes
     });
 
     $output = [];
-    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl},update_only=>0});
+    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl}});
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
 
     if( (scalar @{$ref_genomes}) > 0 ) {
@@ -3321,6 +3298,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	workspace_name has a value which is a string
 	domain has a value which is a string
 	start_offset has a value which is an int
+	index_in_solr has a value which is a ReferenceDataManager.bool
 	kb_env has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -3350,6 +3328,7 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	workspace_name has a value which is a string
 	domain has a value which is a string
 	start_offset has a value which is an int
+	index_in_solr has a value which is a ReferenceDataManager.bool
 	kb_env has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -3401,6 +3380,7 @@ sub update_loaded_genomes
         domain => "bacteria",
         start_offset=>0,
         kb_env => "ci",
+        index_in_solr => 0,
         workspace_name=>undef
     });
 
@@ -3413,9 +3393,7 @@ sub update_loaded_genomes
             refseq=>$params->{refseq},
             phytozome=>$params->{phytozome},
             ensembl=>$params->{ensembl},
-            domain=>$params->{domain},
-            update_only=>$params->{update_only},
-            solr_core=>$solr_core
+            domain=>$params->{domain}
         });
 
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
@@ -3423,8 +3401,15 @@ sub update_loaded_genomes
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
     
-    my $new_genomes = $solrer->new_or_updated({solr_core=>$solr_core, search_docs=>$ref_genomes});
-    $output = $self->load_genomes( {genomes => $new_genomes, index_in_solr => 1} ); 
+    my $new_genomes;
+    if( $params->{update_only} == 1 ) {
+        $new_genomes = $solrer->new_or_updated({solr_core=>$solr_core, search_docs=>$ref_genomes});
+    }
+    else {
+        $new_genomes = $ref_genomes;
+    }
+
+    $output = $self->load_genomes( {genomes => $new_genomes, index_in_solr => $params->{index_in_solr}} ); 
     $msg .= "Updated ".@{$output}." genomes!";
     print $msg . "\n"; 
 
@@ -3544,11 +3529,9 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
-updated_only has a value which is a ReferenceDataManager.bool
 domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
-solr_core has a value which is a string
 
 </pre>
 
@@ -3560,11 +3543,9 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
-updated_only has a value which is a ReferenceDataManager.bool
 domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
-solr_core has a value which is a string
 
 
 =end text
@@ -4444,6 +4425,7 @@ update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 domain has a value which is a string
 start_offset has a value which is an int
+index_in_solr has a value which is a ReferenceDataManager.bool
 kb_env has a value which is a string
 
 </pre>
@@ -4460,6 +4442,7 @@ update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 domain has a value which is a string
 start_offset has a value which is an int
+index_in_solr has a value which is a ReferenceDataManager.bool
 kb_env has a value which is a string
 
 
