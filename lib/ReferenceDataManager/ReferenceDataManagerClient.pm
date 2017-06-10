@@ -125,7 +125,6 @@ ListReferenceGenomesParams is a reference to a hash where the following keys are
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
-	updated_only has a value which is a ReferenceDataManager.bool
 	domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
@@ -156,7 +155,6 @@ ListReferenceGenomesParams is a reference to a hash where the following keys are
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
-	updated_only has a value which is a ReferenceDataManager.bool
 	domain has a value which is a string
 	workspace_name has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
@@ -248,10 +246,9 @@ Lists genomes present in selected reference databases (ensembl, phytozome, refse
 $params is a ReferenceDataManager.ListLoadedGenomesParams
 $output is a reference to a list where each element is a ReferenceDataManager.LoadedReferenceGenomeData
 ListLoadedGenomesParams is a reference to a hash where the following keys are defined:
-	ensembl has a value which is a ReferenceDataManager.bool
-	refseq has a value which is a ReferenceDataManager.bool
-	phytozome has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	data_source has a value which is a string
+	genome_ws has a value which is a string
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -282,10 +279,9 @@ LoadedReferenceGenomeData is a reference to a hash where the following keys are 
 $params is a ReferenceDataManager.ListLoadedGenomesParams
 $output is a reference to a list where each element is a ReferenceDataManager.LoadedReferenceGenomeData
 ListLoadedGenomesParams is a reference to a hash where the following keys are defined:
-	ensembl has a value which is a ReferenceDataManager.bool
-	refseq has a value which is a ReferenceDataManager.bool
-	phytozome has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	data_source has a value which is a string
+	genome_ws has a value which is a string
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
@@ -488,6 +484,10 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	start_offset has a value which is an int
+	genome_count has a value which is an int
+	genome_source has a value which is a string
+	genome_ws has a value which is a string
+	index_features has a value which is a ReferenceDataManager.bool
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -554,6 +554,10 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	solr_core has a value which is a string
 	workspace_name has a value which is a string
 	start_offset has a value which is an int
+	genome_count has a value which is an int
+	genome_source has a value which is a string
+	genome_ws has a value which is a string
+	index_features has a value which is a ReferenceDataManager.bool
 	genome_ver has a value which is an int
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1314,6 +1318,7 @@ LoadGenomesParams is a reference to a hash where the following keys are defined:
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	kb_env has a value which is a string
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
 	version_status has a value which is a string
@@ -1352,6 +1357,7 @@ LoadGenomesParams is a reference to a hash where the following keys are defined:
 	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	kb_env has a value which is a string
 ReferenceGenomeData is a reference to a hash where the following keys are defined:
 	accession has a value which is a string
 	version_status has a value which is a string
@@ -1456,6 +1462,7 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	start_offset has a value which is an int
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	kb_env has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -1483,6 +1490,7 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	start_offset has a value which is an int
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	kb_env has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -1500,7 +1508,7 @@ KBaseReferenceGenomeData is a reference to a hash where the following keys are d
 
 =item Description
 
-Loads Reference genomes into KBase workspace without indexing
+Loads NCBI RefSeq genomes into KBase workspace with or without SOLR indexing
 
 =back
 
@@ -1554,110 +1562,6 @@ Loads Reference genomes into KBase workspace without indexing
  
 
 
-=head2 rast_genomes
-
-  $output = $obj->rast_genomes($params)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$params is a ReferenceDataManager.RASTGenomesParams
-$output is a ReferenceDataManager.RASTGenomesResults
-RASTGenomesParams is a reference to a hash where the following keys are defined:
-	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
-	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
-solrdoc is a reference to a hash where the key is a string and the value is a string
-bool is an int
-RASTGenomesResults is a reference to a hash where the following keys are defined:
-	workspace_name has a value which is a string
-	report_name has a value which is a string
-	report_ref has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$params is a ReferenceDataManager.RASTGenomesParams
-$output is a ReferenceDataManager.RASTGenomesResults
-RASTGenomesParams is a reference to a hash where the following keys are defined:
-	data has a value which is a string
-	genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
-	workspace_name has a value which is a string
-	create_report has a value which is a ReferenceDataManager.bool
-solrdoc is a reference to a hash where the key is a string and the value is a string
-bool is an int
-RASTGenomesResults is a reference to a hash where the following keys are defined:
-	workspace_name has a value which is a string
-	report_name has a value which is a string
-	report_ref has a value which is a string
-
-
-=end text
-
-=item Description
-
-RASTs specified genomes into KBase workspace and indexes in SOLR on demand
-
-=back
-
-=cut
-
- sub rast_genomes
-{
-    my($self, @args) = @_;
-
-# Authentication: required
-
-    if ((my $n = @args) != 1)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function rast_genomes (received $n, expecting 1)");
-    }
-    {
-	my($params) = @args;
-
-	my @_bad_arguments;
-        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to rast_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'rast_genomes');
-	}
-    }
-
-    my $url = $self->{url};
-    my $result = $self->{client}->call($url, $self->{headers}, {
-	    method => "ReferenceDataManager.rast_genomes",
-	    params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{error}->{code},
-					       method_name => 'rast_genomes',
-					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method rast_genomes",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'rast_genomes',
-				       );
-    }
-}
- 
-
-
 =head2 update_loaded_genomes
 
   $output = $obj->update_loaded_genomes($params)
@@ -1679,6 +1583,8 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	workspace_name has a value which is a string
 	domain has a value which is a string
 	start_offset has a value which is an int
+	index_in_solr has a value which is a ReferenceDataManager.bool
+	kb_env has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -1707,6 +1613,8 @@ UpdateLoadedGenomesParams is a reference to a hash where the following keys are 
 	workspace_name has a value which is a string
 	domain has a value which is a string
 	start_offset has a value which is an int
+	index_in_solr has a value which is a ReferenceDataManager.bool
+	kb_env has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -1916,7 +1824,6 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
-updated_only has a value which is a ReferenceDataManager.bool
 domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
@@ -1931,7 +1838,6 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
-updated_only has a value which is a ReferenceDataManager.bool
 domain has a value which is a string
 workspace_name has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
@@ -2017,10 +1923,9 @@ Arguments for the list_loaded_genomes function
 
 <pre>
 a reference to a hash where the following keys are defined:
-ensembl has a value which is a ReferenceDataManager.bool
-refseq has a value which is a ReferenceDataManager.bool
-phytozome has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+data_source has a value which is a string
+genome_ws has a value which is a string
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -2031,10 +1936,9 @@ create_report has a value which is a ReferenceDataManager.bool
 =begin text
 
 a reference to a hash where the following keys are defined:
-ensembl has a value which is a ReferenceDataManager.bool
-refseq has a value which is a ReferenceDataManager.bool
-phytozome has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+data_source has a value which is a string
+genome_ws has a value which is a string
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -2372,6 +2276,10 @@ genomes has a value which is a reference to a list where each element is a Refer
 solr_core has a value which is a string
 workspace_name has a value which is a string
 start_offset has a value which is an int
+genome_count has a value which is an int
+genome_source has a value which is a string
+genome_ws has a value which is a string
+index_features has a value which is a ReferenceDataManager.bool
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -2386,6 +2294,10 @@ genomes has a value which is a reference to a list where each element is a Refer
 solr_core has a value which is a string
 workspace_name has a value which is a string
 start_offset has a value which is an int
+genome_count has a value which is an int
+genome_source has a value which is a string
+genome_ws has a value which is a string
+index_features has a value which is a ReferenceDataManager.bool
 genome_ver has a value which is an int
 create_report has a value which is a ReferenceDataManager.bool
 
@@ -2717,6 +2629,7 @@ data has a value which is a string
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+kb_env has a value which is a string
 
 </pre>
 
@@ -2729,6 +2642,7 @@ data has a value which is a string
 genomes has a value which is a reference to a list where each element is a ReferenceDataManager.ReferenceGenomeData
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+kb_env has a value which is a string
 
 
 =end text
@@ -2760,6 +2674,7 @@ phytozome has a value which is a ReferenceDataManager.bool
 start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+kb_env has a value which is a string
 
 </pre>
 
@@ -2774,81 +2689,7 @@ phytozome has a value which is a ReferenceDataManager.bool
 start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
-
-
-=end text
-
-=back
-
-
-
-=head2 RASTGenomesParams
-
-=over 4
-
-
-
-=item Description
-
-Arguments for the rast_genomes function
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a reference to a hash where the following keys are defined:
-data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
-workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
-
-</pre>
-
-=end html
-
-=begin text
-
-a reference to a hash where the following keys are defined:
-data has a value which is a string
-genomes has a value which is a reference to a list where each element is a ReferenceDataManager.solrdoc
-workspace_name has a value which is a string
-create_report has a value which is a ReferenceDataManager.bool
-
-
-=end text
-
-=back
-
-
-
-=head2 RASTGenomesResults
-
-=over 4
-
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a reference to a hash where the following keys are defined:
-workspace_name has a value which is a string
-report_name has a value which is a string
-report_ref has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-a reference to a hash where the following keys are defined:
-workspace_name has a value which is a string
-report_name has a value which is a string
-report_ref has a value which is a string
+kb_env has a value which is a string
 
 
 =end text
@@ -2881,6 +2722,8 @@ update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 domain has a value which is a string
 start_offset has a value which is an int
+index_in_solr has a value which is a ReferenceDataManager.bool
+kb_env has a value which is a string
 
 </pre>
 
@@ -2896,6 +2739,8 @@ update_only has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 domain has a value which is a string
 start_offset has a value which is an int
+index_in_solr has a value which is a ReferenceDataManager.bool
+kb_env has a value which is a string
 
 
 =end text
