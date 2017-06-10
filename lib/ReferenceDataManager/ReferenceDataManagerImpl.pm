@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '80763c8d98b3d36a7ffe746ecc89faa0d0848dd5';
+our $GIT_COMMIT_HASH = 'ee5c7baa56f1f38cdaf8557a46d77a98a2fc0b8f';
 
 =head1 NAME
 
@@ -1611,7 +1611,8 @@ sub list_loaded_genomes
         }
     }
     $msg .= "\nThere are a total of " . @{$output} . " Reference genomes loaded in KBase workspace " . $wsname ."\n";
-    print $msg . "\n";     
+    print $msg . "\n";    
+
     if ($params->{create_report}) {
         $self->util_create_report({
                 message => $msg,
@@ -3178,6 +3179,7 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	start_offset has a value which is an int
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	kb_env has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -3205,6 +3207,7 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	start_offset has a value which is an int
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
+	kb_env has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -3224,7 +3227,7 @@ KBaseReferenceGenomeData is a reference to a hash where the following keys are d
 
 =item Description
 
-Loads Reference genomes into KBase workspace without indexing
+Loads NCBI RefSeq genomes into KBase workspace with or without SOLR indexing
 
 =back
 
@@ -3253,7 +3256,8 @@ sub load_refgenomes
         ensembl=>0,
         start_offset=>0, 
         index_in_solr=>0,
-        workspace_name=>undef
+        workspace_name=>undef,
+        kb_env=>'ci'
     });
 
     $output = [];
@@ -3261,7 +3265,7 @@ sub load_refgenomes
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
 
     if( (scalar @{$ref_genomes}) > 0 ) {
-        $output = $self->load_genomes({genomes =>$ref_genomes, index_in_solr=>$params->{index_in_solr}});
+        $output = $self->load_genomes({genomes =>$ref_genomes, index_in_solr=>$params->{index_in_solr},kb_env=>$params->{kb_env}});
     } 
     #END load_refgenomes
     my @_bad_returns;
@@ -4380,6 +4384,7 @@ phytozome has a value which is a ReferenceDataManager.bool
 start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+kb_env has a value which is a string
 
 </pre>
 
@@ -4394,6 +4399,7 @@ phytozome has a value which is a ReferenceDataManager.bool
 start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
+kb_env has a value which is a string
 
 
 =end text

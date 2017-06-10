@@ -63,6 +63,16 @@
        "text_options" : {
            "validate_as": "int"
        }
+  }, {
+    "id" : "kb_env",
+    "default_values" : ["ci"],
+    "advanced" : false,
+    "allow_multiple" : false,
+    "optional" : false,
+    "field_type" : "text",
+    "text_options" : {
+      "valid_as" : "text"
+    }
   }],
   "job_id_output_field": "docker",
   "behavior" : {
@@ -82,6 +92,10 @@
         {
           "input_parameter": "phytozome",
           "target_property": "phytozome"
+        },
+        {
+          "input_parameter" : "kb_env",
+          "target_property": "kb_env"
         },
         {
           "input_parameter": "index_in_solr",

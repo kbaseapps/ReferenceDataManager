@@ -327,10 +327,11 @@ module ReferenceDataManager {
         int start_offset;
         bool index_in_solr;
         string workspace_name;
+        string kb_env;
     } LoadRefGenomesParams;
     
     /*
-        Loads Reference genomes into KBase workspace without indexing
+        Loads NCBI RefSeq genomes into KBase workspace with or without SOLR indexing
     */
     funcdef load_refgenomes(LoadRefGenomesParams params) returns (list<KBaseReferenceGenomeData> output) authentication required;
    

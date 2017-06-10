@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Load RefSeq genomes to KBase
+name     : Load RefSeq genomes from NCBI to KBase
 
 tooltip  : |
     Load RefSeq genomes from NCBI refseq database to KBase workspace
@@ -70,6 +70,12 @@ parameters :
             Index the genomes after load
         long-hint  : |
             Indicate to send the genomes to Solr for indexing after l ad
+
+    kb_env :
+         ui-name : |
+             KBase environment
+         short-hint : |
+             Indicate the KBase computing environment, CI or prod
 
 description : |
     <p>Load the NCBI RefSeq genomes</p>
