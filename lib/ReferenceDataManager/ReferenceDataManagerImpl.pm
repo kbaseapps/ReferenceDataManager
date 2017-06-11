@@ -1978,7 +1978,7 @@ sub index_genomes_in_solr
     }
     
     my $gn_total;
-    if (defined($params->{genome_count}) {
+    if (defined($params->{genome_count})) {
        $gn_total = $params->{genome_count};
     }
     else {
