@@ -1346,6 +1346,7 @@ sub list_reference_genomes
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
     my($output);
     #BEGIN list_reference_genomes
+    print "\nContext passed to list_reference_genomes: " . Dumper($ctx);
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         refseq => 1,
@@ -1709,6 +1710,7 @@ sub list_solr_genomes
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
     my($output);
     #BEGIN list_solr_genomes
+    print "\nContext passed to list_solr_genomes: " . Dumper($ctx);
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         solr_core => "Genomes_prod",
