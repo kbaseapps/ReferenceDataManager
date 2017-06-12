@@ -41,7 +41,7 @@ module ReferenceDataManager {
     /*
         Lists genomes present in selected reference databases (ensembl, phytozome, refseq)
     */
-    funcdef list_reference_genomes(ListReferenceGenomesParams params) returns (list<ReferenceGenomeData> output);
+    funcdef list_reference_genomes(ListReferenceGenomesParams params) returns (list<ReferenceGenomeData> output) authentication required;
     
     /*
         Arguments for the list_loaded_genomes function
@@ -80,7 +80,7 @@ module ReferenceDataManager {
     /*
         Lists genomes loaded into KBase from selected reference sources (ensembl, phytozome, refseq)
     */
-    funcdef list_loaded_genomes(ListLoadedGenomesParams params) returns (list<LoadedReferenceGenomeData> output);
+    funcdef list_loaded_genomes(ListLoadedGenomesParams params) returns (list<LoadedReferenceGenomeData> output) authentication required;
 
 
     /* Solr doc data for search requests.                                       
@@ -234,7 +234,7 @@ module ReferenceDataManager {
     /*
         Lists taxa loaded into KBase for a given workspace 
     */
-    funcdef list_loaded_taxa(ListLoadedTaxaParams params) returns (list<LoadedReferenceTaxonData> output);
+    funcdef list_loaded_taxa(ListLoadedTaxaParams params) returns (list<LoadedReferenceTaxonData> output) authentication required;
    
 
     /*

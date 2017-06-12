@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = 'ee5c7baa56f1f38cdaf8557a46d77a98a2fc0b8f';
+our $GIT_COMMIT_HASH = 'c510f440a292883dcb4fbd014d4f9651e76acd45';
 
 =head1 NAME
 
@@ -157,8 +157,8 @@ sub util_create_report {
             });
         }
     }
-    print "Token used inside create_report: " . Dumper($self->util_ws_client()->{token});
-    print "Workspace name passed to create_report:" . Dumper($args);
+    #print "Token used inside create_report: " . Dumper($self->util_ws_client()->{token});
+    #print "Workspace name passed to create_report:" . Dumper($args);
     $self->util_ws_client()->save_objects({
         workspace => $args->{workspace},
         objects => [{
@@ -1346,7 +1346,6 @@ sub list_reference_genomes
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
     my($output);
     #BEGIN list_reference_genomes
-    print "\nContext passed to list_reference_genomes: " . Dumper($ctx);
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         refseq => 1,
@@ -1357,7 +1356,6 @@ sub list_reference_genomes
         workspace_name => undef
     });
 
-    print "\nToken used inside list_reference_genomes: " . Dumper($self->util_ws_client()->{token});
     my $summary = "";
     $output = [];
 
@@ -1710,7 +1708,6 @@ sub list_solr_genomes
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
     my($output);
     #BEGIN list_solr_genomes
-    print "\nContext passed to list_solr_genomes: " . Dumper($ctx);
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         solr_core => "Genomes_prod",
@@ -1722,7 +1719,6 @@ sub list_solr_genomes
         complete => undef,
         workspace_name => undef
     });
-    print "\nToken used inside list_solr_genomes: " . Dumper($self->util_ws_client()->{token});
     $output = [];
     my $msg = "Found ";
     my $solrout;
