@@ -157,8 +157,8 @@ sub util_create_report {
             });
         }
     }
-    #print "Token used inside create_report: " . Dumper($self->util_ws_client()->{token});
-    #print "Workspace name passed to create_report:" . Dumper($args);
+    print "Token used inside create_report: " . Dumper($self->util_ws_client()->{token});
+    print "Workspace name passed to create_report:" . Dumper($args);
     $self->util_ws_client()->save_objects({
         workspace => $args->{workspace},
         objects => [{
