@@ -44,7 +44,7 @@ sub util_initialize_call {
     $self->{_username} = $ctx->user_id();
     $self->{_method} = $ctx->method();
     $self->{_provenance} = $ctx->provenance();
-    #print "Token passed at initialization: " . Dumper($self->{_token});
+    print "Token passed at initialization: " . Dumper($self->{_token});
     my $config_file = $ENV{ KB_DEPLOYMENT_CONFIG };
     my $cfg = Config::IniFiles->new(-file=>$config_file);
     $self->{data} = $cfg->val('ReferenceDataManager','data');
@@ -1356,6 +1356,7 @@ sub list_reference_genomes
         workspace_name => undef
     });
 
+    print "\nToken used inside list_reference_genomes: " . Dumper($self->util_ws_client()->{token});
     my $summary = "";
     $output = [];
 
@@ -1719,6 +1720,7 @@ sub list_solr_genomes
         complete => undef,
         workspace_name => undef
     });
+    print "\nToken used inside list_solr_genomes: " . Dumper($self->util_ws_client()->{token});
     $output = [];
     my $msg = "Found ";
     my $solrout;
@@ -1956,7 +1958,7 @@ sub index_genomes_in_solr
         create_report=>0,
         genome_ver=>1,
         start_offset=>0,
-        genome_count=>undef,
+        genome_count=>100,
         genome_source=>"refseq",
         index_features=>1,
         genome_ws=>undef
@@ -1967,7 +1969,6 @@ sub index_genomes_in_solr
     my $gnsrc = $params->{genome_source};
     my $objVer = $params->{genome_ver};
     my $gnws = undef;
-    
     if($gnsrc eq "others") {
         $gnws = $params->{genome_ws};
     }
@@ -1976,22 +1977,14 @@ sub index_genomes_in_solr
     } else {
         $genomes = $params->{genomes};
     }
-    
-    my $gn_total;
-    if (defined($params->{genome_count})) {
-       $gn_total = $params->{genome_count};
-    }
-    else {
-       $gn_total = @{$genomes};
-    }   
-    
+
     my $solrCore = $params->{solr_core};
     my $gn_start = $params->{start_offset};
+    my $gn_total = $params->{genome_count};
     my $gn_upper = $gn_total + $gn_start;
     if ($gn_upper > @{$genomes} - 1) {
         $gn_upper = @{$genomes} - 1;
     }
-    
     @{$genomes} = @{$genomes}[$gn_start..$gn_upper];
     print "\nTotal genomes to be indexed: ". @{$genomes} . " to SOLR ". $solrCore ."\n";
     $output = $self->_indexGenomeFeatureData($solrCore, $genomes,$params->{index_features});
