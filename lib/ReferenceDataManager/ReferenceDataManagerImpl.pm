@@ -44,7 +44,7 @@ sub util_initialize_call {
     $self->{_username} = $ctx->user_id();
     $self->{_method} = $ctx->method();
     $self->{_provenance} = $ctx->provenance();
-    print "Token passed at initialization: " . Dumper($self->{_token});
+    #print "Token passed at initialization: " . Dumper($self->{_token});
     my $config_file = $ENV{ KB_DEPLOYMENT_CONFIG };
     my $cfg = Config::IniFiles->new(-file=>$config_file);
     $self->{data} = $cfg->val('ReferenceDataManager','data');
