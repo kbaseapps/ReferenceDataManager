@@ -1574,9 +1574,10 @@ sub list_loaded_genomes
                             }
                             elsif( $obj_src && $i == 1 ) {#refseq genomes (exclude 'plant')
                                 if( $obj_src =~ /refseq*/i && $ws_objinfo->[4] == $params->{genome_ver}) {#check the source to exclude phytozome genomes
-                                    $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
-                                    push @{$output}, $curr_gn_info;
-                            
+                                    $curr_gn_info = $self->_getGenomeInfo($ws_objinfo);
+                                    if ($curr_gn_info->{save_date}=~/2017-06-13/) { 
+                                       push @{$output}, $curr_gn_info;
+                                    }
                                     if (@{$output} < 10  && @{$output} > 0) {
                                         $msg .= $self->_genomeInfoString($curr_gn_info);
                                     }
