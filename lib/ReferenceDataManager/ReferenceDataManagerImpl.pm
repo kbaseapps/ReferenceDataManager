@@ -781,9 +781,9 @@ sub _indexGenomeFeatureData
                 }
             }
             else {
-                print "\nget_objects returned " . scalar @{$ws_gnout} . " genomes.\n";
+                print "\nget_objects2 genome ref passed " . scalar @{$gn_refs} . " genomes.\n";
                 $ws_gnout = $ws_gnout->{data};#a reference to a list where each element is a Workspace.ObjectData
-                print "\nthat contains: " . scalar @{$ws_gnout} . " ObjectData.\n";
+                print "\nand returned: " . scalar @{$ws_gnout} . " ObjectData.\n";
                 my $ws_gn_data;#to hold a value which is a Workspace.objectData
                 my $ws_gn_info;#to hold a value which is a Workspace.object_info
                 my $obj_ref;#to hold the KBase workspace reference id for an object
