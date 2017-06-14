@@ -55,5 +55,13 @@ parameters :
         long-hint  : |
             List genomes loaded for this version only
 
+    save_date :
+        ui-name : |
+            Date genome loaded
+        short-hint : |
+            The date when the genome(s) were loaded(e.g., 2017-06-06, or 2017-06)
+        long-hint  : |
+            The date when the genome(s) were loaded, in yyyy-mm-dd format, e.g., 2017-06-06, 2017-06
+
 description : |
     <p>Lists genomes loaded into KBase from source databases</p>

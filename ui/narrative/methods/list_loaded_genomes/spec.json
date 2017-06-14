@@ -64,6 +64,16 @@
     "text_options":{
 	"validate_as" : "int"
     }
+  }, {
+    "id" : "save_date",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":"",
+    "field_type" : "text",
+    "text_options":{
+	"validate_as" : "text"
+    }
   }],
   "job_id_output_field": "docker",
   "behavior" : {
@@ -83,6 +93,10 @@
 	{
           "input_parameter": "genome_ver",
           "target_property": "genome_ver"
+        },
+        {
+          "input_parameter" : "save_date",
+          "target_property": "save_date"
         },
         {
           "constant_value" : "1",

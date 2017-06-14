@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = 'c510f440a292883dcb4fbd014d4f9651e76acd45';
+our $GIT_COMMIT_HASH = '0558b3af831c4d8a60add6b71731c0b9540a1be3';
 
 =head1 NAME
 
@@ -1421,6 +1421,7 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	data_source has a value which is a string
 	genome_ws has a value which is a string
 	genome_ver has a value which is an int
+	save_date has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 LoadedReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1454,6 +1455,7 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	data_source has a value which is a string
 	genome_ws has a value which is a string
 	genome_ver has a value which is an int
+	save_date has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 LoadedReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -1508,6 +1510,7 @@ sub list_loaded_genomes
         data_source=>"refseq",
         create_report=>0,
         genome_ver=>1,
+        save_date=>undef,
         genome_ws=>"ReferenceDataManager",
         workspace_name=>undef
     });
@@ -1574,13 +1577,21 @@ sub list_loaded_genomes
                             }
                             elsif( $obj_src && $i == 1 ) {#refseq genomes (exclude 'plant')
                                 if( $obj_src =~ /refseq*/i && $ws_objinfo->[4] == $params->{genome_ver}) {#check the source to exclude phytozome genomes
-                                    $curr_gn_info = $self->_getGenomeInfo($ws_objinfo);
-                                    if ($curr_gn_info->{save_date}=~/2017-06-13/) { 
+                                   $curr_gn_info = $self->_getGenomeInfo($ws_objinfo);
+                                   if (defined($params->{save_date})) {
+                                       if($curr_gn_info->{save_date}=~/$params->{save_date}/) { 
+                                           push @{$output}, $curr_gn_info;
+                                           if (@{$output} < 10  && @{$output} > 0) {
+                                                $msg .= $self->_genomeInfoString($curr_gn_info);
+                                           }
+                                       }
+                                   }
+                                   else {
                                        push @{$output}, $curr_gn_info;
-                                    }
-                                    if (@{$output} < 10  && @{$output} > 0) {
-                                        $msg .= $self->_genomeInfoString($curr_gn_info);
-                                    }
+                                       if (@{$output} < 10  && @{$output} > 0) {
+                                          $msg .= $self->_genomeInfoString($curr_gn_info);
+                                       }
+                                   }
                                 }
                             }
                             elsif( $obj_src && $i == 2 ) {#ensembl genomes #TODO
@@ -1798,6 +1809,7 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	genome_ws has a value which is a string
 	index_features has a value which is a ReferenceDataManager.bool
 	genome_ver has a value which is an int
+	save_date has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -1868,6 +1880,7 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	genome_ws has a value which is a string
 	index_features has a value which is a ReferenceDataManager.bool
 	genome_ver has a value which is an int
+	save_date has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -1956,6 +1969,7 @@ sub index_genomes_in_solr
         workspace_name =>undef,
         create_report=>0,
         genome_ver=>1,
+        save_date=>undef,
         start_offset=>0,
         genome_count=>100,
         genome_source=>"refseq",
@@ -1972,7 +1986,12 @@ sub index_genomes_in_solr
         $gnws = $params->{genome_ws};
     }
     if (!defined($params->{genomes}) or (scalar @{$params->{genomes}}) == 0) {
-        $genomes = $self->list_loaded_genomes({data_source=>$gnsrc, genome_ver=>$objVer, genome_ws=>$gnws});
+        if(defined($params->{save_date})) {
+            $genomes = $self->list_loaded_genomes({data_source=>$gnsrc, genome_ver=>$objVer, genome_ws=>$gnws, save_date=>$params->{save_date}});
+        }
+        else {
+            $genomes = $self->list_loaded_genomes({data_source=>$gnsrc, genome_ver=>$objVer, genome_ws=>$gnws});
+        }
     } else {
         $genomes = $params->{genomes};
     }
@@ -3638,6 +3657,7 @@ workspace_name has a value which is a string
 data_source has a value which is a string
 genome_ws has a value which is a string
 genome_ver has a value which is an int
+save_date has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -3651,6 +3671,7 @@ workspace_name has a value which is a string
 data_source has a value which is a string
 genome_ws has a value which is a string
 genome_ver has a value which is an int
+save_date has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 
@@ -3992,6 +4013,7 @@ genome_source has a value which is a string
 genome_ws has a value which is a string
 index_features has a value which is a ReferenceDataManager.bool
 genome_ver has a value which is an int
+save_date has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -4010,6 +4032,7 @@ genome_source has a value which is a string
 genome_ws has a value which is a string
 index_features has a value which is a ReferenceDataManager.bool
 genome_ver has a value which is an int
+save_date has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 

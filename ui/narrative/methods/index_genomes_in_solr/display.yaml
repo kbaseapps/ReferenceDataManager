@@ -92,5 +92,12 @@ parameters :
         long-hint  : |
             Index features (if checked) as well as genomes
 
+    save_date :
+        ui-name : |
+            Date genome loaded
+        short-hint : |
+            The date when the genome(s) were loaded(e.g., 2017-06-06, or 2017-06)
+        long-hint  : |
+            The date when the genome(s) were loaded, in yyyy-mm-dd format, e.g., 2017-06-06, 2017-06
 description : |
     <p>Send KBaseReferenceGenomeData genomes for index in Solr</p>

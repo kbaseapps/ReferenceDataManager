@@ -126,14 +126,24 @@
   }, {
     "id" : "index_features",
     "optional":false,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
-    "default_values": [ "1" ],                                                                                                                        
+    "default_values": [ "1" ], 
     "field_type": "checkbox",
     "checkbox_options":{
          "checked_value": 1,
          "unchecked_value": 0
     }   
+  }, {
+    "id" : "save_date",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":"",
+    "field_type" : "text",
+    "text_options":{
+	"validate_as" : "text"
+    }
   }],
   "job_id_output_field": "docker",
   "behavior" : {
@@ -173,6 +183,10 @@
         {
           "input_parameter" : "genome_source",
           "target_property": "genome_source"
+        },
+        {
+          "input_parameter" : "save_date",
+          "target_property": "save_date"
         },
         {
           "narrative_system_variable": "workspace",
