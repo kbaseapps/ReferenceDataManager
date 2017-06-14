@@ -762,24 +762,11 @@ sub _indexGenomeFeatureData
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-=begin    
-    my $kbgn_refs = [];
-    my $slrgn_refs = [];
-    #First, exclude the genomes already indexed in SOLR
-    foreach my $kb_gn (@{$ws_gnData}) {
-        push @{$kbgn_refs}, $kb_gn->{ref};
-    }
-    my $slrGenomes = $self->list_solr_genomes({solr_core => $solrCore});
-    foreach my $slr_gn (@{$slrGenomes}) {
-        push @{$slrgn_refs}, $slr_gn->{ws_ref};
-    } 
-    my @yetindxed = $self->_diffLists($kbgn_refs, $slrgn_refs);
-    print "\nGenomes to be indexed after excluding SOLR existing genomes: " . scalar @yetindxed;
-=cut
-    for($gn_count = 0; $gn_count < @{$ws_gnData}; $gn_count++) {
-        my $kb_gn = $ws_gnData->[$gn_count];
+    
+    for(my $gnCount = 0; $gnCount < @{$ws_gnData}; $gnCount++) {
+        my $kb_gn = $ws_gnData->[$gnCount];
         push @{$gn_refs}, {"ref" => $kb_gn->{ref}};
-        if( @{$gn_refs} >= $gnBatchCount or ($gn_count+1) == @{$ws_gnData}) {
+        if( @{$gn_refs} >= $gnBatchCount or ($gnCount+1) == @{$ws_gnData}) {
             eval {#return a reference to a list where each element is a Workspace.ObjectData with a key named 'data'
                 $ws_gnout = $self->util_ws_client()->get_objects2({
                         objects => $gn_refs
@@ -794,8 +781,9 @@ sub _indexGenomeFeatureData
                 }
             }
             else {
+                print "\nget_objects returned " . scalar @{$ws_gnout} . " genomes.\n";
                 $ws_gnout = $ws_gnout->{data};#a reference to a list where each element is a Workspace.ObjectData
-                #print "\nget_objects returned " . scalar @{$ws_gnout} . " genomes.\n";
+                print "\nthat contains: " . scalar @{$ws_gnout} . " ObjectData.\n";
                 my $ws_gn_data;#to hold a value which is a Workspace.objectData
                 my $ws_gn_info;#to hold a value which is a Workspace.object_info
                 my $obj_ref;#to hold the KBase workspace reference id for an object
@@ -837,7 +825,6 @@ sub _indexGenomeFeatureData
                             push @{$solr_gnftData}, $ws_gnft;
                         }
                         push @{$gnft_batch}, $ws_gnft;
-                        $ft_count ++;
                         if(@{$gnft_batch} >= $gnftBatchCount) {
                             print "\nTo be indexed: " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
                             my $solrret = 0;                        
@@ -853,6 +840,7 @@ sub _indexGenomeFeatureData
                             }
                             else {
                                 print "\nIndexed " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
+                                $ft_count += @{$gnft_batch};
                             }
                             $gnft_batch = [];
                         }
@@ -878,6 +866,7 @@ sub _indexGenomeFeatureData
         }
         else {
             print "\nIndexed leftover of " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
+            $ft_count += @{$gnft_batch};
         }
     }
     #after all genome features, index the genome objects
@@ -894,7 +883,9 @@ sub _indexGenomeFeatureData
             }
         }
         else {
-            print "\nIndexed a total of " . @{$gn_batch} . " genome(s) on " . scalar localtime . "\n";
+            $gn_count += @{$gn_batch};
+            print "\nIndexed a total of " . $gn_count . " genome(s) on " . scalar localtime . "\n";
+            print "\nIndexed a total of " . @{$ws_gnData} . " genome(s) to start ";
         }
     }
     return {"genome_features"=>$solr_gnftData,"count"=>$ft_count + $gn_count};
@@ -1971,7 +1962,7 @@ sub index_genomes_in_solr
         genome_ver=>1,
         save_date=>undef,
         start_offset=>0,
-        genome_count=>100,
+        genome_count=>undef,
         genome_source=>"refseq",
         index_features=>1,
         genome_ws=>undef
@@ -1998,7 +1989,7 @@ sub index_genomes_in_solr
 
     my $solrCore = $params->{solr_core};
     my $gn_start = $params->{start_offset};
-    my $gn_total = $params->{genome_count};
+    my $gn_total = defined($params->{genome_count})?$params->{genome_count}:scalar @{$genomes};
     my $gn_upper = $gn_total + $gn_start;
     if ($gn_upper > @{$genomes} - 1) {
         $gn_upper = @{$genomes} - 1;
