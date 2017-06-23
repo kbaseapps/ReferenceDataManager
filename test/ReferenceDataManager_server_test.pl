@@ -31,7 +31,28 @@ sub get_ws_name {
     }
     return $ws_name;
 }
-
+sub test_getObj2 {
+    my $obj_refs = [
+        {
+            'ref' => '20904/54220/1'
+        },
+        {
+            'ref' => '20904/54221/1'
+        },
+        {
+            'ref' => '20904/54222/1'
+        },
+        {
+            'ref' => '20904/54223/1'
+        },
+        {
+            'ref' => '20904/54252/1'
+        }
+    ];
+    $ws_client->get_objects2({
+        objects => $obj_refs
+    });
+}
 sub check_genome_obj {
     my($genome_obj) = @_;
     ok(defined($genome_obj->{features}), "Features array is present");
@@ -50,21 +71,60 @@ sub test_rast_genomes {
            };
     return $impl->get_genomes4RAST();
 }
+#begin
+    #Testing _updateGenomesCore function
+    my $updret;
+    eval {
+        $updret = $impl->_updateGenomesCore("GenomeFeatures_ci", "Genomes_ci","KBaseGenomes.Genome-12.3");
+        #$updret = $impl->_updateGenomesCore("GenomeFeatures_prod", "Genomes_prod","KBaseGenomes.Genome-8.2");
+    };
+    ok(!$@, "_updateGenomesCore command successful");
+    if ($@) { 
+         print "ERROR:".$@;
+    } else {
+         print "Result status: " .$updret."\n";
+    }
+    ok(defined($updret), "_updateGenomesCore command returneds a value:" . $updret);
+#cut
+=begin
+    #Testing list_loaded_genomes
+    my $wsret;
+    eval {
+        $wsret = $impl->list_loaded_genomes({
+            genome_ver => 1,
+            data_source => "refseq",#"others",
+            create_report => 1,
+            save_date => "2017-06-1",
+            workspace_name => get_ws_name()
+            #other_ws => "qzhang:narrative_1493170238855"	
+	});
+    };
+    ok(!$@,"list_loaded_genomes command successful");
+    if ($@) {
+        print "ERROR:".$@;
+    } else {
+        print "Number of records:".@{$wsret}."\n";
+        print "First record:\n";
+        print Data::Dumper->Dump([$wsret->[@{$wsret} -1]])."\n";
+        #print Data::Dumper->Dump([$wsret->[0]])."\n";
+    }
+    ok(defined($wsret->[0]),"list_loaded_genomes command returned at least one genome");
+=cut
 
-#=begin
+=begin
      #Testing get_genomes4RAST function
      my $rgret;
      eval {
         $rgret = $impl->get_genomes4RAST();
      };
-     ok(!$@,"rast_genomes command successful");
+     ok(!$@,"get_genomes4RAST command successful");
      if ($@) {
         print "ERROR:".$@;
      } else {
         print "Number of records:". $rgret->{genome_text}."\n";
      }
      ok(defined($rgret->{genome_text}),"get_genomes4RAST command returned successfully.");
-#=cut
+=cut
 
 =begin
      #Testing _getWorkspaceGenomes function
@@ -82,18 +142,65 @@ sub test_rast_genomes {
      ok(defined($rgret->[0]),"_getWorkspaceGenomes command returned successfully.");
 =cut
 =begin
+    #Testing update_loaded_genomes function
+    my $wsgnmret;
+    eval {
+        $wsgnmret = $impl->update_loaded_genomes({
+           refseq => 1,
+           start_offset => 87470,
+           kb_env => 'prod'
+         });
+    };
+    ok(!$@,"update_loaded_genomes command successful");
+    if ($@) {
+        print "ERROR:".$@;
+    } else {
+        print "Number of records:".@{$wsgnmret}."\n";
+        print "First record:\n";
+        print Data::Dumper->Dump([$wsgnmret->[0]])."\n";
+    }
+    ok(defined($wsgnmret->[0]),"update_loaded_genomes command returned at least one record");
+=cut
+
+=begin
     #Testing index_genomes_in_solr
-    my $slrcore = "GenomeFeatures_ci";
+    my $slrcore = "GenomeFeatures_prod";
     my $ret;
+    my $gnms = [
+          {
+            'ref' => '15792/114157/1',
+            'source' => 'refseq',
+            'id' => 'GCF_002140775',
+            'accession' => 'GCF_002140775.1',
+            'version' => '1',
+            'workspace_name' => 'ReferenceDataManager',
+            'domain' => 'bacteria',
+            'source_id' => 'GCF_002140775',
+            'name' => 'GCF_002140775'
+          },
+          {
+            'version' => '1',
+            'accession' => 'GCF_002162135.1',
+            'id' => 'GCF_002162135',
+            'source' => 'refseq',
+            'ref' => '15792/114154/2',
+            'name' => 'GCF_002162135',
+            'source_id' => 'GCF_002162135',
+            'domain' => 'bacteria',
+            'workspace_name' => 'ReferenceDataManager'
+          }
+        ];
     eval {
         $ret = $impl->index_genomes_in_solr({
-             genomes => undef,#$wsret,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
+             genomes => [],#$gnms,#[@{$wsret}[(@{$wsret} - 2)..(@{$wsret} - 1)]],#$wsret, #[@{$wsret}[0..1]],
              solr_core => $slrcore,
              genome_ver => 1,
-             genome_source => 'others',
-             genome_ws => 'ReferenceGenomeWS',
+             genome_source => 'refseq',#'others',
+             genome_ws => 'ReferenceDataManager', #'ReferenceGenomeWS',
              genome_count => 50000,
-             start_offset => 0
+             save_date => "2017-06-13",
+             start_offset => 0,
+             index_features => 1
         });
     };
     ok(!$@,"index_genomes_in_solr command successful");
@@ -206,7 +313,8 @@ eval {
     my $wsgnmret;
     eval {
         $wsgnmret = $impl->update_loaded_genomes({
-           refseq => 1
+           refseq => 1,
+           kb_env => 'ci'
         });
     };
     ok(!$@,"update_loaded_genomes command successful");
@@ -375,6 +483,7 @@ eval {
         $wsret = $impl->list_loaded_genomes({
             genome_ver => 1,
             data_source => "others",
+            create_report => 1,
 	    other_ws => "RefSeq_plant" #"qzhang:narrative_1493170238855"	
 	});
     };

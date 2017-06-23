@@ -362,7 +362,7 @@ sub get_genomes4RAST
 # Input parameters:   
 #     $src_core: This parameter specifies the source Solr core name.
 #     $dest_core: This parameter specifies the target Solr core name.
-#     $gnm_type: This parameter specifies the type of genomes to be updated, default to "KBaseGenomes.Genome-8.2".
+#     $gnm_type: This parameter specifies the type of genomes to be updated, default to "KBaseGenomes.Genome-12.3".
 # return
 #    1 for success
 #    0 for any failure
@@ -375,7 +375,7 @@ sub _updateGenomesCore
     my $ret_gnms;
     $src_core = "GenomeFeatures_ci" unless $src_core;
     $dest_core = "Genome_ci" unless $dest_core;
-    $gnm_type = "KBaseGenomes.Genome-8.2" unless $gnm_type;
+    $gnm_type = "KBaseGenomes.Genome-12.3" unless $gnm_type;
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
@@ -410,7 +410,7 @@ sub _updateGenomesCore
                 print "ERROR:".$@;
                 return 0;
          } else {
-                #print "Done updating " . $dest_core . " with ". $src_core. "!";
+                print "Done updating " . $dest_core . " with ". $src_core. "!";
                 return 1;
          }
     }
@@ -781,9 +781,7 @@ sub _indexGenomeFeatureData
                 }
             }
             else {
-                print "\nget_objects2 genome ref passed " . scalar @{$gn_refs} . " genomes.\n";
                 $ws_gnout = $ws_gnout->{data};#a reference to a list where each element is a Workspace.ObjectData
-                print "\nand returned: " . scalar @{$ws_gnout} . " ObjectData.\n";
                 my $ws_gn_data;#to hold a value which is a Workspace.objectData
                 my $ws_gn_info;#to hold a value which is a Workspace.object_info
                 my $obj_ref;#to hold the KBase workspace reference id for an object
@@ -885,7 +883,7 @@ sub _indexGenomeFeatureData
         else {
             $gn_count += @{$gn_batch};
             print "\nIndexed a total of " . $gn_count . " genome(s) on " . scalar localtime . "\n";
-            print "\nIndexed a total of " . @{$ws_gnData} . " genome(s) to start ";
+            #print "\nhad a total of " . @{$ws_gnData} . " genome(s) to start with.\n ";
         }
     }
     return {"genome_features"=>$solr_gnftData,"count"=>$ft_count + $gn_count};
