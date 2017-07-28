@@ -374,11 +374,20 @@ sub _updateGenomesCore
     my $solrgnms;
     my $ret_gnms;
     $src_core = "GenomeFeatures_ci" unless $src_core;
-    $dest_core = "Genome_ci" unless $dest_core;
+    $dest_core = "Genomes_ci" unless $dest_core;
     $gnm_type = "KBaseGenomes.Genome-12.3" unless $gnm_type;
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    
+    my ($out,$exit_code);
+    my $share_cmd = "ws-share -w ReferenceDataManager -u kbaseindexer";
+    $out = `$share_cmd`;
+    $exit_code = ($? >> 8);
+    if ($exit_code==0) {
+        print("$share_cmd returns exit code 0");
+    }
+    exit 0;
 
     eval {
         $solrgnms = $solrer->search_solr({
@@ -404,7 +413,7 @@ sub _updateGenomesCore
             delete $gnm->{_version_};
          }
          eval {
-                $solrer->add_json_2solr({solr_core=>$dest_core, json_docs=>$ret_gnms});
+                $solrer->add_json_2solr({solr_core=>$dest_core, json_data=>$ret_gnms});
          };
          if ($@) {
                 print "ERROR:".$@;
@@ -2004,6 +2013,13 @@ sub index_genomes_in_solr
     
     $msg .= "Totally indexed ". $gnft_count. " genome_feature(s)/genomes!\n";
     print $msg . "\n";
+
+    # for updating to the Genomes core without features
+    my $gn_src_core = $params->{solr_core};
+    (my $gn_dest_core = $gn_src_core) =~ s/Feature//g;
+    my $gnm_type = "KBaseGenomes.Genome-12.3";
+    $gnm_type = "KBaseGenomes.Genome-8.2" if $gn_src_core == "Genomes_prod";
+    $self->_updateGenomesCore($gn_src_core, $gn_dest_core, $gnm_type); 
     
     if ($params->{create_report}) {
         $self->util_create_report({
