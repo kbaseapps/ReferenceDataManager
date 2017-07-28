@@ -379,7 +379,8 @@ sub _updateGenomesCore
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-    
+
+=begin for triggering indexing in ElasticSearch    
     my ($out,$exit_code);
     my $share_cmd = "ws-share -w ReferenceDataManager -u kbaseindexer";
     $out = `$share_cmd`;
@@ -387,7 +388,7 @@ sub _updateGenomesCore
     if ($exit_code==0) {
         print("$share_cmd returns exit code 0");
     }
-    exit 0;
+=cut
 
     eval {
         $solrgnms = $solrer->search_solr({
