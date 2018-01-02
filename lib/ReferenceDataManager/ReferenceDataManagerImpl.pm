@@ -873,7 +873,7 @@ sub _indexGenomeFeatureData
             }
         }
         else {
-            print "\nIndexed leftover of " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
+            #print "\nIndexed leftover of " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
             $ft_count += @{$gnft_batch};
         }
     }
@@ -892,8 +892,7 @@ sub _indexGenomeFeatureData
         }
         else {
             $gn_count += @{$gn_batch};
-            print "\nIndexed a total of " . $gn_count . " genome(s) on " . scalar localtime . "\n";
-            #print "\nhad a total of " . @{$ws_gnData} . " genome(s) to start with.\n ";
+            #print "\nIndexed a total of " . $gn_count . " genome(s) on " . scalar localtime . "\n";
         }
     }
     return {"genome_features"=>$solr_gnftData,"count"=>$ft_count + $gn_count};
@@ -1379,7 +1378,7 @@ sub list_reference_genomes
         $output = $list_items->{ref_genomes};
         $summary = $list_items->{summary};
         $summary .= "\nThere are a total of " . @{$output} . " " . $gn_domain . " Reference genomes in " . $gn_source .".\n";
-        print $summary . "\n";     
+        #print $summary . "\n";     
     }
     if ($params->{create_report}) {
         $self->util_create_report({
@@ -2013,7 +2012,7 @@ sub index_genomes_in_solr
     }
     
     $msg .= "Totally indexed ". $gnft_count. " genome_feature(s)/genomes!\n";
-    print $msg . "\n";
+    #print $msg . "\n";
 
     # for updating to the Genomes core without features
     my $gn_src_core = $params->{solr_core};
@@ -2432,7 +2431,7 @@ sub list_solr_taxa
     }
 
     $msg = ($msg ne "") ? $msg : "Nothing found!";
-    print $msg . "\n";     
+    #print $msg . "\n";     
 
     if ($params->{create_report}) {
         $self->util_create_report({
