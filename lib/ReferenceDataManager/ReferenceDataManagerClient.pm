@@ -188,7 +188,7 @@ Lists genomes present in selected reference databases (ensembl, phytozome, refse
 {
     my($self, @args) = @_;
 
-# Authentication: none
+# Authentication: required
 
     if ((my $n = @args) != 1)
     {
@@ -250,6 +250,7 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	data_source has a value which is a string
 	genome_ws has a value which is a string
 	genome_ver has a value which is an int
+	save_date has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 LoadedReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -283,6 +284,7 @@ ListLoadedGenomesParams is a reference to a hash where the following keys are de
 	data_source has a value which is a string
 	genome_ws has a value which is a string
 	genome_ver has a value which is an int
+	save_date has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 bool is an int
 LoadedReferenceGenomeData is a reference to a hash where the following keys are defined:
@@ -318,7 +320,7 @@ Lists genomes loaded into KBase from selected reference sources (ensembl, phytoz
 {
     my($self, @args) = @_;
 
-# Authentication: none
+# Authentication: required
 
     if ((my $n = @args) != 1)
     {
@@ -489,6 +491,7 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	genome_ws has a value which is a string
 	index_features has a value which is a ReferenceDataManager.bool
 	genome_ver has a value which is an int
+	save_date has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -559,6 +562,7 @@ IndexGenomesInSolrParams is a reference to a hash where the following keys are d
 	genome_ws has a value which is a string
 	index_features has a value which is a ReferenceDataManager.bool
 	genome_ver has a value which is an int
+	save_date has a value which is a string
 	create_report has a value which is a ReferenceDataManager.bool
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -760,7 +764,7 @@ Lists taxa loaded into KBase for a given workspace
 {
     my($self, @args) = @_;
 
-# Authentication: none
+# Authentication: required
 
     if ((my $n = @args) != 1)
     {
@@ -1927,6 +1931,7 @@ workspace_name has a value which is a string
 data_source has a value which is a string
 genome_ws has a value which is a string
 genome_ver has a value which is an int
+save_date has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -1940,6 +1945,7 @@ workspace_name has a value which is a string
 data_source has a value which is a string
 genome_ws has a value which is a string
 genome_ver has a value which is an int
+save_date has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 
@@ -2281,6 +2287,7 @@ genome_source has a value which is a string
 genome_ws has a value which is a string
 index_features has a value which is a ReferenceDataManager.bool
 genome_ver has a value which is an int
+save_date has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 </pre>
@@ -2299,6 +2306,7 @@ genome_source has a value which is a string
 genome_ws has a value which is a string
 index_features has a value which is a ReferenceDataManager.bool
 genome_ver has a value which is an int
+save_date has a value which is a string
 create_report has a value which is a ReferenceDataManager.bool
 
 

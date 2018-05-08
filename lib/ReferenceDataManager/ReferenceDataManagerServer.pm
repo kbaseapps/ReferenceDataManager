@@ -43,11 +43,11 @@ our %return_counts = (
 );
 
 our %method_authentication = (
-        'list_reference_genomes' => 'none',
-        'list_loaded_genomes' => 'none',
+        'list_reference_genomes' => 'required',
+        'list_loaded_genomes' => 'required',
         'list_solr_genomes' => 'required',
         'index_genomes_in_solr' => 'required',
-        'list_loaded_taxa' => 'none',
+        'list_loaded_taxa' => 'required',
         'list_solr_taxa' => 'required',
         'load_taxa' => 'required',
         'index_taxa_in_solr' => 'required',

@@ -268,7 +268,7 @@ sub _listTaxaInSolr {
     my $start = ($rowStart) ? $rowStart : 0;
     my $count = ($rowCount) ? $rowCount : 0;
     $fields = ($fields) ? $fields : "*";
-    
+
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
@@ -285,7 +285,7 @@ sub _listTaxaInSolr {
         hl => "false",
         start => $start
     };
-    
+
     eval {
         $solrout = $solrer->search_solr({
           search_core => $solrCore,
@@ -336,7 +336,7 @@ sub get_genomes4RAST
         push @{$rasted_gnNames}, $rsgnid;
     }
     print "Total number of RASTed genomes in SOLR=" . scalar @{$rasted_ids}; #Dumper($rasted_ids);
-    
+
     my @yetRASTed = $self->_diffLists($kbgn_ids, $rasted_ids);
     print "\nTotal genome for rasting " . scalar @yetRASTed;
     my $srcgenome_text = join(';', @yetRASTed);
@@ -641,7 +641,7 @@ sub _buildSolrGenomeFeature
     my $ws_gn_onterms ={};
     my $ws_gn_roles;
     my $ws_gn_funcs;
-    
+
     if( defined($ws_gn_feature->{aliases})) {
         $ws_gn_nm = $ws_gn_feature->{aliases}[0] unless $ws_gn_feature->{aliases}[0]=~/^(NP_|WP_|YP_|GI|GeneID)/i;
         $ws_gn_aliases = join(";", @{$ws_gn_feature->{aliases}});
@@ -651,31 +651,31 @@ sub _buildSolrGenomeFeature
         $ws_gn_nm = undef;
         $ws_gn_aliases = undef;
     }
-        
+
     $ws_gn_funcs = $ws_gn_feature->{function};
     $ws_gn_funcs = join(";;", split(/\s*;\s+|\s+[\@\/]\s+/, $ws_gn_funcs));
-        
+
     if( defined($ws_gn_feature->{roles}) ) {
         $ws_gn_roles = join(";;", $ws_gn_feature->{roles});
     }
     else {
         $ws_gn_roles = undef;
     }
-    
+
     $loc_contig = "";
     $loc_begin = 0;
     $loc_end = "";
     $loc_strand = "";
     $ws_gn_loc = $ws_gn_feature->{location};
-        
+
     my $end = 0;
     foreach my $contig_loc (@{$ws_gn_loc}) {
         $loc_contig = $loc_contig . ";;" unless $loc_contig eq "";
         $loc_contig = $loc_contig . $contig_loc->[0];
-        
+
         $loc_begin = $loc_begin . ";;" unless $loc_begin eq "";
         $loc_begin = $loc_begin . $contig_loc->[1];
-        
+
         if( $contig_loc->[2] eq "+") {
             $end = $contig_loc->[1] + $contig_loc->[3];
         }
@@ -684,13 +684,13 @@ sub _buildSolrGenomeFeature
         }
         $loc_end = $loc_end . ";;" unless $loc_end eq "";
         $loc_end = $loc_end . $end;
-        
+
         $loc_strand = $loc_strand . ";;" unless $loc_strand eq "";
         $loc_strand = $loc_strand . $contig_loc->[2];
     }
-    
+
     $ws_gn_onterms = $ws_gn_feature->{ontology_terms};
-    
+
     my $ws_gnft = {
             #genome data (redundant)
                 genome_source_id => $ws_gn_info->[10]->{"Source ID"},
@@ -741,7 +741,7 @@ sub _buildSolrGenomeFeature
 sub _diffLists
 {
     my ($self, $list1, $list2) = @_;
-    
+
     my %eliminates = map {($_, 1)} @{$list2};
     my @diff = grep {!$eliminates{$_}} @{$list1};
 
@@ -756,10 +756,10 @@ sub _diffLists
 #Input: a list of ReferenceDataManager.KBaseReferenceGenomeData
 #Output: a list of SolrGenomeFeatureData and the total count of genome_features indexed
 #
-sub _indexGenomeFeatureData 
+sub _indexGenomeFeatureData
 {
     my ($self, $solrCore, $ws_gnData, $index_features) = @_;
-    
+
     my $ws_gnout;
     my $solr_gnftData = [];
     my $gn_batch = [];
@@ -772,7 +772,7 @@ sub _indexGenomeFeatureData
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-    
+
     for(my $gnCount = 0; $gnCount < @{$ws_gnData}; $gnCount++) {
         my $kb_gn = $ws_gnData->[$gnCount];
         push @{$gn_refs}, {"ref" => $kb_gn->{ref}};
@@ -824,7 +824,7 @@ sub _indexGenomeFeatureData
                         push @{$solr_gnftData}, $ws_gnobj;
                     }
                     push @{$gn_batch}, $ws_gnobj;
-                
+
                     if($index_features == 1) {
                     ###2)---Build the genome_feature solr object
                     for (my $ii=0; $ii < @{$ws_gn_features}; $ii++) {
@@ -835,7 +835,7 @@ sub _indexGenomeFeatureData
                         push @{$gnft_batch}, $ws_gnft;
                         if(@{$gnft_batch} >= $gnftBatchCount) {
                             print "\nTo be indexed: " . @{$gnft_batch} . " genome_feature(s) on " . scalar localtime . "\n";
-                            my $solrret = 0;                        
+                            my $solrret = 0; 
                             eval {
                                 $solrret = $solrer->index_in_solr({solr_core=>$solrCore, doc_data=>$gnft_batch});
                             };
@@ -857,7 +857,7 @@ sub _indexGenomeFeatureData
                 }
             }
             $gn_refs = [];
-        } 
+        }
     }
     #after looping through all genome features, index the leftover set of genomeFeature objects
     if($index_features == 1 && @{$gnft_batch} > 0) {
@@ -1000,7 +1000,7 @@ sub _list_ncbi_refgenomes
     my $output = [];
     my $summary = "";
     my $count = 0;
-    
+
     if(!defined($division)) {
         return undef;
     }
@@ -1009,7 +1009,7 @@ sub _list_ncbi_refgenomes
         $count = 0;
         my $assembly_summary_url = "ftp://ftp.ncbi.nlm.nih.gov/genomes/".$source."/".$dvsn."/assembly_summary.txt";
         my $assemblies = [`wget -q -O - $assembly_summary_url`];
-    
+
         foreach my $entry (@{$assemblies}) {
             $count++;
             chomp $entry;
@@ -1159,17 +1159,17 @@ sub _make_lineage {
     return "" if $taxon_id == 1;
     my @lineages=();
     if(exists($taxon_objects->{$taxon_id}) && exists($taxon_objects->{$taxon_id}{"parent_taxon_id"})){
-	my $parent_taxon_id=$taxon_objects->{$taxon_id}{"parent_taxon_id"};
-	while($parent_taxon_id > 1){
-	    if(exists($taxon_objects->{$parent_taxon_id}{"scientific_name"}) && $taxon_objects->{$parent_taxon_id}{"scientific_name"} ne ""){
-		unshift(@lineages,$taxon_objects->{$parent_taxon_id}{"scientific_name"});
-	    }
-	    if(exists($taxon_objects->{$parent_taxon_id}{"parent_taxon_id"})){
-		$parent_taxon_id=$taxon_objects->{$parent_taxon_id}{"parent_taxon_id"};
-	    }else{
-		$parent_taxon_id = 0;
-	    }
-	}
+        my $parent_taxon_id=$taxon_objects->{$taxon_id}{"parent_taxon_id"};
+        while($parent_taxon_id > 1){
+            if(exists($taxon_objects->{$parent_taxon_id}{"scientific_name"}) && $taxon_objects->{$parent_taxon_id}{"scientific_name"} ne ""){
+                unshift(@lineages,$taxon_objects->{$parent_taxon_id}{"scientific_name"});
+            }
+            if(exists($taxon_objects->{$parent_taxon_id}{"parent_taxon_id"})){
+                $parent_taxon_id=$taxon_objects->{$parent_taxon_id}{"parent_taxon_id"};
+            }else{
+                $parent_taxon_id = 0;
+            }
+        }
     }
     return join("; ",@lineages);
 }
@@ -1181,31 +1181,31 @@ sub _check_taxon {
     my @Mismatches=();
     my @Fields_to_Check = ('parent_taxon_ref','rank','domain','scientific_name','scientific_lineage');
     foreach my $field (@Fields_to_Check){
-	if($field eq 'parent_taxon_ref'){
-	    my $parent_taxon = undef;
-	    $parent_taxon = $current_taxon->{'parent_taxon_ref'} if exists $current_taxon->{'parent_taxon_ref'};
-	    if(defined($parent_taxon)){
-		if(!defined($new_taxon->{'parent_taxon_id'})){
-		    push(@Mismatches,"Taxon ".$new_taxon->{'taxonomy_id'}." does not contain parent taxon, but current taxon does");
-		}else{
-		    $parent_taxon = $self->{_wsclient}->get_objects2({objects=>[{"ref" => $parent_taxon}],ignoreErrors=>1})->{data};
-		    if(scalar(@$parent_taxon)){
-			$parent_taxon=$parent_taxon->[0]{data};
-		    }else{
-			push(@Mismatches,"Taxon ".$new_taxon->{'taxonomy_id'}." and current taxon contain parent taxon, but cannot retrieve current parent taxon");
-		    }
-		    if($parent_taxon->{'taxonomy_id'} != $new_taxon->{'parent_taxon_id'}){
-			push(@Mismatches,"Taxon ".$new_taxon->{'taxonomy_id'}." parent taxon id does not match current parent taxon id");
-		    }
-		}
-	    }elsif(defined($new_taxon->{'parent_taxon_id'})){
-		push(@Mismatches,"Taxon ".$new_taxon->{'taxonomy_id'}." does contains parent taxon, but current taxon does not");
-	    }
-	}else{
-	    if($current_taxon->{$field} ne $new_taxon->{$field}){
-		push(@Mismatches,"Taxon ".$new_taxon->{'taxonomy_id'}." field $field (".$new_taxon->{$field}.") does not match current value ".$current_taxon->{$field});
-	    }
-	}
+        if($field eq 'parent_taxon_ref'){
+            my $parent_taxon = undef;
+            $parent_taxon = $current_taxon->{'parent_taxon_ref'} if exists $current_taxon->{'parent_taxon_ref'};
+            if(defined($parent_taxon)){
+                if(!defined($new_taxon->{'parent_taxon_id'})){
+                    push(@Mismatches,"Taxon ".$new_taxon->{'taxonomy_id'}." does not contain parent taxon, but current taxon does");
+                }else{
+                    $parent_taxon = $self->{_wsclient}->get_objects2({objects=>[{"ref" => $parent_taxon}],ignoreErrors=>1})->{data};
+                    if(scalar(@$parent_taxon)){
+                        $parent_taxon=$parent_taxon->[0]{data};
+                    }else{
+                        push(@Mismatches,"Taxon ".$new_taxon->{'taxonomy_id'}." and current taxon contain parent taxon, but cannot retrieve current parent taxon");
+                    }
+                    if($parent_taxon->{'taxonomy_id'} != $new_taxon->{'parent_taxon_id'}){
+                        push(@Mismatches,"Taxon ".$new_taxon->{'taxonomy_id'}." parent taxon id does not match current parent taxon id");
+                    }
+                }
+            }elsif(defined($new_taxon->{'parent_taxon_id'})){
+                push(@Mismatches,"Taxon ".$new_taxon->{'taxonomy_id'}." does contains parent taxon, but current taxon does not");
+            }
+        }else{
+            if($current_taxon->{$field} ne $new_taxon->{$field}){
+                push(@Mismatches,"Taxon ".$new_taxon->{'taxonomy_id'}." field $field (".$new_taxon->{$field}.") does not match current value ".$current_taxon->{$field});
+            }
+        }
     }
     return \@Mismatches;
 }
@@ -3003,9 +3003,10 @@ sub load_genomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'load_genomes');
+        my $msg = "Invalid arguments passed to load_genomes:\n" . join(
+            "", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(
+            error => $msg, method_name => 'load_genomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -3019,8 +3020,11 @@ sub load_genomes
         workspace_name => undef,
         kb_env => "ci"
     });
-#my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service=ver parameter when master is done.
-    my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL });
+    #should remove this service=ver parameter when master is done.
+    #my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $loader = new GenomeFileUtil::GenomeFileUtilClient(
+        $ENV{ SDK_CALLBACK_URL },
+        ('service_version' => 'dev', 'async_version' => 'dev'));
     my $ncbigenomes;
     $output = [];
     my $msg = "";
@@ -3065,7 +3069,7 @@ sub load_genomes
         }
         else
         {
-            $wsname = "ReferenceDataManager";    
+            $wsname = "ReferenceDataManager";
         }
 
         my $gn_type = "User upload";
@@ -3075,38 +3079,60 @@ sub load_genomes
         elsif($ncbigenome->{refseq_category} eq "representative genome") {
            $gn_type = "Representative";
         }
-        
-        #print "\nNow loading ".$ncbigenome->{id}." with loader url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
+
+        print "\nNow loading ".$ncbigenome->{id}." with loader url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
         if ($ncbigenome->{source} eq "refseq" || $ncbigenome->{source} eq "") {
             my $genomeout;
             my $genutilout;
+            my $ws_gnout;
             my $gn_url = $ncbigenome->{ftp_dir}."/".$ncbigenome->{file}."_genomic.gbff.gz";
-            my $asm_level = ($ncbigenome->{assembly_level}) ? $ncbigenome->{assembly_level} : "unknown"; 
+            my $asm_level = ($ncbigenome->{assembly_level}) ? $ncbigenome->{assembly_level} : "unknown";
+            my $ncbign_name = $ncbigenome->{accession};
+            my $ncbiasm_name = $ncbign_name."_assembly";
+            my $existing_asm_ref = undef;
+            my $genbank2gn_param = {
+                    file => {
+                        ftp_url => $gn_url
+                    },
+                    genome_name => $ncbign_name,
+                    workspace_name => $wsname,
+                    source => $ncbigenome->{source},
+                    taxon_wsname => "ReferenceTaxons",
+                    release => $ncbigenome->{version},
+                    generate_ids_if_needed => 1,
+                    # type => $gn_type, #got rid of in new version
+                    generate_missing_genes => 1,
+                    metadata => {
+                        refid => $ncbigenome->{id},
+                        accession => $ncbigenome->{accession},
+                        refname => $ncbigenome->{accession},
+                        url => $gn_url,
+                        assembly_level => $asm_level,
+                        version => $ncbigenome->{version}
+                    }
+            };
             eval {
-                $genutilout = $loader->genbank_to_genome({
-		file => {
-                    ftp_url => $gn_url
-                },
-                genome_name => $ncbigenome->{accession},
-                workspace_name => $wsname,
-                source => $ncbigenome->{source},
-                taxon_wsname => "ReferenceTaxons",
-                release => $ncbigenome->{version},
-                generate_ids_if_needed => 1,
-                type => $gn_type,
-                metadata => { 
-                    refid => $ncbigenome->{id},
-                    accession => $ncbigenome->{accession},
-                    refname => $ncbigenome->{accession},
-                    url => $gn_url,
-                    assembly_level => $asm_level,
-                    version => $ncbigenome->{version}
-                }
-              });
+                $ws_gnout = $self->util_ws_client()->get_object_info3({objects => [{workspace => $wsname, name => $ncbiasm_name}]});
+            };
+            if ($@) {
+                print "**********Received an exception from calling get_object_info3\n";
+                print "get_object_info3 Exception message: " . $@->{"message"} . "\n";
+                print "JSONRPC code: " . $@->{"code"} . "\n";
+                print "Method: " . $@->{"method_name"} . "\n";
+            }
+            else {
+                #print "Assembly ref found: " . Dumper($ws_gnout) . "\n";
+                $existing_asm_ref = $ws_gnout->{paths}[0][0];
+                # introduced in new version
+                $genbank2gn_param->{'use_existing_assembly'} = $existing_asm_ref;
+            }
+            #print "Input params passed to genbank_to_genome()\n" . Dumper($genbank2gn_param);
+            eval {
+                $genutilout = $loader->genbank_to_genome($genbank2gn_param);
             };
             if ($@) {
                 print "**********Received an exception from calling genbank_to_genome to load $ncbigenome->{id}:\n";
-                print "Exception message: " . $@->{"message"} . "\n";
+                print "genbank_to_genome Exception message: " . $@->{"message"} . "\n";
                 print "JSONRPC code: " . $@->{"code"} . "\n";
                 print "Method: " . $@->{"method_name"} . "\n";
                 print "Client-side exception:\n";
@@ -3132,7 +3158,7 @@ sub load_genomes
                    $msg .= "Loaded genome: ".$genomeout->{ref}." into workspace ".$genomeout->{workspace_name}.";\n";
                 }
             }
-            #print "**********************Genome loading process ends on " . scalar localtime . "************************\n";
+            #print "**************Genome loading process ends on " . scalar localtime . "************\n";
         } elsif ($ncbigenome->{source} eq "phytozome") {
             #NEED SAM TO PUT CODE FOR HIS LOADER HERE
             my $genomeout = {
@@ -3152,16 +3178,16 @@ sub load_genomes
     }
     $msg .= "\nLoaded a total of ". scalar @{$output}. " genome(s)!\n";
     print $msg . "\n";
-                
+
     if ((scalar @{$output}) > 0 && $params->{index_in_solr} == 1) {
         $self->index_genomes_in_solr({
-                solr_core => $gn_solr_core,             
+                solr_core => $gn_solr_core,
                 genomes => $output,
                 index_features => 1
         });
         print "Indexed " .@{$output}." genomes!\n";
     }
-    
+
     if ($params->{create_report}) {
         $self->util_create_report({
                 message => $msg,
@@ -3172,11 +3198,12 @@ sub load_genomes
 
     #END load_genomes
     my @_bad_returns;
-    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    (ref($output) eq 'ARRAY') or push(@_bad_returns,
+                                      "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'load_genomes');
+        my $msg = "Invalid returns passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(
+            error => $msg, method_name => 'load_genomes');
     }
     return($output);
 }
@@ -3266,9 +3293,10 @@ sub load_refgenomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to load_refgenomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'load_refgenomes');
+        my $msg = "Invalid arguments passed to load_refgenomes:\n" . join(
+            "", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(
+            error => $msg, method_name => 'load_refgenomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -3276,13 +3304,13 @@ sub load_refgenomes
     #BEGIN load_refgenomes
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
-        refseq=>1,
-        phytozome=>0,
-        ensembl=>0,
-        start_offset=>0, 
-        index_in_solr=>0,
-        workspace_name=>undef,
-        kb_env=>'ci'
+        refseq => 1,
+        phytozome => 0,
+        ensembl => 0,
+        start_offset => 0,
+        index_in_solr => 0,
+        workspace_name => undef,
+        kb_env => 'ci'
     });
 
     $output = [];
@@ -3290,15 +3318,16 @@ sub load_refgenomes
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
 
     if( (scalar @{$ref_genomes}) > 0 ) {
-        $output = $self->load_genomes({genomes =>$ref_genomes, index_in_solr=>$params->{index_in_solr},kb_env=>$params->{kb_env}});
+        $output = $self->load_genomes(
+            {genomes =>$ref_genomes, index_in_solr=>$params->{index_in_solr},kb_env=>$params->{kb_env}});
     } 
     #END load_refgenomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to load_refgenomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'load_refgenomes');
+        my $msg = "Invalid returns passed to load_refgenomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+        method_name => 'load_refgenomes');
     }
     return($output);
 }
@@ -3392,9 +3421,10 @@ sub update_loaded_genomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to update_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'update_loaded_genomes');
+        my $msg = "Invalid arguments passed to update_loaded_genomes:\n" . join(
+            "", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(
+            error => $msg, method_name => 'update_loaded_genomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;

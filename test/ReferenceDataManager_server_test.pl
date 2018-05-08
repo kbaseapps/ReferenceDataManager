@@ -71,12 +71,12 @@ sub test_rast_genomes {
            };
     return $impl->get_genomes4RAST();
 }
-#begin
+=begin
     #Testing _updateGenomesCore function
     my $updret;
     eval {
-        $updret = $impl->_updateGenomesCore("GenomeFeatures_ci", "Genomes_ci","KBaseGenomes.Genome-12.3");
-        #$updret = $impl->_updateGenomesCore("GenomeFeatures_prod", "Genomes_prod","KBaseGenomes.Genome-8.2");
+        #$updret = $impl->_updateGenomesCore("GenomeFeatures_ci", "Genomes_ci","KBaseGenomes.Genome-12.3");
+        $updret = $impl->_updateGenomesCore("GenomeFeatures_prod", "Genomes_prod","KBaseGenomes.Genome-8.2");
     };
     ok(!$@, "_updateGenomesCore command successful");
     if ($@) { 
@@ -85,7 +85,7 @@ sub test_rast_genomes {
          print "Result status: " .$updret."\n";
     }
     ok(defined($updret), "_updateGenomesCore command returneds a value:" . $updret);
-#cut
+=cut
 =begin
     #Testing list_loaded_genomes
     my $wsret;
@@ -96,8 +96,8 @@ sub test_rast_genomes {
             create_report => 1,
             save_date => "2017-06-1",
             workspace_name => get_ws_name()
-            #other_ws => "qzhang:narrative_1493170238855"	
-	});
+            #other_ws => "qzhang:narrative_1493170238855"
+    });
     };
     ok(!$@,"list_loaded_genomes command successful");
     if ($@) {
@@ -298,6 +298,30 @@ eval {
         print Dumper($rast_ret)."\n";
     }
 =cut
+    #Testing load_refgenomes function
+    my $rret;
+    eval {
+        $rret = $impl->load_refgenomes({
+                refseq=>1,
+                index_in_solr=>1,
+                kb_env => 'ci',
+                start=>111980 # only <10 for testing
+        });
+    };
+    ok(!$@,"load_refgenomes command successful");
+    if ($@) {
+        print "ERROR:".$@;
+        my $err = $@;
+        print "Error type: " . ref($err) . "\n";
+        print "Error message: " . $err->{message} . "\n";
+        print "Error error: " . $err->{error} . "\n";
+        print "Error data: " .$err->{data} . "\n";
+    } else {
+        print "Loaded " . scalar @{$rret} . " genomes:\n";
+        print Data::Dumper->Dump([$rret->[@{$rret}-1]])."\n";
+    }
+    ok(defined($rret->[0]),"load_refgenomes command returned at least one genome");
+
     done_testing(3);
 };
 
@@ -326,7 +350,7 @@ eval {
         print Data::Dumper->Dump([$wsgnmret->[0]])."\n";
     }
     ok(defined($wsgnmret->[0]),"update_loaded_genomes command returned at least one record");
-    
+
     #Testing _listGenomesInSolr
     my $solrret;
     eval {i
@@ -637,19 +661,19 @@ eval {
     print Dumper($wsinfo);
         my $maxid = $wsinfo->[4];
         print "\nMax genome object id=$maxid\n";
-        eval {                                                                                             
+        eval {
             my $wsoutput = $ws_client->list_objects({
                     workspaces => [$ws_name],
                     minObjectID => 0,
                     maxObjectID => $maxid,
                     includeMetadata => 1
             });
-	    print "Genome object count=" . @{$wsoutput}. "\n";
+        print "Genome object count=" . @{$wsoutput}. "\n";
         };
 
         $ws_client->delete_workspace({workspace => $ws_name});
         print("Test workspace was deleted\n");
-    } 
+    }
 };
 if (defined($err)) {
     if(ref($err) eq "Bio::KBase::Exceptions::KBaseException") {
@@ -659,42 +683,42 @@ if (defined($err)) {
     }
 }
 
-{		
-     package LocalCallContext;		
-     use strict;		
-     sub new {		
-         my($class,$token,$user) = @_;		
-         my $self = {		
-             token => $token,		
-             user_id => $user		
-         };		
-         return bless $self, $class;		
-     }		
-     sub user_id {		
-         my($self) = @_;		
-         return $self->{user_id};		
-     }		
-     sub token {		
-         my($self) = @_;		
-         return $self->{token};		
-     }		
-     sub provenance {		
-         my($self) = @_;		
-         return [{'service' => 'ReferenceDataManager', 'method' => 'please_never_use_it_in_production', 'method_params' => []}];		
-     }		
-     sub authenticated {		
-         return 1;		
-     }		
-     sub log_debug {		
-         my($self,$msg) = @_;		
-         print STDERR $msg."\n";		
-     }		
-     sub log_info {		
-         my($self,$msg) = @_;		
-         print STDERR $msg."\n";		
-     }		
-     sub method {		
-         my($self) = @_;		
-         return "TEST_METHOD";		
-     }		
+{
+     package LocalCallContext;
+     use strict;
+     sub new {
+         my($class,$token,$user) = @_;
+         my $self = {
+             token => $token,
+             user_id => $user
+         };
+         return bless $self, $class;
+     }
+     sub user_id {
+         my($self) = @_;
+         return $self->{user_id};
+     }
+     sub token {
+         my($self) = @_;
+         return $self->{token};
+     }
+     sub provenance {
+         my($self) = @_;
+         return [{'service' => 'ReferenceDataManager', 'method' => 'please_never_use_it_in_production', 'method_params' => []}];
+     }
+     sub authenticated {
+         return 1;
+     }
+     sub log_debug {
+         my($self,$msg) = @_;
+         print STDERR $msg."\n";
+     }
+     sub log_info {
+         my($self,$msg) = @_;
+         print STDERR $msg."\n";
+     }
+     sub method {
+         my($self) = @_;
+         return "TEST_METHOD";
+     }
  }

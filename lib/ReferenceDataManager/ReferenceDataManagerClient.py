@@ -64,7 +64,8 @@ class ReferenceDataManager(object):
            for the list_loaded_genomes function) -> structure: parameter
            "workspace_name" of String, parameter "data_source" of String,
            parameter "genome_ws" of String, parameter "genome_ver" of Long,
-           parameter "create_report" of type "bool" (A boolean.)
+           parameter "save_date" of String, parameter "create_report" of type
+           "bool" (A boolean.)
         :returns: instance of list of type "LoadedReferenceGenomeData"
            (Struct containing data for a single genome output by the
            list_loaded_genomes function) -> structure: parameter "ref" of
@@ -116,7 +117,8 @@ class ReferenceDataManager(object):
            of Long, parameter "genome_source" of String, parameter
            "genome_ws" of String, parameter "index_features" of type "bool"
            (A boolean.), parameter "genome_ver" of Long, parameter
-           "create_report" of type "bool" (A boolean.)
+           "save_date" of String, parameter "create_report" of type "bool" (A
+           boolean.)
         :returns: instance of list of type "SolrGenomeFeatureData" (Struct
            containing data for a single genome element output by the
            list_solr_genomes and index_genomes_in_solr functions) ->
