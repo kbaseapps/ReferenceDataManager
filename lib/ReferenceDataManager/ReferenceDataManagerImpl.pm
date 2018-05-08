@@ -51,7 +51,7 @@ sub util_initialize_call {
     $self->{scratch} = $cfg->val('ReferenceDataManager','scratch');
     $self->{workspace_url} = $cfg->val('ReferenceDataManager','workspace-url');#$config->{"workspace-url"}; 
     die "no workspace-url defined" unless $self->{workspace_url};
-    
+
     $self->util_timestamp(DateTime->now()->datetime());
     $self->{_wsclient} = new Workspace::WorkspaceClient($self->{workspace_url},token => $ctx->token());
     return $params;
@@ -201,7 +201,7 @@ sub _listGenomesInSolr {
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-    
+
     my $query = { q => "*" };
     if( defined( $cmplt )) {
         if( defined( $dmn )) {
@@ -239,7 +239,7 @@ sub _listGenomesInSolr {
         hl => "false",
         start => $start
     };
-    
+
     eval {
         $solrgnms = $solrer->search_solr({
           search_core => $solrCore,
@@ -439,13 +439,13 @@ sub _checkTaxonStatus
 {
     my ($self, $current_genome, $solr_core) = @_;
     #print "\nChecking taxon status for genome:\n " . Dumper($current_genome) . "\n";
-    
+
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-    
+
     my $status = "";
     my $query = { taxonomy_id => $current_genome->{tax_id} };
-    
+
     if($solrer->exists_in_solr({search_core=>$solr_core,search_query=>{taxonomy_id=>$current_genome->{tax_id}}})==1) {
         $status = "Taxon in KBase";
     }    
@@ -466,7 +466,7 @@ sub _checkTaxonStatus
 #       $solr_core is the name of the SOLR core
 #
 # returns : a string stating the status
-#    
+#
 sub _checkGenomeStatus 
 {
     my ($self, $current_genome, $solr_core, $gn_type) = @_;
@@ -486,7 +486,7 @@ sub _checkGenomeStatus
         wt => "json",
         start => 0
     };
-    
+
     my $solrgnm;
     my $gnms;
     my $gcnt;
@@ -527,12 +527,12 @@ sub _checkGenomeStatus
             }
         }
     }
-        
+
     if( $status eq "" )
     {
         $status = "New genome";#or "Existing genome: status unknown";
     }
-    
+
     #print "\nStatus:$status\n";
     return $status;
 }
@@ -544,7 +544,7 @@ sub _checkGenomeStatus
 # Input parameter: a reference to a Workspace.object_info (which is a reference to a list containing 11 items)
 # Output: a reference to a hash of the type of ReferenceDataManager.LoadedReferenceGenomeData
 #
-sub _getGenomeInfo 
+sub _getGenomeInfo
 {
     my ($self, $ws_objinfo) = @_;
     my $gn_info = [];
@@ -617,7 +617,8 @@ sub _buildSolrGenome
 # Build the genome_feature solr object
 # Input parameters: 
 #       $ws_gn_feature: the reference pointing to the feature data
-#       $ws_ref: a string of three parts connected with forward slash in the form of 'ws_id/obj_id/obj_ver'
+#       $ws_ref: a string of three parts connected with forward slash in the form
+#       of 'ws_id/obj_id/obj_ver'
 #       $ws_gn_data: an UnspecifiedObject containing data about the genome object
 #       $ws_gn_info: a reference to a list containing 11 items
 #       $ws_gn_asmlevel: a string indicating the level of the assembly
@@ -732,6 +733,33 @@ sub _buildSolrGenomeFeature
                 ontology_namespaces => $ws_gn_feature->{ontology_terms}
     };
     return $ws_gnft;
+}
+
+#
+#Internal method, to get the object ref from a given workspace and given object name
+#return: a string expression of the object ref or nothing
+#
+sub _get_object_ref
+{
+    my ($self, $ws_name, $obj_name) = @_;
+    my $objs = {objects => [{workspace => $ws_name, name => $obj_name}]};
+    my $ws_objinfo;
+    my $ws_objref = undef;
+    eval {#returns a reference to a hash with two keys--"infos" and "paths"
+        $ws_objinfo = $self->util_ws_client()->get_object_info3($objs);
+    };
+    if($@) {
+        print "**********Received an exception from calling get_object_info3\n";
+        print "Input parameter: \n" . Dumper($objs);
+        print "ERROR:".$@;
+        if(ref($@) eq 'HASH' && defined($@->{status_line})) {
+            print $@->{status_line}."\n";
+        }
+    }
+    else {
+        $ws_objref = $ws_objinfo->{paths}[0][0];
+    }
+    return $ws_objref;
 }
 
 #
@@ -1048,10 +1076,10 @@ sub _extract_ncbi_taxa {
     my $args = shift;
     my $taxon_file_path=$self->{'data'}."/taxon_dump/";
     if(!-d $taxon_file_path || !-f $taxon_file_path."names.dmp"){
-	mkdir($taxon_file_path);
-	chdir($taxon_file_path);
-	system("curl -o taxdump.tar.gz ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz");
-	system("tar -zxf taxdump.tar.gz");
+        mkdir($taxon_file_path);
+        chdir($taxon_file_path);
+        system("curl -o taxdump.tar.gz ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz");
+        system("tar -zxf taxdump.tar.gz");
     }
 
     open(my $fh, "< ${taxon_file_path}nodes.dmp");
@@ -1060,10 +1088,10 @@ sub _extract_ncbi_taxa {
         chomp;
         my @temp=split(/\s*\|\s*/,$_,-1);
 
-	#Bad, because the lineage needs to be formed from all taxa before ignoring any
-	#The extract case is OK if you're testing a whole branch
-	next if defined($args->{extract}) && !exists($args->{extract}{$temp[1]});
-	#next if defined($args->{ignore}) && exists($args->{ignore}{$temp[0]});
+        #Bad, because the lineage needs to be formed from all taxa before ignoring any
+        #The extract case is OK if you're testing a whole branch
+        next if defined($args->{extract}) && !exists($args->{extract}{$temp[1]});
+        #next if defined($args->{ignore}) && exists($args->{ignore}{$temp[0]});
 
         my $object = {'taxonomy_id'=>$temp[0]+0,
                       'parent_taxon_id'=>$temp[1]+0,
@@ -1090,66 +1118,66 @@ sub _extract_ncbi_taxa {
     open(my $fh, "< ${taxon_file_path}names.dmp");
     my %Duplicate_Names=();
     while(<$fh>){
-	chomp;
-	my @temp=split(/\s*\|\s*/,$_,-1);
-	if(exists($taxon_objects->{$temp[0]})){
-	    if($temp[3] eq "scientific name"){
-		$taxon_objects->{$temp[0]}{"scientific_name"}=$temp[1];
-		$taxon_objects->{$temp[0]}{"unique_variant"}=$temp[2];
-		$Duplicate_Names{$temp[1]}{$temp[0]}=1;
-	    }else{
-		push(@{$taxon_objects->{$temp[0]}{"aliases"}},$temp[1]);
-	    }
-	}
+        chomp;
+        my @temp=split(/\s*\|\s*/,$_,-1);
+        if(exists($taxon_objects->{$temp[0]})){
+            if($temp[3] eq "scientific name"){
+                $taxon_objects->{$temp[0]}{"scientific_name"}=$temp[1];
+                $taxon_objects->{$temp[0]}{"unique_variant"}=$temp[2];
+                $Duplicate_Names{$temp[1]}{$temp[0]}=1;
+            }else{
+                push(@{$taxon_objects->{$temp[0]}{"aliases"}},$temp[1]);
+            }
+        }
     }
     close($fh);
 
     #Iterate through to make lineage, need to determine "level" of each object so to sort properly before loading
     my %taxon_level=();
     foreach my $obj ( map { $taxon_objects->{$_} } sort { $a <=> $b } keys %$taxon_objects ){
-	$obj->{"scientific_lineage"} = _make_lineage($obj->{"taxonomy_id"},$taxon_objects);
+        $obj->{"scientific_lineage"} = _make_lineage($obj->{"taxonomy_id"},$taxon_objects);
 
-	#Determine Domain
-	foreach my $domain ("Eukaryota","Bacteria","Viruses","Archaea"){
-	    if($obj->{"scientific_lineage"} =~ /${domain}/){
-		$obj->{"domain"}=$domain;
-		last;
-	    }
-	}
+        #Determine Domain
+        foreach my $domain ("Eukaryota","Bacteria","Viruses","Archaea"){
+            if($obj->{"scientific_lineage"} =~ /${domain}/){
+                $obj->{"domain"}=$domain;
+                last;
+            }
+        }
 
-	#Determine Kingdom
-	foreach my $kingdom ("Fungi","Viridiplantae","Metazoa"){
-	    if($obj->{"domain"} eq "Eukaryota" && $obj->{"scientific_lineage"} =~ /${kingdom}/){
-		$obj->{"kingdom"}=$kingdom;
-		last;
-	    }
-	}
-	
-	my $level = scalar( split(/;\s/,$obj->{"scientific_lineage"}) );
-	$taxon_level{$level}{$obj->{"taxonomy_id"}}=1;
+        #Determine Kingdom
+        foreach my $kingdom ("Fungi","Viridiplantae","Metazoa"){
+            if($obj->{"domain"} eq "Eukaryota" && $obj->{"scientific_lineage"} =~ /${kingdom}/){
+                $obj->{"kingdom"}=$kingdom;
+                last;
+            }
+        }
+
+        my $level = scalar( split(/;\s/,$obj->{"scientific_lineage"}) );
+        $taxon_level{$level}{$obj->{"taxonomy_id"}}=1;
     }
 
     my $taxon_objs=[];
     foreach my $level ( sort { $a <=> $b } keys %taxon_level ){
-	foreach my $obj ( map { $taxon_objects->{$_} } sort { $a <=> $b } keys %{$taxon_level{$level}} ){
-	    delete $obj->{"parent_taxon_id"} if $obj->{"taxonomy_id"} == 1;
-	    push(@$taxon_objs,$obj);
-	}
+        foreach my $obj ( map { $taxon_objects->{$_} } sort { $a <=> $b } keys %{$taxon_level{$level}} ){
+            delete $obj->{"parent_taxon_id"} if $obj->{"taxonomy_id"} == 1;
+            push(@$taxon_objs,$obj);
+        }
     }
 
     foreach my $obj (@$taxon_objs){
-	#Here we checked whether, in the instance of a clash, a taxon did not have a unique variant
-	#We find that in the few cases this happens (~50), only one member of the clash didn't have unique variant
-	#if(scalar(keys %{$Duplicate_Names{$obj->{'scientific_name'}}})>1 && $obj->{'unique_variant'} =~ /^\s*$/){
-	    #print Dumper($obj),"\n";
-	    #print $obj->{'scientific_name'},"\n";
-	#}
+    #Here we checked whether, in the instance of a clash, a taxon did not have a unique variant
+    #We find that in the few cases this happens (~50), only one member of the clash didn't have unique variant
+    #if(scalar(keys %{$Duplicate_Names{$obj->{'scientific_name'}}})>1 && $obj->{'unique_variant'} =~ /^\s*$/){
+    #print Dumper($obj),"\n";
+    #print $obj->{'scientific_name'},"\n";
+    #}
 
-	#If a scientific name belongs to more than one taxon, and if the unique variant is available
-	if(scalar(keys %{$Duplicate_Names{$obj->{'scientific_name'}}})>1 && $obj->{'unique_variant'} !~ /^\s*$/){
-	    $obj->{'scientific_name'}=$obj->{'unique_variant'};
-	}
-	delete($obj->{'unique_variant'});
+        #If a scientific name belongs to more than one taxon, and if the unique variant is available
+        if(scalar(keys %{$Duplicate_Names{$obj->{'scientific_name'}}})>1 && $obj->{'unique_variant'} !~ /^\s*$/){
+            $obj->{'scientific_name'}=$obj->{'unique_variant'};
+        }
+        delete($obj->{'unique_variant'});
     }
     return $taxon_objs;
 }
@@ -1336,9 +1364,8 @@ sub list_reference_genomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to list_reference_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_reference_genomes');
+        my $msg = "Invalid arguments passed to list_reference_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_reference_genomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -1370,9 +1397,9 @@ sub list_reference_genomes
         $gn_source = "ensembl";
         $gn_domain = undef;    
     }
-    
+
     print $gn_source . "---" . $gn_domain . "\n";
-    
+
     my $list_items = $self->_list_ncbi_refgenomes($gn_source, $gn_domain);
     if(defined($list_items)) {
         $output = $list_items->{ref_genomes};
@@ -1391,9 +1418,8 @@ sub list_reference_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to list_reference_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_reference_genomes');
+        my $msg = "Invalid returns passed to list_reference_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_reference_genomes');
     }
     return($output);
 }
@@ -1495,9 +1521,8 @@ sub list_loaded_genomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to list_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_loaded_genomes');
+        my $msg = "Invalid arguments passed to list_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_loaded_genomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -1518,12 +1543,12 @@ sub list_loaded_genomes
     my $obj_type = "KBaseGenomes.Genome-";
     my $sources = ["phytozome","refseq","ensembl","others"];
     my $wsname;
-    
+
     for (my $i=0; $i < @{$sources}; $i++) {
         if ($params->{data_source} eq $sources->[$i]) {
             my $wsinfo;
             my $wsoutput;
-            
+
             $wsname = $self->util_workspace_names($sources->[$i]);
             if( $wsname eq "others" ) {
                 $wsname = $params->{genome_ws};
@@ -1567,7 +1592,7 @@ sub list_loaded_genomes
                                 if( $obj_src =~ /phytozome*/i) {#check the source to include phytozome genomes only
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info; 
-                            
+ 
                                     if (@{$output} < 10  && @{$output} > 0) {
                                         $msg .= $self->_genomeInfoString($curr_gn_info);
                                     }
@@ -1597,18 +1622,16 @@ sub list_loaded_genomes
                                     if( $ws_objinfo->[10]->{Domain} !~ /Plant/i && $ws_objinfo->[10]->{Domain} !~ /Bacteria/i ) {
                                         $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                         push @{$output}, $curr_gn_info; 
-                            
                                         if (@{$output} < 10  && @{$output} > 0) {
                                            $msg .= $self->_genomeInfoString($curr_gn_info);
                                         }
-                                    }       
+                                    }
                                 }
                             }
                             else {#others
                                 if( $ws_objinfo->[4] == $params->{genome_ver}) {#check the source to exclude phytozome genomes
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info;
-                            
                                     if (@{$output} < 10  && @{$output} > 0) {
                                         $msg .= $self->_genomeInfoString($curr_gn_info);
                                     }
@@ -1621,7 +1644,7 @@ sub list_loaded_genomes
         }
     }
     $msg .= "\nThere are a total of " . @{$output} . " Reference genomes loaded in KBase workspace " . $wsname ."\n";
-    print $msg . "\n";    
+    print $msg . "\n";
 
     if ($params->{create_report}) {
         $self->util_create_report({
@@ -1634,9 +1657,8 @@ sub list_loaded_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to list_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_loaded_genomes');
+        my $msg = "Invalid returns passed to list_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_loaded_genomes');
     }
     return($output);
 }
@@ -1710,9 +1732,8 @@ sub list_solr_genomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_solr_genomes');
+        my $msg = "Invalid arguments passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_solr_genomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -1774,9 +1795,8 @@ sub list_solr_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_solr_genomes');
+        my $msg = "Invalid returns passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_solr_genomes');
     }
     return($output);
 }
@@ -1952,9 +1972,8 @@ sub index_genomes_in_solr
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to index_genomes_in_solr:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'index_genomes_in_solr');
+        my $msg = "Invalid arguments passed to index_genomes_in_solr:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'index_genomes_in_solr');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -2010,7 +2029,7 @@ sub index_genomes_in_solr
         my $curr = @{$output}-1;
         $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
-    
+
     $msg .= "Totally indexed ". $gnft_count. " genome_feature(s)/genomes!\n";
     #print $msg . "\n";
 
@@ -2020,7 +2039,7 @@ sub index_genomes_in_solr
     my $gnm_type = "KBaseGenomes.Genome-12.3";
     $gnm_type = "KBaseGenomes.Genome-8.2" if $gn_src_core == "Genomes_prod";
     $self->_updateGenomesCore($gn_src_core, $gn_dest_core, $gnm_type); 
-    
+
     if ($params->{create_report}) {
         $self->util_create_report({
             message => $msg,
@@ -2032,9 +2051,8 @@ sub index_genomes_in_solr
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to index_genomes_in_solr:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'index_genomes_in_solr');
+        my $msg = "Invalid returns passed to index_genomes_in_solr:\n" . join("", map { "\t$_\n" } @_bad_returns);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'index_genomes_in_solr');
     }
     return($output);
 }
@@ -2138,9 +2156,8 @@ sub list_loaded_taxa
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to list_loaded_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_loaded_taxa');
+        my $msg = "Invalid arguments passed to list_loaded_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_loaded_taxa');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -2188,7 +2205,7 @@ sub list_loaded_taxa
         print ("I: minObjectID: $minObjID\n");
         print ("I: maxObjectID: $maxObjID\n");
 
-	$wsoutput = [];
+    $wsoutput = [];
         my $try_count=5;
         while(scalar(@$wsoutput)==0 && $try_count != 0){
             $try_count--;
@@ -2198,16 +2215,16 @@ sub list_loaded_taxa
                                                                    minObjectID => $minObjID,
                                                                    maxObjectID => $maxObjID});
             };
-	    if ($@) {
-		print "ERROR on iteration $try_count for Batch $batch_count: Cannot list objects: $_ at ".scalar(localtime)."\n";
-		print "Exception message: " . $@->{"message"} . "\n";
-		print "JSONRPC code: " . $@->{"code"} . "\n";
-		print "Method: " . $@->{"method_name"} . "\n";
-		print "Client-side exception:\n";
-		print $@;
-		print "Server-side exception:\n";
-		print $@->{"data"};
-	    }
+        if ($@) {
+            print "ERROR on iteration $try_count for Batch $batch_count: Cannot list objects: $_ at ".scalar(localtime)."\n";
+            print "Exception message: " . $@->{"message"} . "\n";
+            print "JSONRPC code: " . $@->{"code"} . "\n";
+            print "Method: " . $@->{"method_name"} . "\n";
+            print "Client-side exception:\n";
+            print $@;
+            print "Server-side exception:\n";
+            print $@->{"data"};
+        }
             sleep(3) if scalar(@$wsoutput)==0;
         }
         if(exists($params->{ignore})){
@@ -2228,33 +2245,33 @@ sub list_loaded_taxa
                 print "\nStart to fetch the objects at the batch size of: " . @{$wstaxonrefs} . " on " . scalar localtime;
                 $taxonout = $self->util_ws_client()->get_objects2({objects => $wstaxonrefs})->{data};
                 print "\nDone getting the objects at the batch size of: " . @{$taxonout} . " on " . scalar localtime . "\n\n";
-	    };
-	    if($@) {
-		print "ERROR on iteration $try_count for Batch $batch_count: Cannot get objects: $_ at ".scalar(localtime)."\n";
-		print "Exception message: " . $@->{"message"} . "\n";
-		print "JSONRPC code: " . $@->{"code"} . "\n";
-		print "Method: " . $@->{"method_name"} . "\n";
-		print "Client-side exception:\n";
-		print $@;
-		print "Server-side exception:\n";
-		print $@->{"data"};
-	    }
-	    sleep(3) if scalar(@$taxonout)==0;
-	}
+            };
+            if($@) {
+                print "ERROR on iteration $try_count for Batch $batch_count: Cannot get objects: $_ at ".scalar(localtime)."\n";
+                print "Exception message: " . $@->{"message"} . "\n";
+                print "JSONRPC code: " . $@->{"code"} . "\n";
+                print "Method: " . $@->{"method_name"} . "\n";
+                print "Client-side exception:\n";
+                print $@;
+                print "Server-side exception:\n";
+                print $@->{"data"};
+            }
+            sleep(3) if scalar(@$taxonout)==0;
+        }
 
         my $solr_taxa = [];
         for (my $i=0; $i < @{$taxonout}; $i++) {
             my $taxonData = $taxonout->[$i]->{data}; #an UnspecifiedObject
-	    my $curr_taxon = {taxon => $taxonData, ws_ref => $wstaxonrefs->[$i]->{ref}};
+            my $curr_taxon = {taxon => $taxonData, ws_ref => $wstaxonrefs->[$i]->{ref}};
 
             push(@{$output}, $curr_taxon);
-	    push(@{$solr_taxa}, $curr_taxon);
+            push(@{$solr_taxa}, $curr_taxon);
 
             if (@{$output} < 10  && @{$output} > 0) {
                 my $curr = @{$output}-1;
                 $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
             }
-	}
+        }
 
         if(exists($params->{batch}) && scalar(@$output) >= $params->{batch}){
             last;
@@ -2264,9 +2281,8 @@ sub list_loaded_taxa
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to list_loaded_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_loaded_taxa');
+        my $msg = "Invalid returns passed to list_loaded_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_loaded_taxa');
     }
     return($output);
 }
@@ -2378,9 +2394,8 @@ sub list_solr_taxa
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to list_solr_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_solr_taxa');
+        my $msg = "Invalid arguments passed to list_solr_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_solr_taxa');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -2444,9 +2459,8 @@ sub list_solr_taxa
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to list_solr_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'list_solr_taxa');
+        my $msg = "Invalid returns passed to list_solr_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns)
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_solr_taxa');
     }
     return($output);
 }
@@ -2590,9 +2604,8 @@ sub load_taxa
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to load_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'load_taxa');
+        my $msg = "Invalid arguments passed to load_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'load_taxa');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -2633,9 +2646,8 @@ sub load_taxa
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to load_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'load_taxa');
+        my $msg = "Invalid returns passed to load_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'load_taxa');
     }
     return($output);
 }
@@ -2785,9 +2797,8 @@ sub index_taxa_in_solr
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to index_taxa_in_solr:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'index_taxa_in_solr');
+        my $msg = "Invalid arguments passed to index_taxa_in_solr:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'index_taxa_in_solr');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -2801,7 +2812,7 @@ sub index_taxa_in_solr
         start_offset => 0,
         solr_core => "taxonomy_prod" 
     });
-    
+
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
@@ -2816,7 +2827,7 @@ sub index_taxa_in_solr
         $taxa = $params->{taxa};
     }
     my $solrCore = $params->{solr_core};
-    
+
     my $msg = "";
     $output = [];
     my $solrBatch = [];
@@ -2889,9 +2900,8 @@ sub index_taxa_in_solr
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to index_taxa_in_solr:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'index_taxa_in_solr');
+        my $msg = "Invalid returns passed to index_taxa_in_solr:\n" . join("", map { "\t$_\n" } @_bad_returns);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'index_taxa_in_solr');
     }
     return($output);
 }
@@ -3057,7 +3067,7 @@ sub load_genomes
     for (my $i=0; $i < @{$ncbigenomes}; $i++) {
         my $ncbigenome = $ncbigenomes->[$i];
         #check if the taxon of the genome (named in KBase as $gnm->{tax_id} . "_taxon") is loaded in a KBase workspace
-        #print "\n******************Genome#: $i ********************";
+        print "\n******************Genome#: $i ********************";
         my $wsname = "";
         if(defined( $ncbigenome->{workspace_name}))
         {
@@ -3111,21 +3121,13 @@ sub load_genomes
                         version => $ncbigenome->{version}
                     }
             };
-            eval {
-                $ws_gnout = $self->util_ws_client()->get_object_info3({objects => [{workspace => $wsname, name => $ncbiasm_name}]});
-            };
-            if ($@) {
-                print "**********Received an exception from calling get_object_info3\n";
-                print "get_object_info3 Exception message: " . $@->{"message"} . "\n";
-                print "JSONRPC code: " . $@->{"code"} . "\n";
-                print "Method: " . $@->{"method_name"} . "\n";
-            }
-            else {
-                #print "Assembly ref found: " . Dumper($ws_gnout) . "\n";
-                $existing_asm_ref = $ws_gnout->{paths}[0][0];
+
+            $existing_asm_ref = $self->_get_object_ref($wsname, $ncbiasm_name);
+            if ($existing_asm_ref != undef) {
                 # introduced in new version
                 $genbank2gn_param->{'use_existing_assembly'} = $existing_asm_ref;
             }
+
             #print "Input params passed to genbank_to_genome()\n" . Dumper($genbank2gn_param);
             eval {
                 $genutilout = $loader->genbank_to_genome($genbank2gn_param);
@@ -3447,7 +3449,8 @@ sub update_loaded_genomes
     $output = [];
     my $kbenv = $params->{kb_env};
     my $solr_core = ($kbenv =~ /prod$/i) ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
-    my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-8.2" : "KBaseGenomes.Genome-12.3";  
+    #my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-8.2" : "KBaseGenomes.Genome-12.3";
+    my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-8.2" : "KBaseGenomes.Genome-14.1";
 
     my $ref_genomes = $self->list_reference_genomes({
             refseq=>$params->{refseq},
@@ -3457,10 +3460,10 @@ sub update_loaded_genomes
         });
 
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
-    
+
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-    
+
     my $new_genomes;
     if( $params->{update_only} == 1 ) {
         $new_genomes = $solrer->new_or_updated({solr_core=>$solr_core, search_docs=>$ref_genomes,search_type=>$obj_typ});
@@ -3485,9 +3488,8 @@ sub update_loaded_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to update_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'update_loaded_genomes');
+        my $msg = "Invalid returns passed to update_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'update_loaded_genomes');
     }
     return($output);
 }
