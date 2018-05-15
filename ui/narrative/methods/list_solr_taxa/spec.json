@@ -104,10 +104,15 @@
       "output_mapping" : [
         {
           "target_property" : "report_ref",
-    	  "service_method_output_path" : [
-				0,
-				0
-        	]
+          "service_method_output_path" : [0, "report_ref"]
+        },
+        {
+          "target_property" : "report_name",
+          "service_method_output_path" : [0, "report_name"]
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace_name"
         }
       ]
     }

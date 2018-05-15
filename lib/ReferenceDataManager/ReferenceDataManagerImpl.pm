@@ -2031,7 +2031,7 @@ sub index_genomes_in_solr
     }
 
     $msg .= "Totally indexed ". $gnft_count. " genome_feature(s)/genomes!\n";
-    #print $msg . "\n";
+    print $msg . "\n";
 
     # for updating to the Genomes core without features
     my $gn_src_core = $params->{solr_core};

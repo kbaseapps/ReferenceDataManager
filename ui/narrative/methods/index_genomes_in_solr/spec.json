@@ -168,11 +168,11 @@
           "input_parameter" : "genome_count",
           "target_property": "genome_count"
         },
-	{
+	      {
           "input_parameter" : "genome_ver",
           "target_property": "genome_ver"
         },
-	{
+	      {
           "input_parameter" : "index_features",
           "target_property": "index_features"
         },
