@@ -159,7 +159,7 @@ sub util_create_report {
     }
     #print "Token used inside create_report: " . Dumper($self->util_ws_client()->{token});
     #print "Workspace name passed to create_report:" . Dumper($args);
-    $self->util_ws_client()->save_objects({
+    my $list_obj_infos = $self->util_ws_client()->save_objects({
         workspace => $args->{workspace},
         objects => [{
             provenance => $self->{_provenance},
@@ -169,6 +169,7 @@ sub util_create_report {
             name => $self->util_method()
         }]
     });
+    return $list_obj_infos;
 }
 
 #################### methods for accessing SOLR using its web interface#######################
@@ -1407,12 +1408,13 @@ sub list_reference_genomes
         $summary .= "\nThere are a total of " . @{$output} . " " . $gn_domain . " Reference genomes in " . $gn_source .".\n";
         #print $summary . "\n";     
     }
+    my $report_out = [];
     if ($params->{create_report}) {
-        $self->util_create_report({
+        $report_out = $self->util_create_report({
             message => $summary,
             workspace => $params->{workspace_name}
-        });  
-        $output = [$params->{workspace_name}."/list_reference_genomes"];
+        });
+        $output = [{report_name => $params->{workspace_name}."/list_reference_genomes", report_ref => $report_out->[0][6] . "/" . $report_out->[0][0]}];
     } 
     #END list_reference_genomes
     my @_bad_returns;
@@ -1423,8 +1425,6 @@ sub list_reference_genomes
     }
     return($output);
 }
-
-
 
 
 =head2 list_loaded_genomes
@@ -1646,13 +1646,15 @@ sub list_loaded_genomes
     $msg .= "\nThere are a total of " . @{$output} . " Reference genomes loaded in KBase workspace " . $wsname ."\n";
     print $msg . "\n";
 
+    my $report_out = [];
     if ($params->{create_report}) {
-        $self->util_create_report({
-                message => $msg,
-                workspace => $params->{workspace_name}
+        $report_out = $self->util_create_report({
+            message => $msg,
+            workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace_name}."/list_loaded_genomes"];
-    }
+        $output = [{report_name => $params->{workspace_name}."/list_loaded_genomes", report_ref => $report_out->[0][6] . "/" . $report_out->[0][0]}];
+    } 
+
     #END list_loaded_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -1783,13 +1785,14 @@ sub list_solr_genomes
     $msg = ($msg ne "") ? $msg : "Nothing found!";
     print $msg . "\n";     
 
+    my $report_out = [];
     if ($params->{create_report}) {
-        $self->util_create_report({
-                message => $msg,
-                workspace => $params->{workspace_name}
+        $report_out = $self->util_create_report({
+            message => $msg,
+            workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace_name}."/list_solr_genomes"];
-    }
+        $output = [{report_name => $params->{workspace_name}."/list_solr_genomes", report_ref => $report_out->[0][6] . "/" . $report_out->[0][0]}];
+    } 
 
     #END list_solr_genomes
     my @_bad_returns;
@@ -2040,13 +2043,15 @@ sub index_genomes_in_solr
     $gnm_type = "KBaseGenomes.Genome-8.2" if $gn_src_core == "Genomes_prod";
     $self->_updateGenomesCore($gn_src_core, $gn_dest_core, $gnm_type); 
 
+    my $report_out = [];
     if ($params->{create_report}) {
-        $self->util_create_report({
+        $report_out = $self->util_create_report({
             message => $msg,
             workspace => $params->{workspace_name}
-        });  
-        $output = [$params->{workspace_name}."/index_genomes_in_solr"];
-    }    
+        });
+        $output = [{report_name => $params->{workspace_name}."/index_genomes_in_solr", report_ref => $report_out->[0][6] . "/" . $report_out->[0][0]}];
+    }
+
     #END index_genomes_in_solr
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -2205,7 +2210,7 @@ sub list_loaded_taxa
         print ("I: minObjectID: $minObjID\n");
         print ("I: maxObjectID: $maxObjID\n");
 
-    $wsoutput = [];
+        $wsoutput = [];
         my $try_count=5;
         while(scalar(@$wsoutput)==0 && $try_count != 0){
             $try_count--;
@@ -2446,15 +2451,17 @@ sub list_solr_taxa
     }
 
     $msg = ($msg ne "") ? $msg : "Nothing found!";
-    #print $msg . "\n";     
+    print $msg . "\n";
 
+    my $report_out = [];
     if ($params->{create_report}) {
-        $self->util_create_report({
-                message => $msg,
-                workspace => $params->{workspace_name}
+        $report_out = $self->util_create_report({
+            message => $msg,
+            workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace_name}."/list_solr_taxa"];
-    }
+        $output = [{report_name => $params->{workspace_name}."/list_solr_taxa", report_ref => $report_out->[0][6] . "/" . $report_out->[0][0]}];
+    } 
+
     #END list_solr_taxa
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -2889,13 +2896,15 @@ sub index_taxa_in_solr
     $msg .= "Indexed ". scalar @{$output}. " taxa!\n";
     print $msg . "\n";
 
+    my $report_out = [];
     if ($params->{create_report}) {
-        $self->util_create_report({
+        $report_out = $self->util_create_report({
             message => $msg,
             workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace_name}."/index_taxa_in_solr"];
+        $output = [{report_name => $params->{workspace_name}."/index_taxa_in_solr", report_ref => $report_out->[0][6] . "/" . $report_out->[0][0]}];
     }
+
     #END index_taxa_in_solr
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -3190,12 +3199,13 @@ sub load_genomes
         print "Indexed " .@{$output}." genomes!\n";
     }
 
+    my $report_out = [];
     if ($params->{create_report}) {
-        $self->util_create_report({
-                message => $msg,
-                workspace => $params->{workspace_name}
+        $report_out = $self->util_create_report({
+            message => $msg,
+            workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace_name}."/load_genomes"];
+        $output = [{report_name => $params->{workspace_name}."/load_genomes", report_ref => $report_out->[0][6] . "/" . $report_out->[0][0]}];
     }
 
     #END load_genomes
@@ -3476,12 +3486,13 @@ sub update_loaded_genomes
     $msg .= "Updated ".@{$output}." genomes!";
     print $msg . "\n"; 
 
+    my $report_out = [];
     if ($params->{create_report}) {
-        $self->util_create_report({
-                message => $msg,
-                workspace => $params->{workspace_name}
+        $report_out = $self->util_create_report({
+            message => $msg,
+            workspace => $params->{workspace_name}
         });
-        $output = [$params->{workspace_name}."/update_loaded_genomes"];
+        $output = [{report_name => $params->{workspace_name}."/update_loaded_genomes", report_ref => $report_out->[0][6] . "/" . $report_out->[0][0]}];
     }
 
     #END update_loaded_genomes
