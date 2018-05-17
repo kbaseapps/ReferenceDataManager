@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : "kbaseNarrativeMethodInput",
-    "output" : "kbaseReportView"
+    "output" : "no-display"
   },
   "parameters" : [ {
     "id" : "refseq",
@@ -102,7 +102,7 @@
           "target_property": "domain"
         },
         {
-          "constant_value" : "1",
+          "constant_value" : "0",
           "target_property": "create_report"
         },
         {
