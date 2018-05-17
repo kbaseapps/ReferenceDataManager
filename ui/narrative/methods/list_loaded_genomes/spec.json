@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : "kbaseNarrativeMethodInput",
-    "output" : "no-display"
+    "output" : "kbaseReportView"
   },
   "parameters" : [ {
     "id" : "data_source",
@@ -99,7 +99,7 @@
           "target_property": "save_date"
         },
         {
-          "constant_value" : "0",
+          "constant_value" : "1",
           "target_property": "create_report"
         },
         {
@@ -108,6 +108,18 @@
         }
       ],
       "output_mapping" : [
+        {
+          "target_property" : "report_ref",
+          "service_method_output_path" : [0, "report_ref"]
+        },
+        {
+          "target_property" : "report_name",
+          "service_method_output_path" : [0, "report_name"]
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace_name"
+        }
       ]
     }
   }

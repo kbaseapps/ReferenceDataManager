@@ -6,8 +6,7 @@
   "visble" : true,
   "categories" : ["active"],
   "widgets" : { 
-    "input" : "kbaseNarrativeMethodInput",
-    "output" : "no-display"
+    "input" : "kbaseNarrativeMethodInput"
   },  
   "parameters" : [ {
     "id" : "refseq",
@@ -144,12 +143,16 @@
           "input_parameter": "index_in_solr",
           "target_property": "index_in_solr"
         },
-	{
+	      {
           "narrative_system_variable": "workspace",
           "target_property": "workspace_name"
         }
       ],
       "output_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace_name"
+        }
       ]
     }
   }

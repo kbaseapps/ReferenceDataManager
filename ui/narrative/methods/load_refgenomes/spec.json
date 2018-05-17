@@ -6,8 +6,7 @@
   "visble" : true,
   "categories" : ["active"],
   "widgets" : {
-    "input" : "kbaseNarrativeMethodInput",
-    "output" : "no-display"
+    "input" : "kbaseNarrativeMethodInput"
   },
   "parameters" : [ {
     "id" : "refseq",
@@ -111,6 +110,10 @@
         }
       ],
       "output_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace_name"
+        }
       ]
     }
   }

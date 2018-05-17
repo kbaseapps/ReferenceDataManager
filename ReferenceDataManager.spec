@@ -52,7 +52,7 @@ module ReferenceDataManager {
         string genome_ws;
         int genome_ver;
         string save_date;
-	bool create_report;
+	    bool create_report;
     } ListLoadedGenomesParams;
     
     /*
