@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : "kbaseNarrativeMethodInput",
-    "output" : "kbaseReportView"
+    "output" : "no-display"
   },
   "parameters" : [ {
     "id" : "row_start",
