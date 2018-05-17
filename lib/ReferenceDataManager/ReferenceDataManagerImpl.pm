@@ -1403,11 +1403,12 @@ sub list_reference_genomes
 
     my $list_items = $self->_list_ncbi_refgenomes($gn_source, $gn_domain);
     if(defined($list_items)) {
-        $output = $list_items->{ref_genomes};
+        my $refseq_genomes = $list_items->{ref_genomes};
         $summary = $list_items->{summary};
-        $summary .= "\nThere are a total of " . @{$output} . " " . $gn_domain . " Reference genomes in " . $gn_source .".\n";
-        #print $summary . "\n";     
+        $summary .= "\nThere are a total of " . @{$refseq_genomes} . " " . $gn_domain . " Reference genomes in " . $gn_source .".\n";
+        print $summary . "\n";     
     }
+    $output = [$summary];
     my $report_out = [];
     if ($params->{create_report}) {
         $report_out = $self->util_create_report({
@@ -1645,6 +1646,7 @@ sub list_loaded_genomes
     }
     $msg .= "\nThere are a total of " . @{$output} . " Reference genomes loaded in KBase workspace " . $wsname ."\n";
     print $msg . "\n";
+    $output = [$msg];
 
     my $report_out = [];
     if ($params->{create_report}) {
@@ -1784,6 +1786,7 @@ sub list_solr_genomes
     }
     $msg = ($msg ne "") ? $msg : "Nothing found!";
     print $msg . "\n";     
+    $output = [$msg];
 
     my $report_out = [];
     if ($params->{create_report}) {
@@ -2032,9 +2035,9 @@ sub index_genomes_in_solr
         my $curr = @{$output}-1;
         $msg .= Data::Dumper->Dump([$output->[$curr]])."\n";
     }
-
     $msg .= "Totally indexed ". $gnft_count. " genome_feature(s)/genomes!\n";
     print $msg . "\n";
+    $output = [$msg];
 
     # for updating to the Genomes core without features
     my $gn_src_core = $params->{solr_core};
@@ -2452,6 +2455,7 @@ sub list_solr_taxa
 
     $msg = ($msg ne "") ? $msg : "Nothing found!";
     print $msg . "\n";
+    $output = [$msg];
 
     my $report_out = [];
     if ($params->{create_report}) {
@@ -2895,6 +2899,7 @@ sub index_taxa_in_solr
     }
     $msg .= "Indexed ". scalar @{$output}. " taxa!\n";
     print $msg . "\n";
+    $output = [$msg];
 
     my $report_out = [];
     if ($params->{create_report}) {
@@ -3198,6 +3203,7 @@ sub load_genomes
         });
         print "Indexed " .@{$output}." genomes!\n";
     }
+    $output = [$msg];
 
     my $report_out = [];
     if ($params->{create_report}) {
@@ -3484,7 +3490,8 @@ sub update_loaded_genomes
 
     $output = $self->load_genomes( {genomes=>$new_genomes, index_in_solr=>$params->{index_in_solr},kb_env=>$kbenv} ); 
     $msg .= "Updated ".@{$output}." genomes!";
-    print $msg . "\n"; 
+    print $msg . "\n";
+    $output = [$msg];
 
     my $report_out = [];
     if ($params->{create_report}) {
