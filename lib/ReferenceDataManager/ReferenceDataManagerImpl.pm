@@ -1405,7 +1405,7 @@ sub list_reference_genomes
     if(defined($list_items)) {
         $output = $list_items->{ref_genomes};
         $summary = $list_items->{summary};
-        $summary .= "\nThere are a total of " . @{$refseq_genomes} . " " . $gn_domain . " Reference genomes in " . $gn_source .".\n";
+        $summary .= "\nThere are a total of " . @{$output} . " " . $gn_domain . " Reference genomes in " . $gn_source .".\n";
         print $summary . "\n";     
     }
 
@@ -1534,11 +1534,11 @@ sub list_loaded_genomes
     $params = $self->util_initialize_call($params,$ctx);
     $params = $self->util_args($params,[],{
         data_source => "refseq",
-        create_report = >0,
-        genome_ver = >1,
+        create_report => 0,
+        genome_ver => 1,
         save_date => undef,
-        genome_ws=>"ReferenceDataManager",
-        workspace_name=>undef
+        genome_ws => "ReferenceDataManager",
+        workspace_name => undef
     });
     my $msg = "";
     my $output = [];
@@ -1652,8 +1652,8 @@ sub list_loaded_genomes
     my $report_out = [];
     if ($params->{create_report}) {
         $report_out = $self->util_create_report({
-            message => $msg,
-            workspace => $params->{workspace_name}
+                        message => $msg,
+                        workspace => $params->{workspace_name}
         });
         $output = [{report_name => $report_out->[0][7] . "/" . $report_out->[0][1],
                     report_ref => $report_out->[0][6] . "/" . $report_out->[0][0]}];
