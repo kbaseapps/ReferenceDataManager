@@ -3138,11 +3138,11 @@ sub load_genomes
                     }
             };
 
-            $existing_asm_ref = $self->_get_object_ref($wsname, $ncbiasm_name);
-            if ($existing_asm_ref != undef) {
+            #$existing_asm_ref = $self->_get_object_ref($wsname, $ncbiasm_name);
+            #if ($existing_asm_ref != undef) {
                 # introduced in new version
-                $genbank2gn_param->{'use_existing_assembly'} = $existing_asm_ref;
-            }
+                # $genbank2gn_param->{'use_existing_assembly'} = $existing_asm_ref;
+            #}
 
             #print "Input params passed to genbank_to_genome()\n" . Dumper($genbank2gn_param);
             eval {
