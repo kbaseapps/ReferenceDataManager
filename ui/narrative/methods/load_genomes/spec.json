@@ -6,7 +6,8 @@
   "visble" : true,
   "categories" : ["active"],
   "widgets" : { 
-    "input" : "kbaseNarrativeMethodInput"
+    "input" : "kbaseNarrativeMethodInput",
+    "output" : "no-display"
   }, 
   "parameters" : [ {
     "id" : "data",
