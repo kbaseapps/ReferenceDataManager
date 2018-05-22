@@ -784,10 +784,11 @@ sub _genome_object_exists
         $ws_name = "ReferenceDataManager";
     }
     if(!defined($cut_off_date)) {
-        $cut_off_date = '2018-05-19';
-    }   
-    my $objs = {objects => [{workspace => $ws_name, name => $obj_name}]};
+        my $curr_date = DateTime->now(time_zone => 'GMT');
+        $cut_off_date = $curr_date -> ymd; # Retrieves date as a string in 'yyyy-mm-dd' format
+    }
 
+    my $objs = {objects => [{workspace => $ws_name, name => $obj_name}]};
     eval {#returns a reference to a hash with two keys--"infos" and "paths"
         $ws_objs = $self->util_ws_client()->get_object_info3($objs);
     };
@@ -3415,7 +3416,6 @@ sub load_refgenomes
 
     foreach my $ref_gn (@{$ref_genomes}) {
         if($self->_genome_object_exists($params->{workspace_name}, $ref_gn->{accession}, $obj_type, $cut_off_date) == 0) {
-            print "********not found!";
             push(@{$new_gns}, $ref_gn);
         }
     }
