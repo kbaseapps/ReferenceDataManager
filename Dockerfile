@@ -1,4 +1,4 @@
-FROM kbase/kbase:sdkbase.latest
+FROM kbase/kbase:sdkbase2.latest
 MAINTAINER KBase Developer
 # -----------------------------------------
 
@@ -6,6 +6,7 @@ MAINTAINER KBase Developer
 # any required dependencies for your module.
 
 RUN apt-get update && apt-get install -y emacs
+RUN apt-get install libdatetime-format-strptime-perl
 RUN cpanm -i Config::IniFiles
 
 # -----------------------------------------

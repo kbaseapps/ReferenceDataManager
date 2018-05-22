@@ -330,6 +330,8 @@ module ReferenceDataManager {
         bool index_in_solr;
         string workspace_name;
         string kb_env;
+        string cut_off_date;
+        string genome_type;
     } LoadRefGenomesParams;
     
     /*

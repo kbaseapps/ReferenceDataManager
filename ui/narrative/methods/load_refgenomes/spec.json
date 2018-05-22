@@ -63,6 +63,26 @@
        "text_options" : {
            "validate_as": "int"
        }
+    }, {
+    "id": "cut_off_date",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["2018-05-19"],
+    "field_type" : "text",
+       "text_options" : {
+           "valid_as": "text"
+       }
+    }, {
+    "id": "genome_type",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["KBaseGenomes.Genome-14.1"],
+    "field_type" : "text",
+       "text_options" : {
+           "valid_as": "text"
+       }  
   }, {
     "id" : "kb_env",
     "default_values" : ["ci"],
@@ -105,7 +125,15 @@
           "input_parameter": "start_offset",
           "target_property": "start_offset"
         },
-	{
+        {
+          "input_parameter": "cut_off_date",
+          "target_property": "cut_off_date"
+        },
+        {
+          "input_parameter": "genome_type",
+          "target_property": "genome_type"
+        },
+	      {
           "narrative_system_variable": "workspace",
           "target_property": "workspace_name"
         }

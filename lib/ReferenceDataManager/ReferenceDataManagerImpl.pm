@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '0.0.1';
+our $VERSION = '1.0.0';
 our $GIT_URL = 'https://github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '0558b3af831c4d8a60add6b71731c0b9540a1be3';
+our $GIT_COMMIT_HASH = 'eecd55a5dce8dcf785b0468622fb2a6bd418d202';
 
 =head1 NAME
 
@@ -36,6 +36,8 @@ use Try::Tiny;
 use DateTime;
 use List::Util qw(none);
 use List::MoreUtils qw(uniq);
+use DateTime;
+use DateTime::Format::Strptime;
 
 #The first thing every function should do is call this function
 sub util_initialize_call {
@@ -762,7 +764,60 @@ sub _get_object_ref
     }
     return $ws_objref;
 }
+#
+#Internal method, to check if a genome exists in a given workspace with a given object type and saved after a cut_off_date
+#return: true or false
+#
+sub _genome_object_exists
+{
+    my ($self, $ws_name, $obj_name, $obj_type, $cut_off_date) = @_;
+    my $ws_objs;
+    my $obj_exists = 0;
 
+    if(!defined($obj_name)) {
+        return $obj_exists;
+    }
+    if(!defined($obj_type)) {
+        $obj_type = 'KBaseGenomes.Genome-14.1';
+    }
+    if(!defined($ws_name)) {
+        $ws_name = "ReferenceDataManager";
+    }
+    if(!defined($cut_off_date)) {
+        $cut_off_date = '2018-05-19';
+    }   
+    my $objs = {objects => [{workspace => $ws_name, name => $obj_name}]};
+
+    eval {#returns a reference to a hash with two keys--"infos" and "paths"
+        $ws_objs = $self->util_ws_client()->get_object_info3($objs);
+    };
+    if($@) {
+        print "**********Received an exception from calling get_object_info3\n";
+        print "ERROR:".$@;
+        print "Input parameter: \n" . Dumper($objs);
+    }
+    else {
+        $ws_objs = $ws_objs->{infos};
+        my $gn_type = $ws_objs->[0][2];
+        my $strp1 = new DateTime::Format::Strptime(
+                pattern => '%Y-%m-%dT%H:%M:%S+0000',
+                time_zone => 'GMT',
+                on_error=>'croak');
+        my $strp2 = new DateTime::Format::Strptime(
+                pattern => '%Y-%m-%d',
+                time_zone => 'GMT',
+                on_error=>'croak');
+        my $save_date = $strp1->parse_datetime($ws_objs->[0][3]);
+        $cut_off_date = $strp2->parse_datetime($cut_off_date);
+        if($cut_off_date <= $save_date and $gn_type == $obj_type) {
+            $obj_exists = 1;
+        }
+        else {
+            print "Not found!";
+        }
+    }
+    return $obj_exists;
+}
 #
 #Internal method, to return the difference of two lists whose items are strings
 #return: the list with unique items ocurring in $list1 but not in $list2
@@ -1365,8 +1420,9 @@ sub list_reference_genomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to list_reference_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_reference_genomes');
+	my $msg = "Invalid arguments passed to list_reference_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_reference_genomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -1423,11 +1479,14 @@ sub list_reference_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to list_reference_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_reference_genomes');
+	my $msg = "Invalid returns passed to list_reference_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_reference_genomes');
     }
     return($output);
 }
+
+
 
 
 =head2 list_loaded_genomes
@@ -1524,8 +1583,9 @@ sub list_loaded_genomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to list_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_loaded_genomes');
+	my $msg = "Invalid arguments passed to list_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_loaded_genomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -1663,8 +1723,9 @@ sub list_loaded_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to list_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_loaded_genomes');
+	my $msg = "Invalid returns passed to list_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_loaded_genomes');
     }
     return($output);
 }
@@ -1738,8 +1799,9 @@ sub list_solr_genomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_solr_genomes');
+	my $msg = "Invalid arguments passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_solr_genomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -1803,8 +1865,9 @@ sub list_solr_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_solr_genomes');
+	my $msg = "Invalid returns passed to list_solr_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_solr_genomes');
     }
     return($output);
 }
@@ -1980,8 +2043,9 @@ sub index_genomes_in_solr
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to index_genomes_in_solr:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'index_genomes_in_solr');
+	my $msg = "Invalid arguments passed to index_genomes_in_solr:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'index_genomes_in_solr');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -2030,7 +2094,7 @@ sub index_genomes_in_solr
     }
     @{$genomes} = @{$genomes}[$gn_start..$gn_upper];
     print "\nTotal genomes to be indexed: ". @{$genomes} . " to SOLR ". $solrCore ."\n";
-    $output = $self->_indexGenomeFeatureData($solrCore, $genomes,$params->{index_features});
+    $output = $self->_indexGenomeFeatureData($solrCore, $genomes, $params->{index_features});
     my $gnft_count = $output->{count};
     $output = $output->{genome_features};
     if (@{$output} > 0) {
@@ -2061,8 +2125,9 @@ sub index_genomes_in_solr
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to index_genomes_in_solr:\n" . join("", map { "\t$_\n" } @_bad_returns);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'index_genomes_in_solr');
+	my $msg = "Invalid returns passed to index_genomes_in_solr:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'index_genomes_in_solr');
     }
     return($output);
 }
@@ -2166,8 +2231,9 @@ sub list_loaded_taxa
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to list_loaded_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_loaded_taxa');
+	my $msg = "Invalid arguments passed to list_loaded_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_loaded_taxa');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -2291,8 +2357,9 @@ sub list_loaded_taxa
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to list_loaded_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_loaded_taxa');
+	my $msg = "Invalid returns passed to list_loaded_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_loaded_taxa');
     }
     return($output);
 }
@@ -2404,8 +2471,9 @@ sub list_solr_taxa
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to list_solr_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_solr_taxa');
+	my $msg = "Invalid arguments passed to list_solr_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_solr_taxa');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -2472,8 +2540,9 @@ sub list_solr_taxa
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to list_solr_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns)
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'list_solr_taxa');
+	my $msg = "Invalid returns passed to list_solr_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'list_solr_taxa');
     }
     return($output);
 }
@@ -2617,8 +2686,9 @@ sub load_taxa
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to load_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'load_taxa');
+	my $msg = "Invalid arguments passed to load_taxa:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'load_taxa');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -2659,8 +2729,9 @@ sub load_taxa
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to load_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'load_taxa');
+	my $msg = "Invalid returns passed to load_taxa:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'load_taxa');
     }
     return($output);
 }
@@ -2810,8 +2881,9 @@ sub index_taxa_in_solr
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to index_taxa_in_solr:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'index_taxa_in_solr');
+	my $msg = "Invalid arguments passed to index_taxa_in_solr:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'index_taxa_in_solr');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -2916,8 +2988,9 @@ sub index_taxa_in_solr
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to index_taxa_in_solr:\n" . join("", map { "\t$_\n" } @_bad_returns);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'index_taxa_in_solr');
+	my $msg = "Invalid returns passed to index_taxa_in_solr:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'index_taxa_in_solr');
     }
     return($output);
 }
@@ -3029,10 +3102,9 @@ sub load_genomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to load_genomes:\n" . join(
-            "", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(
-            error => $msg, method_name => 'load_genomes');
+	my $msg = "Invalid arguments passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'load_genomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -3208,12 +3280,11 @@ sub load_genomes
 
     #END load_genomes
     my @_bad_returns;
-    (ref($output) eq 'ARRAY') or push(@_bad_returns,
-                                      "Invalid type for return variable \"output\" (value was \"$output\")");
+    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(
-            error => $msg, method_name => 'load_genomes');
+	my $msg = "Invalid returns passed to load_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'load_genomes');
     }
     return($output);
 }
@@ -3242,6 +3313,8 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	kb_env has a value which is a string
+	cut_off_date has a value which is a string
+	genome_type has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -3270,6 +3343,8 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	kb_env has a value which is a string
+	cut_off_date has a value which is a string
+	genome_type has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -3303,10 +3378,9 @@ sub load_refgenomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to load_refgenomes:\n" . join(
-            "", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(
-            error => $msg, method_name => 'load_refgenomes');
+	my $msg = "Invalid arguments passed to load_refgenomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'load_refgenomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -3320,6 +3394,7 @@ sub load_refgenomes
         start_offset => 0,
         index_in_solr => 0,
         workspace_name => undef,
+        cut_off_date => undef,
         kb_env => 'ci'
     });
 
@@ -3327,17 +3402,35 @@ sub load_refgenomes
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl}});
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
 
-    if( (scalar @{$ref_genomes}) > 0 ) {
+    my $new_gns = [];
+    my $cut_off_date;
+    my $obj_type = "KBaseGenomes.Genome-14.1" unless $params->{obj_type};
+    if(!defined($params->{cut_off_date})) {
+        my $curr_date = DateTime->now(time_zone => 'GMT');
+        $cut_off_date = $curr_date -> ymd; # Retrieves date as a string in 'yyyy-mm-dd' format
+    }
+    else {
+        $cut_off_date = $params->{cut_off_date};
+    }
+
+    foreach my $ref_gn (@{$ref_genomes}) {
+        if($self->_genome_object_exists($params->{workspace_name}, $ref_gn->{accession}, $obj_type, $cut_off_date) == 0) {
+            print "********not found!";
+            push(@{$new_gns}, $ref_gn);
+        }
+    }
+
+    if( (scalar @{$new_gns}) > 0 ) {
         $output = $self->load_genomes(
-            {genomes =>$ref_genomes, index_in_solr=>$params->{index_in_solr},kb_env=>$params->{kb_env}});
+            {genomes => $new_gns, index_in_solr=>$params->{index_in_solr}, kb_env=>$params->{kb_env}});
     } 
     #END load_refgenomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to load_refgenomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-        method_name => 'load_refgenomes');
+	my $msg = "Invalid returns passed to load_refgenomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'load_refgenomes');
     }
     return($output);
 }
@@ -3431,10 +3524,9 @@ sub update_loaded_genomes
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
-        my $msg = "Invalid arguments passed to update_loaded_genomes:\n" . join(
-            "", map { "\t$_\n" } @_bad_arguments);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(
-            error => $msg, method_name => 'update_loaded_genomes');
+	my $msg = "Invalid arguments passed to update_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'update_loaded_genomes');
     }
 
     my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
@@ -3497,8 +3589,9 @@ sub update_loaded_genomes
     my @_bad_returns;
     (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
-        my $msg = "Invalid returns passed to update_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
-        Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'update_loaded_genomes');
+	my $msg = "Invalid returns passed to update_loaded_genomes:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'update_loaded_genomes');
     }
     return($output);
 }
@@ -4455,6 +4548,8 @@ start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 kb_env has a value which is a string
+cut_off_date has a value which is a string
+genome_type has a value which is a string
 
 </pre>
 
@@ -4470,6 +4565,8 @@ start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 kb_env has a value which is a string
+cut_off_date has a value which is a string
+genome_type has a value which is a string
 
 
 =end text

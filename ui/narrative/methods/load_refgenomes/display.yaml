@@ -62,6 +62,22 @@ parameters :
             Skip this count of the genomes before loading
         long-hint  : |
             Skip this count of the genomes before loading
+    
+    cut_off_date:
+        ui-name : |
+            Loaded after
+        short-hint : |
+            Skip genomes loaded in KBase after this date (yyyy-mm-dd)
+        long-hint  : |
+            Skip genomes loaded in KBase after this date (yyyy-mm-dd)
+    
+    genome_type:
+        ui-name : |
+            Genome Object Type
+        short-hint : |
+            The KBase object type of genomes
+        long-hint  : |
+            The KBase object type of genomes
 
     index_in_solr :
         ui-name : |
