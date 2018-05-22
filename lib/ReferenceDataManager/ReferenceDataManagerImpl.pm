@@ -792,9 +792,9 @@ sub _genome_object_exists
     eval {#returns a reference to a hash with two keys--"infos" and "paths"
         $ws_objs = $self->util_ws_client()->get_object_info3($objs);
     };
-    if($@) {
-        print "**********Received an exception from calling get_object_info3\n";
-        print "ERROR:".$@;
+    if($@) { # commented out to reduce error msg printouts
+        #print "**********Received an exception from calling get_object_info3\n";
+        #print "ERROR:".$@;
     }
     else {
         $ws_objs = $ws_objs->{infos};
@@ -811,9 +811,6 @@ sub _genome_object_exists
         $cut_off_date = $strp2->parse_datetime($cut_off_date);
         if($cut_off_date <= $save_date and $gn_type == $obj_type) {
             $obj_exists = 1;
-        }
-        else {
-            print "Not found!";
         }
     }
     return $obj_exists;
