@@ -795,7 +795,6 @@ sub _genome_object_exists
     if($@) {
         print "**********Received an exception from calling get_object_info3\n";
         print "ERROR:".$@;
-        print "Input parameter: \n" . Dumper($objs);
     }
     else {
         $ws_objs = $ws_objs->{infos};
