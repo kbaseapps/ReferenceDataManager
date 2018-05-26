@@ -324,7 +324,6 @@ sub get_genomes4RAST
         push @{$kbgn_ids}, $kb_gn->{workspace_name} . "/" . $kb_gn->{genome_id};
     }
 
-    #my $rasted_gnNames = $self->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-8.2",0,100000);
     my $rasted_genomes = $self->list_solr_genomes({
         solr_core => "RefSeq_RAST", 
         domain => "Bacteria"
@@ -1024,43 +1023,58 @@ sub _genomeInfoString
 }
 
 #
-#internal method, for retrieving genome names of a given workspace, genome type and range
+#internal method, for retrieving genome names of a given workspace, genome type and save_time range
 #
 sub _getWorkspaceGenomes
 {
-    my ($self, $ws_name, $gn_type, $minID, $maxID) = @_;
-    $gn_type = "KBaseGenomes.Genome-" unless $gn_type;
+    my ($self, $ws_name, $obj_type, $before, $after) = @_;
+    $obj_type = "KBaseGenomes.Genome-14.1" unless $obj_type;
     $ws_name = "ReferenceDataManager" unless $ws_name;
-    $minID = 0 unless $minID;
-    $maxID = 1000 unless $maxID;
+
+    my $batch_count = 9999;
+
     my $wsoutput;
-    my $list_genomes;
-    eval {
-        $wsoutput = $self->util_ws_client()->list_objects({
-                workspaces => [$ws_name],
-                minObjectID => $minID,
-                type => $gn_type,
-                maxObjectID => $maxID,
-                includeMetadata => 1
-        });
+    my $list_objs;
+
+    my $listObj_params = {workspaces => [$ws_name],
+                          type => $obj_type,
+                          includeMetadata => 0
     };
-    if($@) {
-        print "Cannot list genomes!\n";
-        print "ERROR:" . $@;#->{message}."\n";
-        if(ref($@) eq 'HASH' && defined($@->{status_line})) {
-            print "ERROR:" . $@->{status_line}."\n";
+    my $wsinfo = $self->util_ws_client()->get_workspace_info({'workspace' => $ws_name});
+    my $ws_size = $wsinfo->[4];
+    my $pages = ceil($ws_size/$batch_count);
+
+    for (my $m = 0; $m < $pages; $m++) {
+        $listObj_params->{'minObjectID'} = $batch_count * $m + 1;
+        $listObj_params->{'maxObjectID'} = $batch_count * ($m + 1);
+
+        if (defined($before)) {
+            $listObj_params->{'before'} = $before;
         }
-    } else {
-        print "In workspace " . $ws_name . " the Genome object count=" . @{$wsoutput}. "\n";
-        if( @{$wsoutput} > 0 ) {
-            for (my $j=0; $j < @{$wsoutput}; $j++) {
-                push @{$list_genomes}, $wsoutput->[$j]->[1]; 
+        if (defined($after)) {
+            $listObj_params->{'after'} = $after;
+        }
+
+        eval {$wsoutput = $self->util_ws_client()->list_objects($listObj_params);};
+        if($@) {
+            print "Cannot list objects!\n";
+            print "ERROR:" . $@;#->{message}."\n";
+            if(ref($@) eq 'HASH' && defined($@->{status_line})) {
+                print "ERROR:" . $@->{status_line}."\n";
+            }
+        }
+        else {
+            print "In workspace " . $ws_name . " the Genome object count=" . @{$wsoutput}. "\n";
+            if( @{$wsoutput} > 0 ) {
+                for (my $j=0; $j < @{$wsoutput}; $j++) {
+                    push @{$list_objs}, $wsoutput->[$j]->[1]; 
+                }
             }
         }
     }
-    #print "List of genomes:\n" . Dumper($list_genomes);
+    #print "Loaded genomes of count=" . scalar @{$list_objs} . "\n";
 
-    return {"workspace_name"=>$ws_name, "genome_names"=>$list_genomes};
+    return {"workspace_name"=>$ws_name, "genome_ids"=>$list_objs};
 }
 
 #################### Start subs for accessing NCBI refseq genomes#######################
@@ -3402,26 +3416,30 @@ sub load_refgenomes
                                                      phytozome=>$params->{phytozome},
                                                      ensembl=>$params->{ensembl}});
     $minCount = $minCount <= @{$ref_genomes}-1 ? $minCount : @{$ref_genomes}-1;
-    #@{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..$minCount];
 
-    my $cut_off_date;
+    my $ws_name = "ReferenceDataManager" unless $params->{workspace_name};
     my $obj_type = "KBaseGenomes.Genome-14.1" unless $params->{obj_type};
+    my $cut_off_date;
     if(!defined($params->{cut_off_date})) {
-        my $curr_date = DateTime->now(time_zone => 'GMT');
-        $cut_off_date = $curr_date -> ymd; # Retrieves date as a string in 'yyyy-mm-dd' format
+        $cut_off_date = DateTime->now(time_zone => 'GMT');
+        $cut_off_date = $cut_off_date -> strftime('%Y-%m-%dT%H:%M:%S+0000');
     }
-    else {
+    else{
         $cut_off_date = $params->{cut_off_date};
     }
 
     my $new_gns = [];
+    my $loaded_gnNames = $self->_getWorkspaceGenomes($ws_name, $obj_type, undef, $cut_off_date);
+    $loaded_gnNames = $loaded_gnNames->{genome_ids};
+
     foreach my $ref_gn (@{$ref_genomes}) {
-        if($self->_genome_object_exists($params->{workspace_name}, $ref_gn->{accession}, $obj_type, $cut_off_date) == 0) {
+        my $g_nm = $ref_gn->{accession};
+        if( !(/$g_nm/i ~~ @{$loaded_gnNames})) {
             push(@{$new_gns}, $ref_gn);
         }
     }
-    print "New genomes:" . Dumper($new_gns);
+    #print "New genomes:" . scalar @{$new_gns};
     if( (scalar @{$new_gns}) > 0 ) {
         $output = $self->load_genomes(
             {genomes => $new_gns, index_in_solr=>$params->{index_in_solr}, kb_env=>$params->{kb_env}});
