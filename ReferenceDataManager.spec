@@ -47,7 +47,7 @@ module ReferenceDataManager {
         Arguments for the list_loaded_genomes function
     */
     typedef structure {
-	string workspace_name;
+	    string workspace_name;
         string data_source;
         string genome_ws;
         int genome_ver;

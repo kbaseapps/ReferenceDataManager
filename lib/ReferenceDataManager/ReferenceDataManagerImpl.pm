@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '1.0.0';
 our $GIT_URL = 'https://github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = 'eecd55a5dce8dcf785b0468622fb2a6bd418d202';
+our $GIT_COMMIT_HASH = '2c828217effbbf6559e8e56846d16dca80e812c3';
 
 =head1 NAME
 
@@ -771,7 +771,7 @@ sub _get_object_ref
 sub _genome_object_exists
 {
     my ($self, $ws_name, $obj_name, $obj_type, $cut_off_date) = @_;
-    my $ws_objs;
+    my $ws_objs = undef;
     my $obj_exists = 0;
 
     if(!defined($obj_name)) {
@@ -788,17 +788,13 @@ sub _genome_object_exists
         $cut_off_date = $curr_date -> ymd; # Retrieves date as a string in 'yyyy-mm-dd' format
     }
 
-    my $objs = {objects => [{workspace => $ws_name, name => $obj_name}]};
-    eval {#returns a reference to a hash with two keys--"infos" and "paths"
-        $ws_objs = $self->util_ws_client()->get_object_info3($objs);
-    };
-    if($@) { # commented out to reduce error msg printouts
-        #print "**********Received an exception from calling get_object_info3\n";
-        #print "ERROR:".$@;
-    }
-    else {
+    my $info3_params = {objects => [{workspace => $ws_name, name => $obj_name}],
+                            ignoreErrors => 1,includeMetadata => 0};
+    $ws_objs = $self->util_ws_client()->get_object_info3($info3_params);
+    if (defined($ws_objs)) {
         $ws_objs = $ws_objs->{infos};
         my $gn_type = $ws_objs->[0][2];
+        my $save_date = $ws_objs->[0][3];
         my $strp1 = new DateTime::Format::Strptime(
                 pattern => '%Y-%m-%dT%H:%M:%S+0000',
                 time_zone => 'GMT',
@@ -807,14 +803,18 @@ sub _genome_object_exists
                 pattern => '%Y-%m-%d',
                 time_zone => 'GMT',
                 on_error=>'croak');
-        my $save_date = $strp1->parse_datetime($ws_objs->[0][3]);
-        $cut_off_date = $strp2->parse_datetime($cut_off_date);
-        if($cut_off_date <= $save_date and $gn_type == $obj_type) {
-            $obj_exists = 1;
+        if(defined($save_date)) {
+            $save_date = $strp1->parse_datetime($ws_objs->[0][3]);
+            $cut_off_date = $strp2->parse_datetime($cut_off_date);
+
+            if($cut_off_date <= $save_date and $gn_type == $obj_type) {
+                $obj_exists = 1;
+            }
         }
     }
     return $obj_exists;
 }
+
 #
 #Internal method, to return the difference of two lists whose items are strings
 #return: the list with unique items ocurring in $list1 but not in $list2
@@ -2104,7 +2104,7 @@ sub index_genomes_in_solr
     # for updating to the Genomes core without features
     my $gn_src_core = $params->{solr_core};
     (my $gn_dest_core = $gn_src_core) =~ s/Feature//g;
-    my $gnm_type = "KBaseGenomes.Genome-12.3";
+    my $gnm_type = "KBaseGenomes.Genome-14.1";
     $gnm_type = "KBaseGenomes.Genome-8.2" if $gn_src_core == "Genomes_prod";
     $self->_updateGenomesCore($gn_src_core, $gn_dest_core, $gnm_type); 
 
@@ -3396,10 +3396,15 @@ sub load_refgenomes
     });
 
     $output = [];
-    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},phytozome=>$params->{phytozome},ensembl=>$params->{ensembl}});
-    @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
 
-    my $new_gns = [];
+    my $minCount = 10000 + $params->{start_offset}; 
+    my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},
+                                                     phytozome=>$params->{phytozome},
+                                                     ensembl=>$params->{ensembl}});
+    $minCount = $minCount <= @{$ref_genomes}-1 ? $minCount : @{$ref_genomes}-1;
+    #@{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
+    @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..$minCount];
+
     my $cut_off_date;
     my $obj_type = "KBaseGenomes.Genome-14.1" unless $params->{obj_type};
     if(!defined($params->{cut_off_date})) {
@@ -3410,12 +3415,13 @@ sub load_refgenomes
         $cut_off_date = $params->{cut_off_date};
     }
 
+    my $new_gns = [];
     foreach my $ref_gn (@{$ref_genomes}) {
         if($self->_genome_object_exists($params->{workspace_name}, $ref_gn->{accession}, $obj_type, $cut_off_date) == 0) {
             push(@{$new_gns}, $ref_gn);
         }
     }
-
+    print "New genomes:" . Dumper($new_gns);
     if( (scalar @{$new_gns}) > 0 ) {
         $output = $self->load_genomes(
             {genomes => $new_gns, index_in_solr=>$params->{index_in_solr}, kb_env=>$params->{kb_env}});
