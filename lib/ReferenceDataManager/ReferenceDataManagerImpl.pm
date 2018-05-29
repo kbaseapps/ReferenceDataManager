@@ -46,7 +46,6 @@ sub util_initialize_call {
     $self->{_username} = $ctx->user_id();
     $self->{_method} = $ctx->method();
     $self->{_provenance} = $ctx->provenance();
-    #print "Token passed at initialization: " . Dumper($self->{_token});
     my $config_file = $ENV{ KB_DEPLOYMENT_CONFIG };
     my $cfg = Config::IniFiles->new(-file=>$config_file);
     $self->{data} = $cfg->val('ReferenceDataManager','data');
@@ -1028,32 +1027,46 @@ sub _genomeInfoString
 sub _getWorkspaceGenomes
 {
     my ($self, $ws_name, $obj_type, $before, $after) = @_;
-    $obj_type = "KBaseGenomes.Genome-14.1" unless $obj_type;
-    $ws_name = "ReferenceDataManager" unless $ws_name;
 
-    my $batch_count = 9999;
-
-    my $wsoutput;
-    my $list_objs;
+    my $params = {workspaces => [$ws_name], type => $obj_type};
+    my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
+    $params = $self->util_initialize_call($params, $ctx);
 
     my $listObj_params = {workspaces => [$ws_name],
                           type => $obj_type,
                           includeMetadata => 0
     };
+
+    #my $before = '2018-05-29';
+    my $strp = new DateTime::Format::Strptime(
+                pattern => '%Y-%m-%d',
+                time_zone => 'GMT',
+                on_error=>'croak');
+
+    if(defined($before)) {
+        my $before_date = $strp->parse_datetime($before);
+        $before = $before_date->strftime('%Y-%m-%dT%H:%M:%S%z');
+        $listObj_params->{'before'} = $before;
+    }
+    if(defined($after)) {
+        my $after_date = $strp->parse_datetime($after);
+        $after = $after_date->strftime('%Y-%m-%dT%H:%M:%S%z');
+        $listObj_params->{'after'} = $after;
+    }
+
+    $obj_type = "KBaseGenomes.Genome-14.1" unless $obj_type;
+    $ws_name = "ReferenceDataManager" unless $ws_name;
+
     my $wsinfo = $self->util_ws_client()->get_workspace_info({'workspace' => $ws_name});
     my $ws_size = $wsinfo->[4];
-    my $pages = ceil($ws_size/$batch_count);
 
+    my $batch_count = 9999;
+    my $wsoutput;
+    my $list_objs;
+    my $pages = ceil($ws_size/$batch_count);
     for (my $m = 0; $m < $pages; $m++) {
         $listObj_params->{'minObjectID'} = $batch_count * $m + 1;
         $listObj_params->{'maxObjectID'} = $batch_count * ($m + 1);
-
-        if (defined($before)) {
-            $listObj_params->{'before'} = $before;
-        }
-        if (defined($after)) {
-            $listObj_params->{'after'} = $after;
-        }
 
         eval {$wsoutput = $self->util_ws_client()->list_objects($listObj_params);};
         if($@) {
@@ -1072,7 +1085,7 @@ sub _getWorkspaceGenomes
             }
         }
     }
-    #print "Loaded genomes of count=" . scalar @{$list_objs} . "\n";
+    print "Loaded genomes of count=" . scalar @{$list_objs} . "\n";
 
     return {"workspace_name"=>$ws_name, "genome_ids"=>$list_objs};
 }
