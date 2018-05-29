@@ -1467,6 +1467,8 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	kb_env has a value which is a string
+	cut_off_date has a value which is a string
+	genome_type has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -1495,6 +1497,8 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
 	kb_env has a value which is a string
+	cut_off_date has a value which is a string
+	genome_type has a value which is a string
 bool is an int
 KBaseReferenceGenomeData is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
@@ -2683,6 +2687,8 @@ start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 kb_env has a value which is a string
+cut_off_date has a value which is a string
+genome_type has a value which is a string
 
 </pre>
 
@@ -2698,6 +2704,8 @@ start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
 kb_env has a value which is a string
+cut_off_date has a value which is a string
+genome_type has a value which is a string
 
 
 =end text

@@ -333,7 +333,8 @@ class ReferenceDataManager(object):
            boolean.), parameter "phytozome" of type "bool" (A boolean.),
            parameter "start_offset" of Long, parameter "index_in_solr" of
            type "bool" (A boolean.), parameter "workspace_name" of String,
-           parameter "kb_env" of String
+           parameter "kb_env" of String, parameter "cut_off_date" of String,
+           parameter "genome_type" of String
         :returns: instance of list of type "KBaseReferenceGenomeData"
            (Structure of a single KBase genome in the list returned by the
            load_genomes and update_loaded_genomes functions) -> structure:

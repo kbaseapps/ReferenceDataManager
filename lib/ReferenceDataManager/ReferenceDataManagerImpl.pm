@@ -1027,10 +1027,8 @@ sub _genomeInfoString
 sub _getWorkspaceGenomes
 {
     my ($self, $ws_name, $obj_type, $before, $after) = @_;
-
-    my $params = {workspaces => [$ws_name], type => $obj_type};
-    my $ctx = $ReferenceDataManager::ReferenceDataManagerServer::CallContext;
-    $params = $self->util_initialize_call($params, $ctx);
+    $obj_type = "KBaseGenomes.Genome-14.1" unless $obj_type;
+    $ws_name = "ReferenceDataManager" unless $ws_name;
 
     my $listObj_params = {workspaces => [$ws_name],
                           type => $obj_type,
@@ -1054,15 +1052,12 @@ sub _getWorkspaceGenomes
         $listObj_params->{'after'} = $after;
     }
 
-    $obj_type = "KBaseGenomes.Genome-14.1" unless $obj_type;
-    $ws_name = "ReferenceDataManager" unless $ws_name;
-
     my $wsinfo = $self->util_ws_client()->get_workspace_info({'workspace' => $ws_name});
     my $ws_size = $wsinfo->[4];
 
     my $batch_count = 9999;
     my $wsoutput;
-    my $list_objs;
+    my $list_objs = [];
     my $pages = ceil($ws_size/$batch_count);
     for (my $m = 0; $m < $pages; $m++) {
         $listObj_params->{'minObjectID'} = $batch_count * $m + 1;
@@ -1071,10 +1066,6 @@ sub _getWorkspaceGenomes
         eval {$wsoutput = $self->util_ws_client()->list_objects($listObj_params);};
         if($@) {
             print "Cannot list objects!\n";
-            print "ERROR:" . $@;#->{message}."\n";
-            if(ref($@) eq 'HASH' && defined($@->{status_line})) {
-                print "ERROR:" . $@->{status_line}."\n";
-            }
         }
         else {
             print "In workspace " . $ws_name . " the Genome object count=" . @{$wsoutput}. "\n";
