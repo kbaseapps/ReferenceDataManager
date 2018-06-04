@@ -1667,7 +1667,7 @@ sub list_loaded_genomes
                             $ws_objinfo = $wsoutput->[$j];
                             $obj_src = $ws_objinfo->[10]->{Source};
                             if( $obj_src && $i == 0 ) {#phytozome
-                                if( $obj_src =~ /phytozome*/i) {#check the source to include phytozome genomes only
+                                if( $obj_src =~ /phytozome*/i) {#check the source to include Phytozome genomes only
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info; 
  
@@ -3185,12 +3185,12 @@ sub load_genomes
             $wsname = "ReferenceDataManager";
         }
 
-        my $gn_type = "User upload";
+        my $gn_type = "user upload";
         if( $ncbigenome->{refseq_category} eq "reference genome") {
-           $gn_type = "Reference";
+           $gn_type = "reference";
         }
         elsif($ncbigenome->{refseq_category} eq "representative genome") {
-           $gn_type = "Representative";
+           $gn_type = "representative";
         }
 
         print "\nNow loading ".$ncbigenome->{id}." with loader url=".$ENV{ SDK_CALLBACK_URL }. " on " . scalar localtime . "\n";
@@ -3209,11 +3209,11 @@ sub load_genomes
                     },
                     genome_name => $ncbign_name,
                     workspace_name => $wsname,
-                    source => $ncbigenome->{source},
+                    source => $ncbigenome->{source} . " " . $gn_type,
                     taxon_wsname => "ReferenceTaxons",
                     release => $ncbigenome->{version},
                     generate_ids_if_needed => 1,
-                    # type => $gn_type, #got rid of in new version
+                    # type => $gn_type, #got rid of in new version and combined into source
                     generate_missing_genes => 1,
                     metadata => {
                         refid => $ncbigenome->{id},
@@ -3423,7 +3423,7 @@ sub load_refgenomes
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..$minCount];
 
     my $ws_name = "ReferenceDataManager" unless $params->{workspace_name};
-    my $obj_type = "KBaseGenomes.Genome-14.1" unless $params->{obj_type};
+    my $obj_type = "KBaseGenomes.Genome-14.1" unless $params->{genome_type};
     my $cut_off_date;
     if(!defined($params->{cut_off_date})) {
         $cut_off_date = DateTime->now(time_zone => 'GMT');
@@ -3573,8 +3573,8 @@ sub update_loaded_genomes
     $output = [];
     my $kbenv = $params->{kb_env};
     my $solr_core = ($kbenv =~ /prod$/i) ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
-    #my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-8.2" : "KBaseGenomes.Genome-12.3";
-    my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-8.2" : "KBaseGenomes.Genome-14.1";
+    #my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-9.0" : "KBaseGenomes.Genome-12.3";
+    my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-9.0" : "KBaseGenomes.Genome-14.1";
 
     my $ref_genomes = $self->list_reference_genomes({
             refseq=>$params->{refseq},
