@@ -3443,7 +3443,7 @@ sub load_refgenomes
             push(@{$new_gns}, $ref_gn);
         }
     }
-    #print "New genomes:" . scalar @{$new_gns};
+    print "There are " . scalar @{$new_gns} . " New genomes to load in this batch.";
     if( (scalar @{$new_gns}) > 0 ) {
         $output = $self->load_genomes(
             {genomes => $new_gns, index_in_solr=>$params->{index_in_solr}, kb_env=>$params->{kb_env}});
