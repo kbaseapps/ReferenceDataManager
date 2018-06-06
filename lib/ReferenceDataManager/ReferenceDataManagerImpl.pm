@@ -1060,15 +1060,18 @@ sub _getWorkspaceGenomes
     my $list_objs = [];
     my $pages = ceil($ws_size/$batch_count);
     for (my $m = 0; $m < $pages; $m++) {
-        $listObj_params->{'minObjectID'} = $batch_count * $m + 1;
-        $listObj_params->{'maxObjectID'} = $batch_count * ($m + 1);
+        my $minID = $batch_count * $m + 1;
+        my $maxID = $batch_count * ($m + 1);
+        $listObj_params->{'minObjectID'} = $minID;
+        $listObj_params->{'maxObjectID'} = $maxID;
 
         eval {$wsoutput = $self->util_ws_client()->list_objects($listObj_params);};
         if($@) {
             print "Cannot list objects!\n";
         }
         else {
-            print "In workspace " . $ws_name . " the Genome object count=" . @{$wsoutput}. "\n";
+            print "In workspace " . $ws_name . " range from ".$minID . " to "
+            .$maxID." loaded genome count=" . @{$wsoutput}. "\n";
             if( @{$wsoutput} > 0 ) {
                 for (my $j=0; $j < @{$wsoutput}; $j++) {
                     push @{$list_objs}, $wsoutput->[$j]->[1]; 
@@ -1133,7 +1136,10 @@ sub _list_ncbi_refgenomes
             push @{$output},$current_genome;
 
             if ($count <= 10) {
-                $summary .= $current_genome->{accession}.";".$current_genome->{version_status}.";".$current_genome->{id}.";".$current_genome->{ftp_dir}.";".$current_genome->{file}.";".$current_genome->{id}.";".$current_genome->{version}.";".$current_genome->{source}.";".$current_genome->{domain}."\n";
+                $summary .= $current_genome->{accession}.";".$current_genome->{version_status}.";"
+                .$current_genome->{id}.";".$current_genome->{ftp_dir}.";".$current_genome->{file}.";"
+                .$current_genome->{id}.";".$current_genome->{version}.";".$current_genome->{source}
+                .";".$current_genome->{domain}."\n";
             }
         }
     }
@@ -3423,7 +3429,8 @@ sub load_refgenomes
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..$minCount];
 
     my $ws_name = "ReferenceDataManager" unless $params->{workspace_name};
-    my $obj_type = "KBaseGenomes.Genome-14.1" unless $params->{genome_type};
+    my $obj_type = "KBaseGenomes.Genome-9.0" unless $params->{genome_type};
+
     my $cut_off_date;
     if(!defined($params->{cut_off_date})) {
         $cut_off_date = DateTime->now(time_zone => 'GMT');
@@ -3443,7 +3450,7 @@ sub load_refgenomes
             push(@{$new_gns}, $ref_gn);
         }
     }
-    print "There are " . scalar @{$new_gns} . " New genomes to load in this batch.";
+    print "There are " . scalar @{$new_gns} . " new genomes to load in this batch.";
     if( (scalar @{$new_gns}) > 0 ) {
         $output = $self->load_genomes(
             {genomes => $new_gns, index_in_solr=>$params->{index_in_solr}, kb_env=>$params->{kb_env}});

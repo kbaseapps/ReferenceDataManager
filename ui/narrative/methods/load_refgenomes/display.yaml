@@ -65,7 +65,7 @@ parameters :
     
     cut_off_date:
         ui-name : |
-            Loaded after
+            Skip genomes loaded after
         short-hint : |
             Skip genomes loaded in KBase after this date (yyyy-mm-dd)
         long-hint  : |
