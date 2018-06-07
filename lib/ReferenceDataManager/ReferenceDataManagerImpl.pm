@@ -3413,7 +3413,7 @@ sub load_refgenomes
         ensembl => 0,
         start_offset => 0,
         index_in_solr => 0,
-        workspace_name => "ReferenceDataManager",
+        workspace_name => undef,
         cut_off_date => undef,
         genome_type => "KBaseGenomes.Genome-14.1",
         kb_env => 'ci'
@@ -3428,7 +3428,7 @@ sub load_refgenomes
     $minCount = $minCount <= @{$ref_genomes}-1 ? $minCount : @{$ref_genomes}-1;
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..$minCount];
 
-    my $ws_name = $params->{workspace_name};
+    my $target_ws_name = "ReferenceDataManager";
     my $genome_type = $params->{genome_type};
 
     my $cut_off_date;
@@ -3441,7 +3441,7 @@ sub load_refgenomes
     }
 
     my $new_gns = [];
-    my $loaded_gnNames = $self->_getWorkspaceGenomes($ws_name, $genome_type, undef, $cut_off_date);
+    my $loaded_gnNames = $self->_getWorkspaceGenomes($target_ws_name, $genome_type, undef, $cut_off_date);
     $loaded_gnNames = $loaded_gnNames->{genome_ids};
 
     foreach my $ref_gn (@{$ref_genomes}) {
