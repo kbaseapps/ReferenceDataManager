@@ -776,7 +776,7 @@ sub _genome_object_exists
         return $obj_exists;
     }
     if(!defined($obj_type)) {
-        $obj_type = 'KBaseGenomes.Genome-14.1';
+        $obj_type = 'KBaseGenomes.Genome-9.0';
     }
     if(!defined($ws_name)) {
         $ws_name = "ReferenceDataManager";
@@ -1026,16 +1026,15 @@ sub _genomeInfoString
 #
 sub _getWorkspaceGenomes
 {
-    my ($self, $ws_name, $obj_type, $before, $after) = @_;
-    $obj_type = "KBaseGenomes.Genome-14.1" unless $obj_type;
+    my ($self, $ws_name, $genome_type, $before, $after) = @_;
+    $genome_type = "KBaseGenomes.Genome-14.1" unless $genome_type;
     $ws_name = "ReferenceDataManager" unless $ws_name;
 
     my $listObj_params = {workspaces => [$ws_name],
-                          type => $obj_type,
+                          type => $genome_type,
                           includeMetadata => 0
     };
 
-    #my $before = '2018-05-29';
     my $strp = new DateTime::Format::Strptime(
                 pattern => '%Y-%m-%d',
                 time_zone => 'GMT',
@@ -2129,7 +2128,7 @@ sub index_genomes_in_solr
     my $gn_src_core = $params->{solr_core};
     (my $gn_dest_core = $gn_src_core) =~ s/Feature//g;
     my $gnm_type = "KBaseGenomes.Genome-14.1";
-    $gnm_type = "KBaseGenomes.Genome-8.2" if $gn_src_core == "Genomes_prod";
+    $gnm_type = "KBaseGenomes.Genome-9.0" if $gn_src_core == "Genomes_prod";
     $self->_updateGenomesCore($gn_src_core, $gn_dest_core, $gnm_type); 
 
     my $report_out = [];
@@ -3143,7 +3142,7 @@ sub load_genomes
     #my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL });
     my $loader = new GenomeFileUtil::GenomeFileUtilClient(
         $ENV{ SDK_CALLBACK_URL },
-        ('service_version' => 'dev', 'async_version' => 'dev'));
+        ('service_version' => 'beta', 'async_version' => 'beta'));
     my $ncbigenomes;
     $output = [];
     my $msg = "";
@@ -3414,8 +3413,9 @@ sub load_refgenomes
         ensembl => 0,
         start_offset => 0,
         index_in_solr => 0,
-        workspace_name => undef,
+        workspace_name => "ReferenceDataManager",
         cut_off_date => undef,
+        genome_type => "KBaseGenomes.Genome-14.1",
         kb_env => 'ci'
     });
 
@@ -3428,8 +3428,8 @@ sub load_refgenomes
     $minCount = $minCount <= @{$ref_genomes}-1 ? $minCount : @{$ref_genomes}-1;
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..$minCount];
 
-    my $ws_name = "ReferenceDataManager" unless $params->{workspace_name};
-    my $obj_type = "KBaseGenomes.Genome-9.0" unless $params->{genome_type};
+    my $ws_name = $params->{workspace_name};
+    my $genome_type = $params->{genome_type};
 
     my $cut_off_date;
     if(!defined($params->{cut_off_date})) {
@@ -3441,7 +3441,7 @@ sub load_refgenomes
     }
 
     my $new_gns = [];
-    my $loaded_gnNames = $self->_getWorkspaceGenomes($ws_name, $obj_type, undef, $cut_off_date);
+    my $loaded_gnNames = $self->_getWorkspaceGenomes($ws_name, $genome_type, undef, $cut_off_date);
     $loaded_gnNames = $loaded_gnNames->{genome_ids};
 
     foreach my $ref_gn (@{$ref_genomes}) {
@@ -3580,7 +3580,6 @@ sub update_loaded_genomes
     $output = [];
     my $kbenv = $params->{kb_env};
     my $solr_core = ($kbenv =~ /prod$/i) ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
-    #my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-9.0" : "KBaseGenomes.Genome-12.3";
     my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-9.0" : "KBaseGenomes.Genome-14.1";
 
     my $ref_genomes = $self->list_reference_genomes({
