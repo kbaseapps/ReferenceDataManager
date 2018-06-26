@@ -376,7 +376,7 @@ sub _updateGenomesCore
     my $ret_gnms;
     $src_core = "GenomeFeatures_ci" unless $src_core;
     $dest_core = "Genomes_ci" unless $dest_core;
-    $gnm_type = "KBaseGenomes.Genome-12.3" unless $gnm_type;
+    $gnm_type = "KBaseGenomes.Genome-14.*" unless $gnm_type;
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
@@ -1027,7 +1027,7 @@ sub _genomeInfoString
 sub _getWorkspaceGenomes
 {
     my ($self, $ws_name, $genome_type, $before, $after) = @_;
-    $genome_type = "KBaseGenomes.Genome-14.1" unless $genome_type;
+    $genome_type = "KBaseGenomes.Genome-14." unless $genome_type;
     $ws_name = "ReferenceDataManager" unless $ws_name;
 
     my $listObj_params = {workspaces => [$ws_name],
@@ -2127,7 +2127,7 @@ sub index_genomes_in_solr
     # for updating to the Genomes core without features
     my $gn_src_core = $params->{solr_core};
     (my $gn_dest_core = $gn_src_core) =~ s/Feature//g;
-    my $gnm_type = "KBaseGenomes.Genome-14.1";
+    my $gnm_type = "KBaseGenomes.Genome-14.*";
     $gnm_type = "KBaseGenomes.Genome-9.0" if $gn_src_core == "Genomes_prod";
     $self->_updateGenomesCore($gn_src_core, $gn_dest_core, $gnm_type); 
 
@@ -3415,7 +3415,7 @@ sub load_refgenomes
         index_in_solr => 0,
         workspace_name => undef,
         cut_off_date => undef,
-        genome_type => "KBaseGenomes.Genome-14.1",
+        genome_type => "KBaseGenomes.Genome-14.2",
         kb_env => 'ci'
     });
 
@@ -3580,7 +3580,7 @@ sub update_loaded_genomes
     $output = [];
     my $kbenv = $params->{kb_env};
     my $solr_core = ($kbenv =~ /prod$/i) ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
-    my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-9.0" : "KBaseGenomes.Genome-14.1";
+    my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-9.0" : "KBaseGenomes.Genome-14.2";
 
     my $ref_genomes = $self->list_reference_genomes({
             refseq=>$params->{refseq},
