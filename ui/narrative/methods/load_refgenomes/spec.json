@@ -85,7 +85,7 @@
        }  
   }, {
     "id" : "kb_env",
-    "default_values" : ["ci"],
+    "default_values" : ["prod"],
     "advanced" : true,
     "allow_multiple" : false,
     "optional" : false,
