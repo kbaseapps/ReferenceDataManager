@@ -1463,6 +1463,7 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
+	domain has a value which is a string
 	start_offset has a value which is an int
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
@@ -1493,6 +1494,7 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
+	domain has a value which is a string
 	start_offset has a value which is an int
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
@@ -2683,6 +2685,7 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
+domain has a value which is a string
 start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
@@ -2700,6 +2703,7 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
+domain has a value which is a string
 start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string

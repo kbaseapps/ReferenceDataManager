@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "genomes",
     "index_in_solr",
     "workspace_name",
-    "create_report"
+    "kb_env"
 })
 public class LoadGenomesParams {
 
@@ -38,8 +38,8 @@ public class LoadGenomesParams {
     private Long indexInSolr;
     @JsonProperty("workspace_name")
     private String workspaceName;
-    @JsonProperty("create_report")
-    private Long createReport;
+    @JsonProperty("kb_env")
+    private String kbEnv;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("data")
@@ -102,18 +102,18 @@ public class LoadGenomesParams {
         return this;
     }
 
-    @JsonProperty("create_report")
-    public Long getCreateReport() {
-        return createReport;
+    @JsonProperty("kb_env")
+    public String getKbEnv() {
+        return kbEnv;
     }
 
-    @JsonProperty("create_report")
-    public void setCreateReport(Long createReport) {
-        this.createReport = createReport;
+    @JsonProperty("kb_env")
+    public void setKbEnv(String kbEnv) {
+        this.kbEnv = kbEnv;
     }
 
-    public LoadGenomesParams withCreateReport(Long createReport) {
-        this.createReport = createReport;
+    public LoadGenomesParams withKbEnv(String kbEnv) {
+        this.kbEnv = kbEnv;
         return this;
     }
 
@@ -129,7 +129,7 @@ public class LoadGenomesParams {
 
     @Override
     public String toString() {
-        return ((((((((((((("LoadGenomesParams"+" [data=")+ data)+", genomes=")+ genomes)+", indexInSolr=")+ indexInSolr)+", workspaceName=")+ workspaceName)+", createReport=")+ createReport)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((("LoadGenomesParams"+" [data=")+ data)+", genomes=")+ genomes)+", indexInSolr=")+ indexInSolr)+", workspaceName=")+ workspaceName)+", kbEnv=")+ kbEnv)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

@@ -21,70 +21,28 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "ensembl",
-    "refseq",
-    "phytozome",
     "workspace_name",
+    "data_source",
+    "genome_ws",
+    "genome_ver",
+    "save_date",
     "create_report"
 })
 public class ListLoadedGenomesParams {
 
-    @JsonProperty("ensembl")
-    private Long ensembl;
-    @JsonProperty("refseq")
-    private Long refseq;
-    @JsonProperty("phytozome")
-    private Long phytozome;
     @JsonProperty("workspace_name")
     private String workspaceName;
+    @JsonProperty("data_source")
+    private String dataSource;
+    @JsonProperty("genome_ws")
+    private String genomeWs;
+    @JsonProperty("genome_ver")
+    private Long genomeVer;
+    @JsonProperty("save_date")
+    private String saveDate;
     @JsonProperty("create_report")
     private Long createReport;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
-
-    @JsonProperty("ensembl")
-    public Long getEnsembl() {
-        return ensembl;
-    }
-
-    @JsonProperty("ensembl")
-    public void setEnsembl(Long ensembl) {
-        this.ensembl = ensembl;
-    }
-
-    public ListLoadedGenomesParams withEnsembl(Long ensembl) {
-        this.ensembl = ensembl;
-        return this;
-    }
-
-    @JsonProperty("refseq")
-    public Long getRefseq() {
-        return refseq;
-    }
-
-    @JsonProperty("refseq")
-    public void setRefseq(Long refseq) {
-        this.refseq = refseq;
-    }
-
-    public ListLoadedGenomesParams withRefseq(Long refseq) {
-        this.refseq = refseq;
-        return this;
-    }
-
-    @JsonProperty("phytozome")
-    public Long getPhytozome() {
-        return phytozome;
-    }
-
-    @JsonProperty("phytozome")
-    public void setPhytozome(Long phytozome) {
-        this.phytozome = phytozome;
-    }
-
-    public ListLoadedGenomesParams withPhytozome(Long phytozome) {
-        this.phytozome = phytozome;
-        return this;
-    }
 
     @JsonProperty("workspace_name")
     public String getWorkspaceName() {
@@ -98,6 +56,66 @@ public class ListLoadedGenomesParams {
 
     public ListLoadedGenomesParams withWorkspaceName(String workspaceName) {
         this.workspaceName = workspaceName;
+        return this;
+    }
+
+    @JsonProperty("data_source")
+    public String getDataSource() {
+        return dataSource;
+    }
+
+    @JsonProperty("data_source")
+    public void setDataSource(String dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public ListLoadedGenomesParams withDataSource(String dataSource) {
+        this.dataSource = dataSource;
+        return this;
+    }
+
+    @JsonProperty("genome_ws")
+    public String getGenomeWs() {
+        return genomeWs;
+    }
+
+    @JsonProperty("genome_ws")
+    public void setGenomeWs(String genomeWs) {
+        this.genomeWs = genomeWs;
+    }
+
+    public ListLoadedGenomesParams withGenomeWs(String genomeWs) {
+        this.genomeWs = genomeWs;
+        return this;
+    }
+
+    @JsonProperty("genome_ver")
+    public Long getGenomeVer() {
+        return genomeVer;
+    }
+
+    @JsonProperty("genome_ver")
+    public void setGenomeVer(Long genomeVer) {
+        this.genomeVer = genomeVer;
+    }
+
+    public ListLoadedGenomesParams withGenomeVer(Long genomeVer) {
+        this.genomeVer = genomeVer;
+        return this;
+    }
+
+    @JsonProperty("save_date")
+    public String getSaveDate() {
+        return saveDate;
+    }
+
+    @JsonProperty("save_date")
+    public void setSaveDate(String saveDate) {
+        this.saveDate = saveDate;
+    }
+
+    public ListLoadedGenomesParams withSaveDate(String saveDate) {
+        this.saveDate = saveDate;
         return this;
     }
 
@@ -128,7 +146,7 @@ public class ListLoadedGenomesParams {
 
     @Override
     public String toString() {
-        return ((((((((((((("ListLoadedGenomesParams"+" [ensembl=")+ ensembl)+", refseq=")+ refseq)+", phytozome=")+ phytozome)+", workspaceName=")+ workspaceName)+", createReport=")+ createReport)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((("ListLoadedGenomesParams"+" [workspaceName=")+ workspaceName)+", dataSource=")+ dataSource)+", genomeWs=")+ genomeWs)+", genomeVer=")+ genomeVer)+", saveDate=")+ saveDate)+", createReport=")+ createReport)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

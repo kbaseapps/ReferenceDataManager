@@ -43,6 +43,41 @@
       "unchecked_value": 0
     }
   }, {
+    "id" : "domain",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["bacteria"],
+    "field_type" : "dropdown",
+     "dropdown_options":{
+      "options": [
+        {
+          "value": "bacteria",
+          "display": "B (Bacteria)",
+          "id": "B",
+          "ui_name": "B (Bacteria)"
+        },
+        {
+          "value": "archaea",
+          "display": "A (Archaea)",
+          "id": "A",
+          "ui_name": "A (Archaea)"
+        },
+        {
+          "value": "fungi",
+          "display": "F (Fungi)",
+          "id": "F",
+          "ui_name": "F (Fungi)"
+        },
+        {
+          "value": "plant",
+          "display": "P (Plant)",
+          "id": "P",
+          "ui_name": "P (Plant)"
+        }
+      ]
+    }
+  }, {
     "id": "index_in_solr",
     "optional":false,
     "advanced":true,
@@ -112,6 +147,10 @@
         {
           "input_parameter": "phytozome",
           "target_property": "phytozome"
+        },
+        {
+          "input_parameter": "domain",
+          "target_property": "domain"
         },
         {
           "input_parameter" : "kb_env",

@@ -326,6 +326,7 @@ module ReferenceDataManager {
         bool ensembl;
         bool refseq;
         bool phytozome;
+        string domain;
         int start_offset;
         bool index_in_solr;
         string workspace_name;

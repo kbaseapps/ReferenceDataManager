@@ -22,23 +22,26 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
     "accession",
-    "status",
-    "name",
+    "version_status",
+    "asm_name",
     "ftp_dir",
     "file",
     "id",
     "version",
     "source",
-    "domain"
+    "domain",
+    "refseq_category",
+    "tax_id",
+    "assembly_level"
 })
 public class ReferenceGenomeData {
 
     @JsonProperty("accession")
     private String accession;
-    @JsonProperty("status")
-    private String status;
-    @JsonProperty("name")
-    private String name;
+    @JsonProperty("version_status")
+    private String versionStatus;
+    @JsonProperty("asm_name")
+    private String asmName;
     @JsonProperty("ftp_dir")
     private String ftpDir;
     @JsonProperty("file")
@@ -51,6 +54,12 @@ public class ReferenceGenomeData {
     private String source;
     @JsonProperty("domain")
     private String domain;
+    @JsonProperty("refseq_category")
+    private String refseqCategory;
+    @JsonProperty("tax_id")
+    private String taxId;
+    @JsonProperty("assembly_level")
+    private String assemblyLevel;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("accession")
@@ -68,33 +77,33 @@ public class ReferenceGenomeData {
         return this;
     }
 
-    @JsonProperty("status")
-    public String getStatus() {
-        return status;
+    @JsonProperty("version_status")
+    public String getVersionStatus() {
+        return versionStatus;
     }
 
-    @JsonProperty("status")
-    public void setStatus(String status) {
-        this.status = status;
+    @JsonProperty("version_status")
+    public void setVersionStatus(String versionStatus) {
+        this.versionStatus = versionStatus;
     }
 
-    public ReferenceGenomeData withStatus(String status) {
-        this.status = status;
+    public ReferenceGenomeData withVersionStatus(String versionStatus) {
+        this.versionStatus = versionStatus;
         return this;
     }
 
-    @JsonProperty("name")
-    public String getName() {
-        return name;
+    @JsonProperty("asm_name")
+    public String getAsmName() {
+        return asmName;
     }
 
-    @JsonProperty("name")
-    public void setName(String name) {
-        this.name = name;
+    @JsonProperty("asm_name")
+    public void setAsmName(String asmName) {
+        this.asmName = asmName;
     }
 
-    public ReferenceGenomeData withName(String name) {
-        this.name = name;
+    public ReferenceGenomeData withAsmName(String asmName) {
+        this.asmName = asmName;
         return this;
     }
 
@@ -188,6 +197,51 @@ public class ReferenceGenomeData {
         return this;
     }
 
+    @JsonProperty("refseq_category")
+    public String getRefseqCategory() {
+        return refseqCategory;
+    }
+
+    @JsonProperty("refseq_category")
+    public void setRefseqCategory(String refseqCategory) {
+        this.refseqCategory = refseqCategory;
+    }
+
+    public ReferenceGenomeData withRefseqCategory(String refseqCategory) {
+        this.refseqCategory = refseqCategory;
+        return this;
+    }
+
+    @JsonProperty("tax_id")
+    public String getTaxId() {
+        return taxId;
+    }
+
+    @JsonProperty("tax_id")
+    public void setTaxId(String taxId) {
+        this.taxId = taxId;
+    }
+
+    public ReferenceGenomeData withTaxId(String taxId) {
+        this.taxId = taxId;
+        return this;
+    }
+
+    @JsonProperty("assembly_level")
+    public String getAssemblyLevel() {
+        return assemblyLevel;
+    }
+
+    @JsonProperty("assembly_level")
+    public void setAssemblyLevel(String assemblyLevel) {
+        this.assemblyLevel = assemblyLevel;
+    }
+
+    public ReferenceGenomeData withAssemblyLevel(String assemblyLevel) {
+        this.assemblyLevel = assemblyLevel;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -200,7 +254,7 @@ public class ReferenceGenomeData {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((("ReferenceGenomeData"+" [accession=")+ accession)+", status=")+ status)+", name=")+ name)+", ftpDir=")+ ftpDir)+", file=")+ file)+", id=")+ id)+", version=")+ version)+", source=")+ source)+", domain=")+ domain)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((("ReferenceGenomeData"+" [accession=")+ accession)+", versionStatus=")+ versionStatus)+", asmName=")+ asmName)+", ftpDir=")+ ftpDir)+", file=")+ file)+", id=")+ id)+", version=")+ version)+", source=")+ source)+", domain=")+ domain)+", refseqCategory=")+ refseqCategory)+", taxId=")+ taxId)+", assemblyLevel=")+ assemblyLevel)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

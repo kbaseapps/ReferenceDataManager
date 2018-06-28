@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '1.0.0';
 our $GIT_URL = 'https://github.com/kbaseapps/ReferenceDataManager.git';
-our $GIT_COMMIT_HASH = '2c828217effbbf6559e8e56846d16dca80e812c3';
+our $GIT_COMMIT_HASH = 'b84a6e83990618e48c1a45cef7908f3ebc462b53';
 
 =head1 NAME
 
@@ -3329,6 +3329,7 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
+	domain has a value which is a string
 	start_offset has a value which is an int
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
@@ -3359,6 +3360,7 @@ LoadRefGenomesParams is a reference to a hash where the following keys are defin
 	ensembl has a value which is a ReferenceDataManager.bool
 	refseq has a value which is a ReferenceDataManager.bool
 	phytozome has a value which is a ReferenceDataManager.bool
+	domain has a value which is a string
 	start_offset has a value which is an int
 	index_in_solr has a value which is a ReferenceDataManager.bool
 	workspace_name has a value which is a string
@@ -3411,6 +3413,7 @@ sub load_refgenomes
         refseq => 1,
         phytozome => 0,
         ensembl => 0,
+        domain => "bacteria",
         start_offset => 0,
         index_in_solr => 0,
         workspace_name => undef,
@@ -3421,10 +3424,11 @@ sub load_refgenomes
 
     $output = [];
 
-    my $minCount = 10000 + $params->{start_offset}; 
+    my $minCount = 5000 + $params->{start_offset}; 
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},
                                                      phytozome=>$params->{phytozome},
-                                                     ensembl=>$params->{ensembl}});
+                                                     ensembl=>$params->{ensembl},
+                                                     domain=>$params->{domain}});
     $minCount = $minCount <= @{$ref_genomes}-1 ? $minCount : @{$ref_genomes}-1;
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..$minCount];
 
@@ -4574,6 +4578,7 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
+domain has a value which is a string
 start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string
@@ -4591,6 +4596,7 @@ a reference to a hash where the following keys are defined:
 ensembl has a value which is a ReferenceDataManager.bool
 refseq has a value which is a ReferenceDataManager.bool
 phytozome has a value which is a ReferenceDataManager.bool
+domain has a value which is a string
 start_offset has a value which is an int
 index_in_solr has a value which is a ReferenceDataManager.bool
 workspace_name has a value which is a string

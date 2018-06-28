@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 /**
  * <p>Original spec-file type: KBaseReferenceGenomeData</p>
  * <pre>
- * Struct containing data for a single genome output by the list_loaded_genomes function
+ * Structure of a single KBase genome in the list returned by the load_genomes and update_loaded_genomes functions
  * </pre>
  * 
  */
@@ -27,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "source_id",
     "accession",
     "name",
-    "ftp_dir",
     "version",
     "source",
     "domain"
@@ -46,8 +45,6 @@ public class KBaseReferenceGenomeData {
     private String accession;
     @JsonProperty("name")
     private String name;
-    @JsonProperty("ftp_dir")
-    private String ftpDir;
     @JsonProperty("version")
     private String version;
     @JsonProperty("source")
@@ -146,21 +143,6 @@ public class KBaseReferenceGenomeData {
         return this;
     }
 
-    @JsonProperty("ftp_dir")
-    public String getFtpDir() {
-        return ftpDir;
-    }
-
-    @JsonProperty("ftp_dir")
-    public void setFtpDir(String ftpDir) {
-        this.ftpDir = ftpDir;
-    }
-
-    public KBaseReferenceGenomeData withFtpDir(String ftpDir) {
-        this.ftpDir = ftpDir;
-        return this;
-    }
-
     @JsonProperty("version")
     public String getVersion() {
         return version;
@@ -218,7 +200,7 @@ public class KBaseReferenceGenomeData {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((("KBaseReferenceGenomeData"+" [ref=")+ ref)+", id=")+ id)+", workspaceName=")+ workspaceName)+", sourceId=")+ sourceId)+", accession=")+ accession)+", name=")+ name)+", ftpDir=")+ ftpDir)+", version=")+ version)+", source=")+ source)+", domain=")+ domain)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((("KBaseReferenceGenomeData"+" [ref=")+ ref)+", id=")+ id)+", workspaceName=")+ workspaceName)+", sourceId=")+ sourceId)+", accession=")+ accession)+", name=")+ name)+", version=")+ version)+", source=")+ source)+", domain=")+ domain)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

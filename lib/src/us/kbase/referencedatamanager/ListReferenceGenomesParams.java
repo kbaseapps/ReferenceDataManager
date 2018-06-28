@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "ensembl",
     "refseq",
     "phytozome",
-    "updated_only",
+    "domain",
     "workspace_name",
     "create_report"
 })
@@ -36,8 +36,8 @@ public class ListReferenceGenomesParams {
     private Long refseq;
     @JsonProperty("phytozome")
     private Long phytozome;
-    @JsonProperty("updated_only")
-    private Long updatedOnly;
+    @JsonProperty("domain")
+    private String domain;
     @JsonProperty("workspace_name")
     private String workspaceName;
     @JsonProperty("create_report")
@@ -89,18 +89,18 @@ public class ListReferenceGenomesParams {
         return this;
     }
 
-    @JsonProperty("updated_only")
-    public Long getUpdatedOnly() {
-        return updatedOnly;
+    @JsonProperty("domain")
+    public String getDomain() {
+        return domain;
     }
 
-    @JsonProperty("updated_only")
-    public void setUpdatedOnly(Long updatedOnly) {
-        this.updatedOnly = updatedOnly;
+    @JsonProperty("domain")
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 
-    public ListReferenceGenomesParams withUpdatedOnly(Long updatedOnly) {
-        this.updatedOnly = updatedOnly;
+    public ListReferenceGenomesParams withDomain(String domain) {
+        this.domain = domain;
         return this;
     }
 
@@ -146,7 +146,7 @@ public class ListReferenceGenomesParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((("ListReferenceGenomesParams"+" [ensembl=")+ ensembl)+", refseq=")+ refseq)+", phytozome=")+ phytozome)+", updatedOnly=")+ updatedOnly)+", workspaceName=")+ workspaceName)+", createReport=")+ createReport)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((("ListReferenceGenomesParams"+" [ensembl=")+ ensembl)+", refseq=")+ refseq)+", phytozome=")+ phytozome)+", domain=")+ domain)+", workspaceName=")+ workspaceName)+", createReport=")+ createReport)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

@@ -12,9 +12,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * <p>Original spec-file type: UpdateLoadedGenomesParams</p>
+ * <p>Original spec-file type: LoadRefGenomesParams</p>
  * <pre>
- * Arguments for the update_loaded_genomes function
+ * Arguments for the load_refgenomes function
  * </pre>
  * 
  */
@@ -24,14 +24,15 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "ensembl",
     "refseq",
     "phytozome",
-    "update_only",
-    "workspace_name",
     "domain",
     "start_offset",
     "index_in_solr",
-    "kb_env"
+    "workspace_name",
+    "kb_env",
+    "cut_off_date",
+    "genome_type"
 })
-public class UpdateLoadedGenomesParams {
+public class LoadRefGenomesParams {
 
     @JsonProperty("ensembl")
     private Long ensembl;
@@ -39,18 +40,20 @@ public class UpdateLoadedGenomesParams {
     private Long refseq;
     @JsonProperty("phytozome")
     private Long phytozome;
-    @JsonProperty("update_only")
-    private Long updateOnly;
-    @JsonProperty("workspace_name")
-    private String workspaceName;
     @JsonProperty("domain")
     private String domain;
     @JsonProperty("start_offset")
     private Long startOffset;
     @JsonProperty("index_in_solr")
     private Long indexInSolr;
+    @JsonProperty("workspace_name")
+    private String workspaceName;
     @JsonProperty("kb_env")
     private String kbEnv;
+    @JsonProperty("cut_off_date")
+    private String cutOffDate;
+    @JsonProperty("genome_type")
+    private String genomeType;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("ensembl")
@@ -63,7 +66,7 @@ public class UpdateLoadedGenomesParams {
         this.ensembl = ensembl;
     }
 
-    public UpdateLoadedGenomesParams withEnsembl(Long ensembl) {
+    public LoadRefGenomesParams withEnsembl(Long ensembl) {
         this.ensembl = ensembl;
         return this;
     }
@@ -78,7 +81,7 @@ public class UpdateLoadedGenomesParams {
         this.refseq = refseq;
     }
 
-    public UpdateLoadedGenomesParams withRefseq(Long refseq) {
+    public LoadRefGenomesParams withRefseq(Long refseq) {
         this.refseq = refseq;
         return this;
     }
@@ -93,38 +96,8 @@ public class UpdateLoadedGenomesParams {
         this.phytozome = phytozome;
     }
 
-    public UpdateLoadedGenomesParams withPhytozome(Long phytozome) {
+    public LoadRefGenomesParams withPhytozome(Long phytozome) {
         this.phytozome = phytozome;
-        return this;
-    }
-
-    @JsonProperty("update_only")
-    public Long getUpdateOnly() {
-        return updateOnly;
-    }
-
-    @JsonProperty("update_only")
-    public void setUpdateOnly(Long updateOnly) {
-        this.updateOnly = updateOnly;
-    }
-
-    public UpdateLoadedGenomesParams withUpdateOnly(Long updateOnly) {
-        this.updateOnly = updateOnly;
-        return this;
-    }
-
-    @JsonProperty("workspace_name")
-    public String getWorkspaceName() {
-        return workspaceName;
-    }
-
-    @JsonProperty("workspace_name")
-    public void setWorkspaceName(String workspaceName) {
-        this.workspaceName = workspaceName;
-    }
-
-    public UpdateLoadedGenomesParams withWorkspaceName(String workspaceName) {
-        this.workspaceName = workspaceName;
         return this;
     }
 
@@ -138,7 +111,7 @@ public class UpdateLoadedGenomesParams {
         this.domain = domain;
     }
 
-    public UpdateLoadedGenomesParams withDomain(String domain) {
+    public LoadRefGenomesParams withDomain(String domain) {
         this.domain = domain;
         return this;
     }
@@ -153,7 +126,7 @@ public class UpdateLoadedGenomesParams {
         this.startOffset = startOffset;
     }
 
-    public UpdateLoadedGenomesParams withStartOffset(Long startOffset) {
+    public LoadRefGenomesParams withStartOffset(Long startOffset) {
         this.startOffset = startOffset;
         return this;
     }
@@ -168,8 +141,23 @@ public class UpdateLoadedGenomesParams {
         this.indexInSolr = indexInSolr;
     }
 
-    public UpdateLoadedGenomesParams withIndexInSolr(Long indexInSolr) {
+    public LoadRefGenomesParams withIndexInSolr(Long indexInSolr) {
         this.indexInSolr = indexInSolr;
+        return this;
+    }
+
+    @JsonProperty("workspace_name")
+    public String getWorkspaceName() {
+        return workspaceName;
+    }
+
+    @JsonProperty("workspace_name")
+    public void setWorkspaceName(String workspaceName) {
+        this.workspaceName = workspaceName;
+    }
+
+    public LoadRefGenomesParams withWorkspaceName(String workspaceName) {
+        this.workspaceName = workspaceName;
         return this;
     }
 
@@ -183,8 +171,38 @@ public class UpdateLoadedGenomesParams {
         this.kbEnv = kbEnv;
     }
 
-    public UpdateLoadedGenomesParams withKbEnv(String kbEnv) {
+    public LoadRefGenomesParams withKbEnv(String kbEnv) {
         this.kbEnv = kbEnv;
+        return this;
+    }
+
+    @JsonProperty("cut_off_date")
+    public String getCutOffDate() {
+        return cutOffDate;
+    }
+
+    @JsonProperty("cut_off_date")
+    public void setCutOffDate(String cutOffDate) {
+        this.cutOffDate = cutOffDate;
+    }
+
+    public LoadRefGenomesParams withCutOffDate(String cutOffDate) {
+        this.cutOffDate = cutOffDate;
+        return this;
+    }
+
+    @JsonProperty("genome_type")
+    public String getGenomeType() {
+        return genomeType;
+    }
+
+    @JsonProperty("genome_type")
+    public void setGenomeType(String genomeType) {
+        this.genomeType = genomeType;
+    }
+
+    public LoadRefGenomesParams withGenomeType(String genomeType) {
+        this.genomeType = genomeType;
         return this;
     }
 
@@ -200,7 +218,7 @@ public class UpdateLoadedGenomesParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((("UpdateLoadedGenomesParams"+" [ensembl=")+ ensembl)+", refseq=")+ refseq)+", phytozome=")+ phytozome)+", updateOnly=")+ updateOnly)+", workspaceName=")+ workspaceName)+", domain=")+ domain)+", startOffset=")+ startOffset)+", indexInSolr=")+ indexInSolr)+", kbEnv=")+ kbEnv)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((("LoadRefGenomesParams"+" [ensembl=")+ ensembl)+", refseq=")+ refseq)+", phytozome=")+ phytozome)+", domain=")+ domain)+", startOffset=")+ startOffset)+", indexInSolr=")+ indexInSolr)+", workspaceName=")+ workspaceName)+", kbEnv=")+ kbEnv)+", cutOffDate=")+ cutOffDate)+", genomeType=")+ genomeType)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

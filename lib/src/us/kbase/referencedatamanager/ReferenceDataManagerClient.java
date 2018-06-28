@@ -176,7 +176,7 @@ public class ReferenceDataManagerClient {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<List<ReferenceGenomeData>>> retType = new TypeReference<List<List<ReferenceGenomeData>>>() {};
-        List<List<ReferenceGenomeData>> res = caller.jsonrpcCall("ReferenceDataManager.list_reference_genomes", args, retType, true, false, jsonRpcContext, this.serviceVersion);
+        List<List<ReferenceGenomeData>> res = caller.jsonrpcCall("ReferenceDataManager.list_reference_genomes", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -186,15 +186,15 @@ public class ReferenceDataManagerClient {
      * Lists genomes loaded into KBase from selected reference sources (ensembl, phytozome, refseq)
      * </pre>
      * @param   params   instance of type {@link us.kbase.referencedatamanager.ListLoadedGenomesParams ListLoadedGenomesParams}
-     * @return   parameter "output" of list of type {@link us.kbase.referencedatamanager.KBaseReferenceGenomeData KBaseReferenceGenomeData}
+     * @return   parameter "output" of list of type {@link us.kbase.referencedatamanager.LoadedReferenceGenomeData LoadedReferenceGenomeData}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public List<KBaseReferenceGenomeData> listLoadedGenomes(ListLoadedGenomesParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public List<LoadedReferenceGenomeData> listLoadedGenomes(ListLoadedGenomesParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
-        TypeReference<List<List<KBaseReferenceGenomeData>>> retType = new TypeReference<List<List<KBaseReferenceGenomeData>>>() {};
-        List<List<KBaseReferenceGenomeData>> res = caller.jsonrpcCall("ReferenceDataManager.list_loaded_genomes", args, retType, true, false, jsonRpcContext, this.serviceVersion);
+        TypeReference<List<List<LoadedReferenceGenomeData>>> retType = new TypeReference<List<List<LoadedReferenceGenomeData>>>() {};
+        List<List<LoadedReferenceGenomeData>> res = caller.jsonrpcCall("ReferenceDataManager.list_loaded_genomes", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -204,15 +204,33 @@ public class ReferenceDataManagerClient {
      * Lists genomes indexed in SOLR
      * </pre>
      * @param   params   instance of type {@link us.kbase.referencedatamanager.ListSolrDocsParams ListSolrDocsParams}
-     * @return   parameter "output" of list of type {@link us.kbase.referencedatamanager.SolrGenomeData SolrGenomeData}
+     * @return   parameter "output" of list of original type "solrdoc" (Solr doc data for search requests. Arbitrary key-value pairs returned by the solr.) &rarr; mapping from String to String
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public List<SolrGenomeData> listSolrGenomes(ListSolrDocsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public List<Map<String,String>> listSolrGenomes(ListSolrDocsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
-        TypeReference<List<List<SolrGenomeData>>> retType = new TypeReference<List<List<SolrGenomeData>>>() {};
-        List<List<SolrGenomeData>> res = caller.jsonrpcCall("ReferenceDataManager.list_solr_genomes", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        TypeReference<List<List<Map<String,String>>>> retType = new TypeReference<List<List<Map<String,String>>>>() {};
+        List<List<Map<String,String>>> res = caller.jsonrpcCall("ReferenceDataManager.list_solr_genomes", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: index_genomes_in_solr</p>
+     * <pre>
+     * Index specified genomes in SOLR from KBase workspace
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.referencedatamanager.IndexGenomesInSolrParams IndexGenomesInSolrParams}
+     * @return   parameter "output" of list of type {@link us.kbase.referencedatamanager.SolrGenomeFeatureData SolrGenomeFeatureData}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public List<SolrGenomeFeatureData> indexGenomesInSolr(IndexGenomesInSolrParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<List<SolrGenomeFeatureData>>> retType = new TypeReference<List<List<SolrGenomeFeatureData>>>() {};
+        List<List<SolrGenomeFeatureData>> res = caller.jsonrpcCall("ReferenceDataManager.index_genomes_in_solr", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -230,7 +248,7 @@ public class ReferenceDataManagerClient {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<List<LoadedReferenceTaxonData>>> retType = new TypeReference<List<List<LoadedReferenceTaxonData>>>() {};
-        List<List<LoadedReferenceTaxonData>> res = caller.jsonrpcCall("ReferenceDataManager.list_loaded_taxa", args, retType, true, false, jsonRpcContext, this.serviceVersion);
+        List<List<LoadedReferenceTaxonData>> res = caller.jsonrpcCall("ReferenceDataManager.list_loaded_taxa", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -253,6 +271,42 @@ public class ReferenceDataManagerClient {
     }
 
     /**
+     * <p>Original spec-file function name: load_taxa</p>
+     * <pre>
+     * Loads specified taxa into KBase workspace and indexes in SOLR on demand
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.referencedatamanager.LoadTaxonsParams LoadTaxonsParams}
+     * @return   parameter "output" of list of type {@link us.kbase.referencedatamanager.SolrTaxonData SolrTaxonData}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public List<SolrTaxonData> loadTaxa(LoadTaxonsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<List<SolrTaxonData>>> retType = new TypeReference<List<List<SolrTaxonData>>>() {};
+        List<List<SolrTaxonData>> res = caller.jsonrpcCall("ReferenceDataManager.load_taxa", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: index_taxa_in_solr</p>
+     * <pre>
+     * Index specified taxa in SOLR from KBase workspace
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.referencedatamanager.IndexTaxaInSolrParams IndexTaxaInSolrParams}
+     * @return   parameter "output" of list of type {@link us.kbase.referencedatamanager.SolrTaxonData SolrTaxonData}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public List<SolrTaxonData> indexTaxaInSolr(IndexTaxaInSolrParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<List<SolrTaxonData>>> retType = new TypeReference<List<List<SolrTaxonData>>>() {};
+        List<List<SolrTaxonData>> res = caller.jsonrpcCall("ReferenceDataManager.index_taxa_in_solr", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: load_genomes</p>
      * <pre>
      * Loads specified genomes into KBase workspace and indexes in SOLR on demand
@@ -271,38 +325,20 @@ public class ReferenceDataManagerClient {
     }
 
     /**
-     * <p>Original spec-file function name: index_genomes_in_solr</p>
+     * <p>Original spec-file function name: load_refgenomes</p>
      * <pre>
-     * Index specified genomes in SOLR from KBase workspace
+     * Loads NCBI RefSeq genomes into KBase workspace with or without SOLR indexing
      * </pre>
-     * @param   params   instance of type {@link us.kbase.referencedatamanager.IndexGenomesInSolrParams IndexGenomesInSolrParams}
+     * @param   params   instance of type {@link us.kbase.referencedatamanager.LoadRefGenomesParams LoadRefGenomesParams}
      * @return   parameter "output" of list of type {@link us.kbase.referencedatamanager.KBaseReferenceGenomeData KBaseReferenceGenomeData}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public List<KBaseReferenceGenomeData> indexGenomesInSolr(IndexGenomesInSolrParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public List<KBaseReferenceGenomeData> loadRefgenomes(LoadRefGenomesParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<List<KBaseReferenceGenomeData>>> retType = new TypeReference<List<List<KBaseReferenceGenomeData>>>() {};
-        List<List<KBaseReferenceGenomeData>> res = caller.jsonrpcCall("ReferenceDataManager.index_genomes_in_solr", args, retType, true, true, jsonRpcContext, this.serviceVersion);
-        return res.get(0);
-    }
-
-    /**
-     * <p>Original spec-file function name: index_taxa_in_solr</p>
-     * <pre>
-     * Index specified genomes in SOLR from KBase workspace
-     * </pre>
-     * @param   params   instance of type {@link us.kbase.referencedatamanager.IndexTaxaInSolrParams IndexTaxaInSolrParams}
-     * @return   parameter "output" of list of type {@link us.kbase.referencedatamanager.SolrTaxonData SolrTaxonData}
-     * @throws IOException if an IO exception occurs
-     * @throws JsonClientException if a JSON RPC exception occurs
-     */
-    public List<SolrTaxonData> indexTaxaInSolr(IndexTaxaInSolrParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
-        List<Object> args = new ArrayList<Object>();
-        args.add(params);
-        TypeReference<List<List<SolrTaxonData>>> retType = new TypeReference<List<List<SolrTaxonData>>>() {};
-        List<List<SolrTaxonData>> res = caller.jsonrpcCall("ReferenceDataManager.index_taxa_in_solr", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        List<List<KBaseReferenceGenomeData>> res = caller.jsonrpcCall("ReferenceDataManager.load_refgenomes", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 

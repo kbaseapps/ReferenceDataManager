@@ -13,77 +13,62 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * <p>Original spec-file type: LoadTaxonsParams</p>
+ * <p>Original spec-file type: IndexTaxaInSolrParams</p>
  * <pre>
- * Arguments for the load_taxa function
+ * Arguments for the index_taxa_in_solr function
  * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "data",
-    "taxons",
-    "index_in_solr",
+    "taxa",
+    "solr_core",
     "workspace_name",
-    "create_report"
+    "create_report",
+    "start_offset"
 })
-public class LoadTaxonsParams {
+public class IndexTaxaInSolrParams {
 
-    @JsonProperty("data")
-    private String data;
-    @JsonProperty("taxons")
-    private List<KBaseReferenceTaxonData> taxons;
-    @JsonProperty("index_in_solr")
-    private Long indexInSolr;
+    @JsonProperty("taxa")
+    private List<LoadedReferenceTaxonData> taxa;
+    @JsonProperty("solr_core")
+    private String solrCore;
     @JsonProperty("workspace_name")
     private String workspaceName;
     @JsonProperty("create_report")
     private Long createReport;
+    @JsonProperty("start_offset")
+    private Long startOffset;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("data")
-    public String getData() {
-        return data;
+    @JsonProperty("taxa")
+    public List<LoadedReferenceTaxonData> getTaxa() {
+        return taxa;
     }
 
-    @JsonProperty("data")
-    public void setData(String data) {
-        this.data = data;
+    @JsonProperty("taxa")
+    public void setTaxa(List<LoadedReferenceTaxonData> taxa) {
+        this.taxa = taxa;
     }
 
-    public LoadTaxonsParams withData(String data) {
-        this.data = data;
+    public IndexTaxaInSolrParams withTaxa(List<LoadedReferenceTaxonData> taxa) {
+        this.taxa = taxa;
         return this;
     }
 
-    @JsonProperty("taxons")
-    public List<KBaseReferenceTaxonData> getTaxons() {
-        return taxons;
+    @JsonProperty("solr_core")
+    public String getSolrCore() {
+        return solrCore;
     }
 
-    @JsonProperty("taxons")
-    public void setTaxons(List<KBaseReferenceTaxonData> taxons) {
-        this.taxons = taxons;
+    @JsonProperty("solr_core")
+    public void setSolrCore(String solrCore) {
+        this.solrCore = solrCore;
     }
 
-    public LoadTaxonsParams withTaxons(List<KBaseReferenceTaxonData> taxons) {
-        this.taxons = taxons;
-        return this;
-    }
-
-    @JsonProperty("index_in_solr")
-    public Long getIndexInSolr() {
-        return indexInSolr;
-    }
-
-    @JsonProperty("index_in_solr")
-    public void setIndexInSolr(Long indexInSolr) {
-        this.indexInSolr = indexInSolr;
-    }
-
-    public LoadTaxonsParams withIndexInSolr(Long indexInSolr) {
-        this.indexInSolr = indexInSolr;
+    public IndexTaxaInSolrParams withSolrCore(String solrCore) {
+        this.solrCore = solrCore;
         return this;
     }
 
@@ -97,7 +82,7 @@ public class LoadTaxonsParams {
         this.workspaceName = workspaceName;
     }
 
-    public LoadTaxonsParams withWorkspaceName(String workspaceName) {
+    public IndexTaxaInSolrParams withWorkspaceName(String workspaceName) {
         this.workspaceName = workspaceName;
         return this;
     }
@@ -112,8 +97,23 @@ public class LoadTaxonsParams {
         this.createReport = createReport;
     }
 
-    public LoadTaxonsParams withCreateReport(Long createReport) {
+    public IndexTaxaInSolrParams withCreateReport(Long createReport) {
         this.createReport = createReport;
+        return this;
+    }
+
+    @JsonProperty("start_offset")
+    public Long getStartOffset() {
+        return startOffset;
+    }
+
+    @JsonProperty("start_offset")
+    public void setStartOffset(Long startOffset) {
+        this.startOffset = startOffset;
+    }
+
+    public IndexTaxaInSolrParams withStartOffset(Long startOffset) {
+        this.startOffset = startOffset;
         return this;
     }
 
@@ -129,7 +129,7 @@ public class LoadTaxonsParams {
 
     @Override
     public String toString() {
-        return ((((((((((((("LoadTaxonsParams"+" [data=")+ data)+", taxons=")+ taxons)+", indexInSolr=")+ indexInSolr)+", workspaceName=")+ workspaceName)+", createReport=")+ createReport)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((("IndexTaxaInSolrParams"+" [taxa=")+ taxa)+", solrCore=")+ solrCore)+", workspaceName=")+ workspaceName)+", createReport=")+ createReport)+", startOffset=")+ startOffset)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
