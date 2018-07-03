@@ -3424,13 +3424,24 @@ sub load_refgenomes
 
     $output = [];
 
-    my $minCount = 5000 + $params->{start_offset}; 
+    my $start_pos = $params->{start_offset};
+    my $minCount = 0;
+
     my $ref_genomes = $self->list_reference_genomes({refseq=>$params->{refseq},
                                                      phytozome=>$params->{phytozome},
                                                      ensembl=>$params->{ensembl},
                                                      domain=>$params->{domain}});
-    $minCount = $minCount <= @{$ref_genomes}-1 ? $minCount : @{$ref_genomes}-1;
-    @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..$minCount];
+    my $refCount = @{$ref_genomes}-1;
+    if($start_pos < 0) {
+        $minCount = $refCount;
+        $start_pos = 0;
+    }
+    else{
+        $minCount = 5000 + $start_pos;
+    }
+
+    $minCount = $minCount <= $refCount ? $minCount : $refCount;
+    @{$ref_genomes} = @{$ref_genomes}[$start_pos..$minCount];
 
     my $target_ws_name = "ReferenceDataManager";
     my $genome_type = $params->{genome_type};
