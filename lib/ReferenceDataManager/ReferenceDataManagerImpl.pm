@@ -3141,8 +3141,8 @@ sub load_genomes
     #should remove this service=ver parameter when master is done.
     #my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL });
     my $loader = new GenomeFileUtil::GenomeFileUtilClient(
-        $ENV{ SDK_CALLBACK_URL },
-        ('service_version' => 'beta', 'async_version' => 'beta'));
+        $ENV{ SDK_CALLBACK_URL });
+        # ('service_version' => 'beta', 'async_version' => 'beta'));
     my $ncbigenomes;
     $output = [];
     my $msg = "";
