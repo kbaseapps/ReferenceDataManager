@@ -1,6 +1,6 @@
 {
   "ver" : "1.0.0",
-  "name" : "Uplate loaded refseq genomes in KBase",
+  "name" : "Update loaded refseq genomes in KBase",
   "authors" : [ "chenry", "qzhang" ],
   "contact" : "help@kbase.us",
   "visble" : true,
