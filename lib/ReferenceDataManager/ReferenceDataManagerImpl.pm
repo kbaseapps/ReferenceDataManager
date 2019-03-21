@@ -195,10 +195,10 @@ sub _listGenomesInSolr {
 
     my $gn_type;
     if( $solrCore =~ /ci$/i ){
-       $gn_type = "KBaseGenomes.Genome-12.3";
+       $gn_type = "KBaseGenomes.Genome-15.1";
     }
     else {
-       $gn_type = "KBaseGenomes.Genome-8.2";
+       $gn_type = "KBaseGenomes.Genome-10.0";
     }
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
@@ -380,16 +380,6 @@ sub _updateGenomesCore
 
     my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
-
-=begin for triggering indexing in ElasticSearch    
-    my ($out,$exit_code);
-    my $share_cmd = "ws-share -w ReferenceDataManager -u kbaseindexer";
-    $out = `$share_cmd`;
-    $exit_code = ($? >> 8);
-    if ($exit_code==0) {
-        print("$share_cmd returns exit code 0");
-    }
-=cut
 
     eval {
         $solrgnms = $solrer->search_solr({
@@ -776,7 +766,7 @@ sub _genome_object_exists
         return $obj_exists;
     }
     if(!defined($obj_type)) {
-        $obj_type = 'KBaseGenomes.Genome-9.0';
+        $obj_type = 'KBaseGenomes.Genome-10.0';
     }
     if(!defined($ws_name)) {
         $ws_name = "ReferenceDataManager";
@@ -1027,11 +1017,12 @@ sub _genomeInfoString
 sub _getWorkspaceGenomes
 {
     my ($self, $ws_name, $genome_type, $before, $after) = @_;
-    $genome_type = "KBaseGenomes.Genome-14." unless $genome_type;
+    $genome_type = "KBaseGenomes.Genome-15." unless $genome_type;
     $ws_name = "ReferenceDataManager" unless $ws_name;
 
     my $listObj_params = {workspaces => [$ws_name],
                           type => $genome_type,
+                          #savedby => ['kbasedata'],
                           includeMetadata => 0
     };
 
@@ -1132,6 +1123,24 @@ sub _list_ncbi_refgenomes
             $current_genome->{refseq_category} = $attribs[4];
             $current_genome->{tax_id} = $attribs[5];
             $current_genome->{assembly_level} = $attribs[11];
+
+            my $scientific_name = $attribs[7];
+            my $organism_name = $attribs[7];
+            if (defined($attribs[8])) {
+                my $infraspecific_name = $attribs[8] =~ s/strain=//gr;
+                my @strain_words = split /;/, $infraspecific_name;
+                for (@strain_words) { # remove duplicated strain terms
+                    if (index(lc($organism_name), lc($_)) == -1) {
+                        if (scalar(@strain_words) > 1) {
+                            $scientific_name .= ";".$_;
+                        }
+                        else {
+                            $scientific_name .= " ".$_;
+                        }
+                    }
+                }
+            }
+            $current_genome->{scientific_name} = $scientific_name;
             push @{$output},$current_genome;
 
             if ($count <= 10) {
@@ -2127,8 +2136,8 @@ sub index_genomes_in_solr
     # for updating to the Genomes core without features
     my $gn_src_core = $params->{solr_core};
     (my $gn_dest_core = $gn_src_core) =~ s/Feature//g;
-    my $gnm_type = "KBaseGenomes.Genome-14.*";
-    $gnm_type = "KBaseGenomes.Genome-9.0" if $gn_src_core == "Genomes_prod";
+    my $gnm_type = "KBaseGenomes.Genome-15.*";
+    $gnm_type = "KBaseGenomes.Genome-10.0" if $gn_src_core == "Genomes_prod";
     $self->_updateGenomesCore($gn_src_core, $gn_dest_core, $gnm_type); 
 
     my $report_out = [];
@@ -3217,6 +3226,8 @@ sub load_genomes
                     source => $ncbigenome->{source} . " " . $gn_type,
                     taxon_wsname => "ReferenceTaxons",
                     release => $ncbigenome->{version},
+                    scientific_name => $ncbigenome->{scientific_name},
+                    tax_id => $ncbigenome->{tax_id},
                     generate_ids_if_needed => 1,
                     # type => $gn_type, #got rid of in new version and combined into source
                     generate_missing_genes => 1,
@@ -3230,13 +3241,12 @@ sub load_genomes
                     }
             };
 
-            #$existing_asm_ref = $self->_get_object_ref($wsname, $ncbiasm_name);
-            #if ($existing_asm_ref != undef) {
+            $existing_asm_ref = $self->_get_object_ref($wsname, $ncbiasm_name);
+            if ($existing_asm_ref != undef) {
                 # introduced in new version
-                # $genbank2gn_param->{'use_existing_assembly'} = $existing_asm_ref;
-            #}
+                $genbank2gn_param->{'use_existing_assembly'} = $existing_asm_ref;
+            }
 
-            #print "Input params passed to genbank_to_genome()\n" . Dumper($genbank2gn_param);
             eval {
                 $genutilout = $loader->genbank_to_genome($genbank2gn_param);
             };
@@ -3418,7 +3428,7 @@ sub load_refgenomes
         index_in_solr => 0,
         workspace_name => undef,
         cut_off_date => undef,
-        genome_type => "KBaseGenomes.Genome-14.2",
+        genome_type => "KBaseGenomes.Genome-15.1",
         kb_env => 'ci'
     });
 
@@ -3595,7 +3605,7 @@ sub update_loaded_genomes
     $output = [];
     my $kbenv = $params->{kb_env};
     my $solr_core = ($kbenv =~ /prod$/i) ? "GenomeFeatures_prod" : "GenomeFeatures_ci";
-    my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-9.0" : "KBaseGenomes.Genome-14.2";
+    my $obj_typ = ($kbenv =~ /prod$/i) ? "KBaseGenomes.Genome-10.0" : "KBaseGenomes.Genome-15.1";
 
     my $ref_genomes = $self->list_reference_genomes({
             refseq=>$params->{refseq},
