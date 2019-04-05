@@ -3247,7 +3247,6 @@ sub load_genomes
                 # introduced in new version
                 $genbank2gn_param->{'use_existing_assembly'} = $existing_asm_ref;
             }
-            print "parameters passed to genbank_to_genome:\n". Dumper($genbank2gn_param);
 
             eval {
                 $genutilout = $loader->genbank_to_genome($genbank2gn_param);
