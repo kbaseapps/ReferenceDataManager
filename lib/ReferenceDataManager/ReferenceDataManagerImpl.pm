@@ -363,7 +363,7 @@ sub get_genomes4RAST
 # Input parameters:   
 #     $src_core: This parameter specifies the source Solr core name.
 #     $dest_core: This parameter specifies the target Solr core name.
-#     $gnm_type: This parameter specifies the type of genomes to be updated, default to "KBaseGenomes.Genome-12.3".
+#     $gnm_type: This parameter specifies the type of genomes to be updated, default to "KBaseGenomes.Genome-15.1".
 # return
 #    1 for success
 #    0 for any failure
@@ -376,7 +376,7 @@ sub _updateGenomesCore
     my $ret_gnms;
     $src_core = "GenomeFeatures_ci" unless $src_core;
     $dest_core = "Genomes_ci" unless $dest_core;
-    $gnm_type = "KBaseGenomes.Genome-14.*" unless $gnm_type;
+    $gnm_type = "KBaseGenomes.Genome-15.*" unless $gnm_type;
 
     my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
     #my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
