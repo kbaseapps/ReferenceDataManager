@@ -1,4 +1,4 @@
-package KBSolrUtil::KBSolrUtilClient;
+package installed_clients::KBSolrUtilClient;
 
 use JSON::RPC::Client;
 use POSIX;
@@ -22,7 +22,7 @@ our $VERSION = "0.1.0";
 
 =head1 NAME
 
-KBSolrUtil::KBSolrUtilClient
+installed_clients::KBSolrUtilClient
 
 =head1 DESCRIPTION
 
@@ -39,7 +39,7 @@ sub new
     
 
     my $self = {
-	client => KBSolrUtil::KBSolrUtilClient::RpcClient->new,
+	client => installed_clients::KBSolrUtilClient::RpcClient->new,
 	url => $url,
 	headers => [],
     };
@@ -1024,10 +1024,10 @@ sub _validate_version {
         );
     }
     if ($sMinor > $cMinor) {
-        warn "New client version available for KBSolrUtil::KBSolrUtilClient\n";
+        warn "New client version available for installed_clients::KBSolrUtilClient\n";
     }
     if ($sMajor == 0) {
-        warn "KBSolrUtil::KBSolrUtilClient version is $svr_version. API subject to change.\n";
+        warn "installed_clients::KBSolrUtilClient version is $svr_version. API subject to change.\n";
     }
 }
 
@@ -1509,7 +1509,7 @@ json_data has a value which is a string
 
 =cut
 
-package KBSolrUtil::KBSolrUtilClient::RpcClient;
+package installed_clients::KBSolrUtilClient::RpcClient;
 use base 'JSON::RPC::Client';
 use POSIX;
 use strict;

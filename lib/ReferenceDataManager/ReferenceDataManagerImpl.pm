@@ -19,10 +19,10 @@ A KBase module: ReferenceDataManager
 
 #BEGIN_HEADER
 use Bio::KBase::AuthToken;
-use Workspace::WorkspaceClient;
-use GenomeFileUtil::GenomeFileUtilClient;
-use KBSolrUtil::KBSolrUtilClient;
-use RAST_SDK::RAST_SDKClient;
+use installed_clients::WorkspaceClient;
+use installed_clients::GenomeFileUtilClient;
+use installed_clients::KBSolrUtilClient;
+use installed_clients::RAST_SDKClient;
 
 use Config::IniFiles;
 use Config::Simple;
@@ -54,7 +54,7 @@ sub util_initialize_call {
     die "no workspace-url defined" unless $self->{workspace_url};
 
     $self->util_timestamp(DateTime->now()->datetime());
-    $self->{_wsclient} = new Workspace::WorkspaceClient($self->{workspace_url},token => $ctx->token());
+    $self->{_wsclient} = new installed_clients::WorkspaceClient($self->{workspace_url},token => $ctx->token());
     return $params;
 }
 
@@ -201,8 +201,8 @@ sub _listGenomesInSolr {
        $gn_type = "KBaseGenomes.Genome-10.0";
     }
 
-    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
-    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     my $query = { q => "*" };
     if( defined( $cmplt )) {
@@ -271,8 +271,8 @@ sub _listTaxaInSolr {
     my $count = ($rowCount) ? $rowCount : 0;
     $fields = ($fields) ? $fields : "*";
 
-    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
-    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     my $query = { q => "*" };
     my $solrout;
@@ -311,8 +311,8 @@ sub get_genomes4RAST
 {
     my ($self) = @_;
 
-    my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev','async_version'=>'dev'));
-    #my $raster = new RAST_SDK::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
+    my $raster = new installed_clients::RAST_SDKClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev','async_version'=>'dev'));
+    #my $raster = new installed_clients::RAST_SDKClient($ENV{ SDK_CALLBACK_URL });
 
     my $srcgenomes = $self->list_solr_genomes({
             solr_core => "Genomes_prod",
@@ -378,8 +378,8 @@ sub _updateGenomesCore
     $dest_core = "Genomes_ci" unless $dest_core;
     $gnm_type = "KBaseGenomes.Genome-14.*" unless $gnm_type;
 
-    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
-    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     eval {
         $solrgnms = $solrer->search_solr({
@@ -431,8 +431,8 @@ sub _checkTaxonStatus
     my ($self, $current_genome, $solr_core) = @_;
     #print "\nChecking taxon status for genome:\n " . Dumper($current_genome) . "\n";
 
-    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
-    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     my $status = "";
     my $query = { taxonomy_id => $current_genome->{tax_id} };
@@ -464,8 +464,8 @@ sub _checkGenomeStatus
     #print "\nChecking status for genome:\n " . Dumper($current_genome) . "\n";
     $gn_type = "KBaseGenomes.Genome-8.2" unless $gn_type;
 
-    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
-    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     my $status = "";
     my $query = { 
@@ -839,8 +839,8 @@ sub _indexGenomeFeatureData
     my $gnBatchCount = 35;
     my $gn_refs = [];
 
-    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
-    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     for(my $gnCount = 0; $gnCount < @{$ws_gnData}; $gnCount++) {
         my $kb_gn = $ws_gnData->[$gnCount];
@@ -2927,8 +2927,8 @@ sub index_taxa_in_solr
         solr_core => "taxonomy_prod" 
     });
 
-    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
-    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     my $taxa;
     if (!defined($params->{taxa})) {
@@ -3148,10 +3148,11 @@ sub load_genomes
         kb_env => "ci"
     });
     #should remove this service=ver parameter when master is done.
-    #my $loader = new GenomeFileUtil::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL });
-    my $loader = new GenomeFileUtil::GenomeFileUtilClient(
-        $ENV{ SDK_CALLBACK_URL });
-        # ('service_version' => 'beta', 'async_version' => 'beta'));
+    #my $loader = new installed_clients::GenomeFileUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $loader = new installed_clients::GenomeFileUtilClient(
+        $ENV{ SDK_CALLBACK_URL },
+        ('service_version' => 'beta', 'async_version' => 'beta'));
+    
     my $ncbigenomes;
     $output = [];
     my $msg = "";
@@ -3227,7 +3228,7 @@ sub load_genomes
                     taxon_wsname => "ReferenceTaxons",
                     release => $ncbigenome->{version},
                     scientific_name => $ncbigenome->{scientific_name},
-                    tax_id => $ncbigenome->{tax_id},
+                    taxon_id => $ncbigenome->{tax_id},
                     generate_ids_if_needed => 1,
                     # type => $gn_type, #got rid of in new version and combined into source
                     generate_missing_genes => 1,
@@ -3246,6 +3247,7 @@ sub load_genomes
                 # introduced in new version
                 $genbank2gn_param->{'use_existing_assembly'} = $existing_asm_ref;
             }
+            print "parameters passed to genbank_to_genome:\n". Dumper($genbank2gn_param);
 
             eval {
                 $genutilout = $loader->genbank_to_genome($genbank2gn_param);
@@ -3253,12 +3255,53 @@ sub load_genomes
             if ($@) {
                 print "**********Received an exception from calling genbank_to_genome to load $ncbigenome->{id}:\n";
                 print "genbank_to_genome Exception message: " . $@->{"message"} . "\n";
-                print "JSONRPC code: " . $@->{"code"} . "\n";
-                print "Method: " . $@->{"method_name"} . "\n";
-                print "Client-side exception:\n";
-                print $@;
-                print "\nServer-side exception:\n";
-                print $@->{"data"};
+                if (index($@->{"message"}, $ncbigenome->{tax_id}." is not a valid KBase taxon ID.") != -1) {
+                    # remove the 'taxon_id' hash key from $genbank2gn_param
+                    if (exists $genbank2gn_param->{'taxon_id'})
+                    {
+                        delete $genbank2gn_param->{'taxon_id'};
+                    }
+                    # $genbank2gn_param->{'taxon_id'} = 'unknown';
+                    eval {
+                        $genutilout = $loader->genbank_to_genome($genbank2gn_param);
+                    };
+                    if ($@) {
+                        print "**********Received an exception from re-calling genbank_to_genome to load $ncbigenome->{id}:\n";
+                        print "re-calling genbank_to_genome exception message: " . $@->{"message"} . "\n";
+                        print "JSONRPC code: " . $@->{"code"} . "\n";
+                        print "Method: " . $@->{"method_name"} . "\n";
+                        print "Client-side exception:\n";
+                        print $@;
+                        print "\nServer-side exception:\n";
+                        print $@->{"data"};
+                    }
+                    else
+                    {
+                        $genomeout = {
+                            "ref" => $genutilout->{genome_ref},
+                            id => $ncbigenome->{id},
+                            workspace_name => $wsname,
+                            source_id => $ncbigenome->{id},
+                            accession => $ncbigenome->{accession},
+                            name => $ncbigenome->{id},
+                            version => $ncbigenome->{version},
+                            source => $ncbigenome->{source},
+                            domain => $ncbigenome->{domain}
+                        };
+                        push(@{$output},$genomeout);
+                        if (@{$output} < 10  && @{$output} > 0) {
+                            $msg .= "Loaded genome: ".$genomeout->{ref}." into workspace ".$genomeout->{workspace_name}.";\n";
+                        }
+                    }
+                }
+                else {
+                    print "JSONRPC code: " . $@->{"code"} . "\n";
+                    print "Method: " . $@->{"method_name"} . "\n";
+                    print "Client-side exception:\n";
+                    print $@;
+                    print "\nServer-side exception:\n";
+                    print $@->{"data"};
+                }
             }
             else
             {
@@ -3616,8 +3659,8 @@ sub update_loaded_genomes
 
     @{$ref_genomes} = @{$ref_genomes}[$params->{start_offset}..@{$ref_genomes}-1];
 
-    my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
-    #my $solrer = new KBSolrUtil::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
+    my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL }, ('service_version'=>'dev', 'async_version' => 'dev'));#should remove this service_version=ver parameter when master is done.
+    #my $solrer = new installed_clients::KBSolrUtilClient($ENV{ SDK_CALLBACK_URL });
 
     my $new_genomes;
     if( $params->{update_only} == 1 ) {

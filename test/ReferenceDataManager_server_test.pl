@@ -4,7 +4,7 @@ use Test::More;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
-use Workspace::WorkspaceClient;
+use installed_clients::WorkspaceClient;
 use ReferenceDataManager::ReferenceDataManagerImpl;
 
 use Config::IniFiles;
@@ -15,7 +15,7 @@ my $config_file = $ENV{'KB_DEPLOYMENT_CONFIG'};
 my $config = new Config::Simple($config_file)->get_block('ReferenceDataManager');
 my $ws_url = $config->{"workspace-url"};
 my $ws_name = undef;
-my $ws_client = new Workspace::WorkspaceClient($ws_url,token => $token);
+my $ws_client = new installed_clients::WorkspaceClient($ws_url,token => $token);
 my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1, auth_svc=>$config->{'auth-service-url'});
 print("ws url:".$config->{'workspace-url'} . "\n");
 print("auth url:".$config->{'auth-service-url'} . "\n");
@@ -71,6 +71,7 @@ sub test_rast_genomes {
            };
     return $impl->get_genomes4RAST();
 }
+
 =begin
     #Testing _updateGenomesCore function
     my $updret;
@@ -130,8 +131,8 @@ sub test_rast_genomes {
      #Testing _getWorkspaceGenomes function
      my $rgret;
      eval {
-        $rgret = $impl->_getWorkspaceGenomes("ReferenceDataManager", "KBaseGenomes.Genome-12.3", 0, 100); 
-        #$rgret = $impl->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-8.2",0,100000); 
+        $rgret = $impl->_getWorkspaceGenomes("ReferenceDataManager", "KBaseGenomes.Genome-14.", undef, '2018-05-19'); 
+        #$rgret = $impl->_getWorkspaceGenomes("qzhang:narrative_1493170238855","KBaseGenomes.Genome-8.2",0,'2018-05-19'); 
      };
      ok(!$@,"_getWorkspaceGenomes command successful");
      if ($@) {
@@ -218,7 +219,7 @@ sub test_rast_genomes {
    }
     ok(defined($ret->[0]),"\nindex_genomes_in_solr command returned at least one genome");
 =cut
-=begin
+#=begin
     #Testing the list_reference_genomes function
     my $refret;
     eval {
@@ -226,7 +227,7 @@ sub test_rast_genomes {
             refseq => 1,
             domain => "bacteria,archaea,plant,fungi",
             update_only => 0,
-            create_report => 1,
+            create_report => 0,
             workspace_name => get_ws_name() 
         });
     };
@@ -241,7 +242,7 @@ sub test_rast_genomes {
         #print Data::Dumper->Dump([$refret->[@{$refret} - 1]])."\n";
     }
     ok(defined($refret->[0]),"list_reference_Genomes command returned at least one genome");
-=cut 
+#=cut 
 =begin
     #Testing list_solr_genomes function
     my $sgret;
@@ -298,14 +299,41 @@ eval {
         print Dumper($rast_ret)."\n";
     }
 =cut
+#=begin
+   #Testing load_genomes function
+    my $ret; my $ref_genomes; 
+    @{$ref_genomes} = @{$refret}[@{$refret}-10..@{$refret}-1];
+    eval {
+        $ret = $impl->load_genomes({
+            genomes => $ref_genomes,
+            index_in_solr => 0 
+        });
+    };
+    ok(!$@,"load_genomes command successful");
+    if ($@) {
+        print "ERROR:".$@;
+        my $err = $@;
+        print "Error type: " . ref($err) . "\n";
+        print "Error message: " . $err->{message} . "\n";
+        print "Error error: " . $err->{error} . "\n";
+        print "Error data: " .$err->{data} . "\n";
+    } else {
+        print "Loaded " . scalar @{$ret} . " genomes:\n";
+        print Data::Dumper->Dump([$ret->[@{$ret}-1]])."\n";
+    }
+    ok(defined($ret->[0]),"load_genomes command returned at least one genome");
+=cut
+=begin
     #Testing load_refgenomes function
     my $rret;
     eval {
         $rret = $impl->load_refgenomes({
                 refseq=>1,
-                index_in_solr=>1,
+                index_in_solr=>0,
                 kb_env => 'ci',
-                start=>111980 # only <10 for testing
+                cut_off_date => '2018-05-19',
+                start_offset => 0,
+                genome_type => "KBaseGenomes.Genome-15.1" # "KBaseGenomes.Genome-10."
         });
     };
     ok(!$@,"load_refgenomes command successful");
@@ -321,7 +349,7 @@ eval {
         print Data::Dumper->Dump([$rret->[@{$rret}-1]])."\n";
     }
     ok(defined($rret->[0]),"load_refgenomes command returned at least one genome");
-
+=cut
     done_testing(3);
 };
 
@@ -658,7 +686,7 @@ eval {
         my $wsinfo = $ws_client->get_workspace_info({
                     workspace => $ws_name
         });
-    print Dumper($wsinfo);
+        print Dumper($wsinfo);
         my $maxid = $wsinfo->[4];
         print "\nMax genome object id=$maxid\n";
         eval {

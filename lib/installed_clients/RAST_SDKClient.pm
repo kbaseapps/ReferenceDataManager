@@ -1,4 +1,4 @@
-package RAST_SDK::RAST_SDKClient;
+package installed_clients::RAST_SDKClient;
 
 use JSON::RPC::Client;
 use POSIX;
@@ -22,7 +22,7 @@ our $VERSION = "0.1.0";
 
 =head1 NAME
 
-RAST_SDK::RAST_SDKClient
+installed_clients::RAST_SDKClient
 
 =head1 DESCRIPTION
 
@@ -39,7 +39,7 @@ sub new
     
 
     my $self = {
-	client => RAST_SDK::RAST_SDKClient::RpcClient->new,
+	client => installed_clients::RAST_SDKClient::RpcClient->new,
 	url => $url,
 	headers => [],
     };
@@ -56,7 +56,7 @@ sub new
     if (exists $arg_hash{"async_job_check_max_time_ms"}) {
         $self->{async_job_check_max_time} = $arg_hash{"async_job_check_max_time_ms"} / 1000.0;
     }
-    my $service_version = 'dev';
+    my $service_version = 'release';
     if (exists $arg_hash{"service_version"}) {
         $service_version = $arg_hash{"service_version"};
     }
@@ -202,7 +202,6 @@ AnnotateGenomeParams is a reference to a hash where the following keys are defin
 	kmer_v1_parameters has a value which is a RAST_SDK.bool
 	annotate_proteins_similarity has a value which is a RAST_SDK.bool
 	resolve_overlapping_features has a value which is a RAST_SDK.bool
-	find_close_neighbors has a value which is a RAST_SDK.bool
 	call_features_prophage_phispy has a value which is a RAST_SDK.bool
 	retain_old_anno_for_hypotheticals has a value which is a RAST_SDK.bool
 genome_id is a string
@@ -247,7 +246,6 @@ AnnotateGenomeParams is a reference to a hash where the following keys are defin
 	kmer_v1_parameters has a value which is a RAST_SDK.bool
 	annotate_proteins_similarity has a value which is a RAST_SDK.bool
 	resolve_overlapping_features has a value which is a RAST_SDK.bool
-	find_close_neighbors has a value which is a RAST_SDK.bool
 	call_features_prophage_phispy has a value which is a RAST_SDK.bool
 	retain_old_anno_for_hypotheticals has a value which is a RAST_SDK.bool
 genome_id is a string
@@ -352,7 +350,12 @@ $params is a RAST_SDK.AnnotateGenomesParams
 $return is a RAST_SDK.AnnotateGenomesResults
 AnnotateGenomesParams is a reference to a hash where the following keys are defined:
 	workspace has a value which is a string
-	genomes has a value which is a reference to a list where each element is a RAST_SDK.GenomeParams
+	input_genomes has a value which is a reference to a list where each element is a RAST_SDK.GenomeParams
+	genetic_code has a value which is an int
+	domain has a value which is a string
+	scientific_name has a value which is a string
+	genome_text has a value which is a string
+	output_genome has a value which is a string
 	call_features_rRNA_SEED has a value which is a RAST_SDK.bool
 	call_features_tRNA_trnascan has a value which is a RAST_SDK.bool
 	call_selenoproteins has a value which is a RAST_SDK.bool
@@ -369,7 +372,6 @@ AnnotateGenomesParams is a reference to a hash where the following keys are defi
 	kmer_v1_parameters has a value which is a RAST_SDK.bool
 	annotate_proteins_similarity has a value which is a RAST_SDK.bool
 	resolve_overlapping_features has a value which is a RAST_SDK.bool
-	find_close_neighbors has a value which is a RAST_SDK.bool
 	call_features_prophage_phispy has a value which is a RAST_SDK.bool
 	retain_old_anno_for_hypotheticals has a value which is a RAST_SDK.bool
 GenomeParams is a reference to a hash where the following keys are defined:
@@ -398,7 +400,12 @@ $params is a RAST_SDK.AnnotateGenomesParams
 $return is a RAST_SDK.AnnotateGenomesResults
 AnnotateGenomesParams is a reference to a hash where the following keys are defined:
 	workspace has a value which is a string
-	genomes has a value which is a reference to a list where each element is a RAST_SDK.GenomeParams
+	input_genomes has a value which is a reference to a list where each element is a RAST_SDK.GenomeParams
+	genetic_code has a value which is an int
+	domain has a value which is a string
+	scientific_name has a value which is a string
+	genome_text has a value which is a string
+	output_genome has a value which is a string
 	call_features_rRNA_SEED has a value which is a RAST_SDK.bool
 	call_features_tRNA_trnascan has a value which is a RAST_SDK.bool
 	call_selenoproteins has a value which is a RAST_SDK.bool
@@ -415,7 +422,6 @@ AnnotateGenomesParams is a reference to a hash where the following keys are defi
 	kmer_v1_parameters has a value which is a RAST_SDK.bool
 	annotate_proteins_similarity has a value which is a RAST_SDK.bool
 	resolve_overlapping_features has a value which is a RAST_SDK.bool
-	find_close_neighbors has a value which is a RAST_SDK.bool
 	call_features_prophage_phispy has a value which is a RAST_SDK.bool
 	retain_old_anno_for_hypotheticals has a value which is a RAST_SDK.bool
 GenomeParams is a reference to a hash where the following keys are defined:
@@ -604,10 +610,10 @@ sub _validate_version {
         );
     }
     if ($sMinor > $cMinor) {
-        warn "New client version available for RAST_SDK::RAST_SDKClient\n";
+        warn "New client version available for installed_clients::RAST_SDKClient\n";
     }
     if ($sMajor == 0) {
-        warn "RAST_SDK::RAST_SDKClient version is $svr_version. API subject to change.\n";
+        warn "installed_clients::RAST_SDKClient version is $svr_version. API subject to change.\n";
     }
 }
 
@@ -774,7 +780,6 @@ annotate_proteins_kmer_v2 has a value which is a RAST_SDK.bool
 kmer_v1_parameters has a value which is a RAST_SDK.bool
 annotate_proteins_similarity has a value which is a RAST_SDK.bool
 resolve_overlapping_features has a value which is a RAST_SDK.bool
-find_close_neighbors has a value which is a RAST_SDK.bool
 call_features_prophage_phispy has a value which is a RAST_SDK.bool
 retain_old_anno_for_hypotheticals has a value which is a RAST_SDK.bool
 
@@ -808,7 +813,6 @@ annotate_proteins_kmer_v2 has a value which is a RAST_SDK.bool
 kmer_v1_parameters has a value which is a RAST_SDK.bool
 annotate_proteins_similarity has a value which is a RAST_SDK.bool
 resolve_overlapping_features has a value which is a RAST_SDK.bool
-find_close_neighbors has a value which is a RAST_SDK.bool
 call_features_prophage_phispy has a value which is a RAST_SDK.bool
 retain_old_anno_for_hypotheticals has a value which is a RAST_SDK.bool
 
@@ -908,7 +912,12 @@ scientific_name has a value which is a string
 <pre>
 a reference to a hash where the following keys are defined:
 workspace has a value which is a string
-genomes has a value which is a reference to a list where each element is a RAST_SDK.GenomeParams
+input_genomes has a value which is a reference to a list where each element is a RAST_SDK.GenomeParams
+genetic_code has a value which is an int
+domain has a value which is a string
+scientific_name has a value which is a string
+genome_text has a value which is a string
+output_genome has a value which is a string
 call_features_rRNA_SEED has a value which is a RAST_SDK.bool
 call_features_tRNA_trnascan has a value which is a RAST_SDK.bool
 call_selenoproteins has a value which is a RAST_SDK.bool
@@ -925,7 +934,6 @@ annotate_proteins_kmer_v2 has a value which is a RAST_SDK.bool
 kmer_v1_parameters has a value which is a RAST_SDK.bool
 annotate_proteins_similarity has a value which is a RAST_SDK.bool
 resolve_overlapping_features has a value which is a RAST_SDK.bool
-find_close_neighbors has a value which is a RAST_SDK.bool
 call_features_prophage_phispy has a value which is a RAST_SDK.bool
 retain_old_anno_for_hypotheticals has a value which is a RAST_SDK.bool
 
@@ -937,7 +945,12 @@ retain_old_anno_for_hypotheticals has a value which is a RAST_SDK.bool
 
 a reference to a hash where the following keys are defined:
 workspace has a value which is a string
-genomes has a value which is a reference to a list where each element is a RAST_SDK.GenomeParams
+input_genomes has a value which is a reference to a list where each element is a RAST_SDK.GenomeParams
+genetic_code has a value which is an int
+domain has a value which is a string
+scientific_name has a value which is a string
+genome_text has a value which is a string
+output_genome has a value which is a string
 call_features_rRNA_SEED has a value which is a RAST_SDK.bool
 call_features_tRNA_trnascan has a value which is a RAST_SDK.bool
 call_selenoproteins has a value which is a RAST_SDK.bool
@@ -954,7 +967,6 @@ annotate_proteins_kmer_v2 has a value which is a RAST_SDK.bool
 kmer_v1_parameters has a value which is a RAST_SDK.bool
 annotate_proteins_similarity has a value which is a RAST_SDK.bool
 resolve_overlapping_features has a value which is a RAST_SDK.bool
-find_close_neighbors has a value which is a RAST_SDK.bool
 call_features_prophage_phispy has a value which is a RAST_SDK.bool
 retain_old_anno_for_hypotheticals has a value which is a RAST_SDK.bool
 
@@ -1001,7 +1013,7 @@ report_ref has a value which is a string
 
 =cut
 
-package RAST_SDK::RAST_SDKClient::RpcClient;
+package installed_clients::RAST_SDKClient::RpcClient;
 use base 'JSON::RPC::Client';
 use POSIX;
 use strict;
