@@ -3200,7 +3200,7 @@ sub load_genomes
             $wsname = "ReferenceDataManager";
         }
 
-        my $gn_type = "user upload";
+        my $gn_type = "na";
         if( $ncbigenome->{refseq_category} eq "reference genome") {
            $gn_type = "reference";
         }
