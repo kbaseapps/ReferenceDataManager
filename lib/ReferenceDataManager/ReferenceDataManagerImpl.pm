@@ -1707,7 +1707,7 @@ sub list_loaded_genomes
                                        if($curr_gn_info->{save_date}=~/$params->{save_date}/) { 
                                            push @{$output}, $curr_gn_info;
 					   foreach my $dm (@$domains) {
-				               if ($dm == $curr_gn_info->{domain}) {
+				               if (defined($curr_gn_info->{domain}) && $dm eq $curr_gn_info->{domain}) {
 					           $domain_counts->{$dm} += 1;
 					       }
 				           }
@@ -1719,7 +1719,7 @@ sub list_loaded_genomes
                                    else {
                                        push @{$output}, $curr_gn_info;
 				       foreach my $dm (@$domains) {
-				           if ($dm == $curr_gn_info->{'Domain'}) {
+				           if (defined($curr_gn_info->{domain}) && $dm eq $curr_gn_info->{domain}) {
 					       $domain_counts->{$dm} += 1;
 					   }
 				       }
