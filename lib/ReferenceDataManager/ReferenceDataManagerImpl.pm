@@ -1422,7 +1422,7 @@ ReferenceGenomeData is a reference to a hash where the following keys are define
 	file has a value which is a string
 	id has a value which is a string
 	version has a value which is a string
-	source has a value which is a string
+	source has a value which is a stringF
 	domain has a value which is a string
 	refseq_category has a value which is a string
 	tax_id has a value which is a string
@@ -1634,7 +1634,13 @@ sub list_loaded_genomes
     my $batch_count = 1000;
     my $obj_type = "KBaseGenomes.Genome-";
     my $sources = ["phytozome","refseq","ensembl","others"];
+    my $domains = ["Bacteria", , "Archaea", "Fungi", "Plant"];
+    my $domain_counts = {};
     my $wsname;
+
+    foreach my $dm (@$domains) {
+        $domain_counts->{$dm} = 0;
+    }
 
     for (my $i=0; $i < @{$sources}; $i++) {
         if ($params->{data_source} eq $sources->[$i]) {
@@ -1684,7 +1690,11 @@ sub list_loaded_genomes
                                 if( $obj_src =~ /phytozome*/i) {#check the source to include Phytozome genomes only
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info; 
- 
+                                    foreach my $dm (@$domains) {
+				        if ($dm == $curr_gn_info->{domain}) {
+				            $domain_counts->{$dm} += 1;
+				        }
+				    }
                                     if (@{$output} < 10  && @{$output} > 0) {
                                         $msg .= $self->_genomeInfoString($curr_gn_info);
                                     }
@@ -1696,6 +1706,11 @@ sub list_loaded_genomes
                                    if (defined($params->{save_date})) {
                                        if($curr_gn_info->{save_date}=~/$params->{save_date}/) { 
                                            push @{$output}, $curr_gn_info;
+					   foreach my $dm (@$domains) {
+				               if ($dm == $curr_gn_info->{domain}) {
+					           $domain_counts->{$dm} += 1;
+					       }
+				           }
                                            if (@{$output} < 10  && @{$output} > 0) {
                                                 $msg .= $self->_genomeInfoString($curr_gn_info);
                                            }
@@ -1703,6 +1718,11 @@ sub list_loaded_genomes
                                    }
                                    else {
                                        push @{$output}, $curr_gn_info;
+				       foreach my $dm (@$domains) {
+				           if ($dm == $curr_gn_info->{'Domain'}) {
+					       $domain_counts->{$dm} += 1;
+					   }
+				       }
                                        if (@{$output} < 10  && @{$output} > 0) {
                                           $msg .= $self->_genomeInfoString($curr_gn_info);
                                        }
@@ -1737,6 +1757,7 @@ sub list_loaded_genomes
     }
     $msg .= "\nThere are a total of " . @{$output} . " Reference genomes loaded in KBase workspace " . $wsname ."\n";
     print $msg . "\n";
+    print Dumper($domain_counts);
 
     my $report_out = [];
     if ($params->{create_report}) {
