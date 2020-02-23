@@ -1636,6 +1636,7 @@ sub list_loaded_genomes
     my $sources = ["phytozome","refseq","ensembl","others"];
     my $domains = ["Bacteria", , "Archaea", "Fungi", "Plant"];
     my $domain_counts = {};
+    my $genome_accessions = [];
     my $wsname;
 
     foreach my $dm (@$domains) {
@@ -1701,14 +1702,18 @@ sub list_loaded_genomes
                                 }
                             }
                             elsif( $obj_src && $i == 1 ) {#refseq genomes (exclude 'plant')
-                                if( $obj_src =~ /refseq*/i && $ws_objinfo->[4] == $params->{genome_ver}) {#check the source to exclude phytozome genomes
+                                if( $obj_src =~ /refseq*/i && $ws_objinfo->[4]) {#check the source to exclude phytozome genomes
                                    $curr_gn_info = $self->_getGenomeInfo($ws_objinfo);
                                    if (defined($params->{save_date})) {
                                        if($curr_gn_info->{save_date}=~/$params->{save_date}/) { 
                                            push @{$output}, $curr_gn_info;
 					   foreach my $dm (@$domains) {
-				               if (defined($curr_gn_info->{domain}) && $dm eq $curr_gn_info->{domain}) {
-					           $domain_counts->{$dm} += 1;
+				               if (defined($curr_gn_info->{domain}) && $dm eq $curr_gn_info->{domain}
+					               && defined($curr_gn_info->{accession})) {
+						   unless (grep { $_ eq $curr_gn_info->{accession}} @{$genome_accessions}) {
+						       $domain_counts->{$dm} += 1;
+						       push @{$genome_accessions},$curr_gn_info->{accession};
+						   }
 					       }
 				           }
                                            if (@{$output} < 10  && @{$output} > 0) {
@@ -1719,8 +1724,12 @@ sub list_loaded_genomes
                                    else {
                                        push @{$output}, $curr_gn_info;
 				       foreach my $dm (@$domains) {
-				           if (defined($curr_gn_info->{domain}) && $dm eq $curr_gn_info->{domain}) {
-					       $domain_counts->{$dm} += 1;
+				           if (defined($curr_gn_info->{domain}) && $dm eq $curr_gn_info->{domain})
+					           && defined($curr_gn_info->{accession})) {
+					       unless (grep { $_ eq $curr_gn_info->{accession}} @{$genome_accessions}) {
+						   $domain_counts->{$dm} += 1;
+						   push @{$genome_accessions},$curr_gn_info->{accession};
+					       }
 					   }
 				       }
                                        if (@{$output} < 10  && @{$output} > 0) {
@@ -1741,13 +1750,13 @@ sub list_loaded_genomes
                                 }
                             }
                             else {#others
-                                if( $ws_objinfo->[4] == $params->{genome_ver}) {#check the source to exclude phytozome genomes
+                                //if( $ws_objinfo->[4] == $params->{genome_ver}) {#check the source to exclude phytozome genomes
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info;
                                     if (@{$output} < 10  && @{$output} > 0) {
                                         $msg .= $self->_genomeInfoString($curr_gn_info);
                                     }
-                                }
+                                //}
                             }
                         }
                     }
