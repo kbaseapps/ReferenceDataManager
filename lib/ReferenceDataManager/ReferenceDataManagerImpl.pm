@@ -1750,13 +1750,13 @@ sub list_loaded_genomes
                                 }
                             }
                             else {#others
-                                //if( $ws_objinfo->[4] == $params->{genome_ver}) {#check the source to exclude phytozome genomes
+                                #if( $ws_objinfo->[4] == $params->{genome_ver}) {#check the source to exclude phytozome genomes
                                     $curr_gn_info = $self->_getGenomeInfo($ws_objinfo); 
                                     push @{$output}, $curr_gn_info;
                                     if (@{$output} < 10  && @{$output} > 0) {
                                         $msg .= $self->_genomeInfoString($curr_gn_info);
                                     }
-                                //}
+                                #}
                             }
                         }
                     }
