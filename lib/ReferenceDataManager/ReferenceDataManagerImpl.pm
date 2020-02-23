@@ -1724,7 +1724,7 @@ sub list_loaded_genomes
                                    else {
                                        push @{$output}, $curr_gn_info;
 				       foreach my $dm (@$domains) {
-				           if (defined($curr_gn_info->{domain}) && $dm eq $curr_gn_info->{domain})
+				           if (defined($curr_gn_info->{domain}) && $dm eq $curr_gn_info->{domain}
 					           && defined($curr_gn_info->{accession})) {
 					       unless (grep { $_ eq $curr_gn_info->{accession}} @{$genome_accessions}) {
 						   $domain_counts->{$dm} += 1;
